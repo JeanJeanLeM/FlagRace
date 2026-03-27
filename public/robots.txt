@@ -1,0 +1,9 @@
+# Accès explicite pour les robots AdSense / Google (validation du site)
+User-agent: *
+Allow: /
+
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: Google-Display-Ads-Bot
+Allow: /
