@@ -67,10 +67,27 @@ export const FLAG_DECOY_ALPHA2: Record<string, string> = {
   LIE: 'li',
 };
 
+/**
+ * Natural Earth / jeux monde : codes ADM0_A3 non ISO ou absents de restcountries.
+ * Doit être résolu avant EXTRA (généré) pour afficher un vrai drapeau flagcdn.
+ */
+const ISO3_FLAG_WORLD_PATCH: Record<string, string> = {
+  /** Souvent « Chypre Nord » / erreur de code → drapeau Chypre (même emplacement carte). */
+  CYN: 'cy',
+  /** British Indian Ocean Territory (ISO alpha-2 IO). */
+  IOA: 'io',
+  /** Cachemire / zone contestée dans les données NE — drapeau ONU comme neutre. */
+  KAS: 'un',
+  /** Variante Palestine dans certaines bases (PSE = ps). */
+  PSX: 'ps',
+  PSQ: 'ps',
+};
+
 export function flagAlpha2ForIso3(iso3: string): string | null {
   return (
     FLAG_ALPHA2_BY_ISO3[iso3] ??
     FLAG_DECOY_ALPHA2[iso3] ??
+    ISO3_FLAG_WORLD_PATCH[iso3] ??
     EXTRA_FLAG_ALPHA2_BY_ISO3[iso3] ??
     null
   );

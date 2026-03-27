@@ -698,7 +698,7 @@ html, body {
   overflow: hidden;
 }
 
-/* Bandeau drapeaux : grille + scroll vertical dans la zone de jeu */
+/* Bandeau drapeaux : grille max 3 col., pas de chevauchement, scroll vertical */
 .flag-dock {
   flex: 0 0 auto;
   flex-shrink: 0;
@@ -715,9 +715,12 @@ html, body {
   padding: 0.65rem 0.5rem;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: auto;
   column-gap: 0.45rem;
   row-gap: 0.5rem;
   align-content: start;
+  align-items: start;
+  justify-items: stretch;
   background: rgba(0, 0, 0, 0.35);
   border-right: 1px solid var(--border);
   scrollbar-gutter: stable;
@@ -891,6 +894,9 @@ html, body {
 
 .flag-dock-item {
   position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0;
@@ -899,6 +905,8 @@ html, body {
   cursor: grab;
   overflow: hidden;
   aspect-ratio: 4 / 3;
+  min-height: 0;
+  flex-shrink: 0;
   transition: border-color 0.15s, transform 0.12s;
 }
 
