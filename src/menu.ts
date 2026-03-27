@@ -1,4 +1,9 @@
-import { REGION_CATALOG, getDefaultRegionId, regionSupportsFlags } from './data/regionConfig.ts';
+import {
+  REGION_CATALOG,
+  REGIONS,
+  getDefaultRegionId,
+  regionSupportsFlags,
+} from './data/regionConfig.ts';
 import { DEFAULT_GAME_TYPE, GAME_TYPE_LABELS, type GameTypeId } from './gameModes.ts';
 
 function renderRegionModeGrid(container: HTMLElement): void {
@@ -73,7 +78,7 @@ function syncPuzzleBlock(
     selectedGameType === 'flag-match' ||
     selectedGameType === 'capitals-map' ||
     selectedGameType === 'country-labels-map';
-  menuRoot.querySelectorAll<HTMLButtonElement>('.mode-card[data-mode]').forEach((btn) => {
+  menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-grid .mode-card[data-mode]').forEach((btn) => {
     btn.disabled = !canPickRegion;
   });
 }
@@ -93,52 +98,74 @@ export function resetMenuToGamePick(): void {
 }
 
 export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
-  const menuRootEl = document.getElementById('screen-menu');
-  if (!menuRootEl) return;
+  const el = document.getElementById('screen-menu');
+  if (!el) return;
+  const menuRoot: HTMLElement = el;
 
   let selectedGameType: GameTypeId = DEFAULT_GAME_TYPE;
   let selectedRegionId = getDefaultRegionId();
 
-  const regionGrid = menuRootEl.querySelector<HTMLElement>('#region-mode-grid');
+  const regionGrid = menuRoot.querySelector<HTMLElement>('#region-mode-grid');
   if (regionGrid) renderRegionModeGrid(regionGrid);
 
-  menuPanelGame = menuRootEl.querySelector('#menu-panel-game');
-  menuPanelSetup = menuRootEl.querySelector('#menu-panel-setup');
-  const btnContinue = menuRootEl.querySelector<HTMLButtonElement>('#btn-menu-continue');
-  const btnBackType = menuRootEl.querySelector<HTMLButtonElement>('#btn-menu-back-type');
-  const btnStart = menuRootEl.querySelector<HTMLButtonElement>('#btn-menu-start');
-  const setupModeLine = menuRootEl.querySelector<HTMLElement>('#menu-setup-mode-line');
-  const puzzleControlsHint = menuRootEl.querySelector<HTMLElement>('#menu-puzzle-controls-hint');
+  menuPanelGame = menuRoot.querySelector('#menu-panel-game');
+  menuPanelSetup = menuRoot.querySelector('#menu-panel-setup');
+  const btnContinue = menuRoot.querySelector<HTMLButtonElement>('#btn-menu-continue');
+  const btnBackType = menuRoot.querySelector<HTMLButtonElement>('#btn-menu-back-type');
+  const btnStart = menuRoot.querySelector<HTMLButtonElement>('#btn-menu-start');
+  const setupModeLine = menuRoot.querySelector<HTMLElement>('#menu-setup-mode-line');
+  const puzzleControlsHint = menuRoot.querySelector<HTMLElement>('#menu-puzzle-controls-hint');
 
-  const puzzleDifficulty = menuRootEl.querySelector<HTMLElement>('#puzzle-difficulty-only');
-  const flagDifficulty = menuRootEl.querySelector<HTMLElement>('#flag-difficulty-only');
-  const capitalsDifficulty = menuRootEl.querySelector<HTMLElement>('#capitals-difficulty-only');
-  const countryLabelDifficulty = menuRootEl.querySelector<HTMLElement>('#country-label-difficulty-only');
-  const typeCards = menuRootEl.querySelectorAll<HTMLButtonElement>('.game-type-card[data-game-type]');
-  const flagTypeBtn = menuRootEl.querySelector<HTMLButtonElement>('.game-type-card[data-game-type="flag-match"]');
+  const puzzleDifficulty = menuRoot.querySelector<HTMLElement>('#puzzle-difficulty-only');
+  const flagDifficulty = menuRoot.querySelector<HTMLElement>('#flag-difficulty-only');
+  const capitalsDifficulty = menuRoot.querySelector<HTMLElement>('#capitals-difficulty-only');
+  const countryLabelDifficulty = menuRoot.querySelector<HTMLElement>('#country-label-difficulty-only');
+  const typeCards = menuRoot.querySelectorAll<HTMLButtonElement>('.game-type-card[data-game-type]');
 
-  function syncFlagGameForRegion(): void {
-    const ok = regionSupportsFlags(selectedRegionId);
-    if (flagTypeBtn) {
-      flagTypeBtn.disabled = !ok;
-      flagTypeBtn.classList.toggle('game-type-card--unavailable', !ok);
-      flagTypeBtn.setAttribute('aria-disabled', ok ? 'false' : 'true');
-      flagTypeBtn.title = ok ? '' : 'Pas de drapeaux ISO pour cette carte (départements, États US).';
-    }
-    if (!ok && selectedGameType === 'flag-match') {
-      selectedGameType = DEFAULT_GAME_TYPE;
-      syncGameTypeCards();
-      syncPuzzleBlock(
-        menuRootEl,
-        puzzleDifficulty,
-        flagDifficulty,
-        capitalsDifficulty,
-        countryLabelDifficulty,
-        selectedGameType,
-      );
-      syncPuzzleHint();
-      updateSetupSummary();
-    }
+  /** Modes drapeaux : seules les cartes avec drapeaux ISO (pas départements FR ni États US). */
+  const FLAG_BLOCKED_REGION_TITLE =
+    'Pas de drapeaux ISO pour cette carte (départements, États US).';
+
+  function ensureRegionCompatibleWithGameType(): void {
+    if (selectedGameType !== 'flag-match') return;
+    if (regionSupportsFlags(selectedRegionId)) return;
+    const fallback = REGIONS.find((r) => r.supportsFlags);
+    if (fallback) selectedRegionId = fallback.id;
+  }
+
+  function refreshRegionGridActiveState(): void {
+    menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-grid .mode-card[data-mode]').forEach((btn) => {
+      const id = btn.dataset['mode'];
+      if (!id) return;
+      const on = id === selectedRegionId && !btn.disabled;
+      btn.classList.toggle('active', on);
+    });
+  }
+
+  function syncRegionGridForGameType(): void {
+    menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-grid .mode-card[data-mode]').forEach((btn) => {
+      const id = btn.dataset['mode'];
+      if (!id) return;
+      const blockForFlags = selectedGameType === 'flag-match' && !regionSupportsFlags(id);
+      btn.disabled = blockForFlags;
+      btn.classList.toggle('disabled', blockForFlags);
+      btn.setAttribute('aria-disabled', blockForFlags ? 'true' : 'false');
+      if (blockForFlags) {
+        btn.title = FLAG_BLOCKED_REGION_TITLE;
+        const base = REGION_CATALOG.find((e) => e.id === id && e.available === true);
+        const desc = base && 'descriptionLines' in base ? base.descriptionLines.join(', ') : '';
+        btn.setAttribute(
+          'aria-label',
+          `${base?.label ?? id}. ${FLAG_BLOCKED_REGION_TITLE}${desc ? ` ${desc}` : ''}`,
+        );
+      } else {
+        btn.title = '';
+        const base = REGION_CATALOG.find((e) => e.id === id && e.available === true);
+        if (base && 'descriptionLines' in base) {
+          btn.setAttribute('aria-label', `${base.label}. ${base.descriptionLines.join(', ')}`);
+        }
+      }
+    });
   }
 
   function syncGameTypeCards(): void {
@@ -170,7 +197,7 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
     menuPanelSetup.classList.remove('menu-panel--hidden');
     menuPanelSetup.setAttribute('aria-hidden', 'false');
     syncPuzzleBlock(
-      menuRootEl,
+      menuRoot,
       puzzleDifficulty,
       flagDifficulty,
       capitalsDifficulty,
@@ -179,7 +206,9 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
     );
     syncPuzzleHint();
     updateSetupSummary();
-    syncFlagGameForRegion();
+    ensureRegionCompatibleWithGameType();
+    syncRegionGridForGameType();
+    refreshRegionGridActiveState();
     btnStart?.focus();
   }
 
@@ -197,17 +226,16 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
     });
   });
 
-  menuRootEl.querySelectorAll<HTMLButtonElement>('.mode-card[data-mode]').forEach((btn) => {
+  menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-grid .mode-card[data-mode]').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (btn.disabled || btn.classList.contains('disabled')) return;
       const mode = btn.dataset['mode'];
       if (!mode) return;
       selectedRegionId = mode;
-      menuRootEl.querySelectorAll<HTMLButtonElement>('.mode-card[data-mode]').forEach((el) => {
+      menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-grid .mode-card[data-mode]').forEach((el) => {
         if (el.disabled || el.classList.contains('disabled')) return;
         el.classList.toggle('active', el === btn);
       });
-      syncFlagGameForRegion();
     });
   });
 
@@ -224,7 +252,7 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   });
 
   syncPuzzleBlock(
-    menuRootEl,
+    menuRoot,
     puzzleDifficulty,
     flagDifficulty,
     capitalsDifficulty,
@@ -233,5 +261,4 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   );
   syncPuzzleHint();
   syncGameTypeCards();
-  syncFlagGameForRegion();
 }

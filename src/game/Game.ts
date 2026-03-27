@@ -118,7 +118,13 @@ export class Game {
   }
 
   private buildTiles(geojson: GeoFeatureCollection, countries: string[]): void {
-    const { tiles, borderConnectors } = buildMapTiles(this.canvas, geojson, countries, 'scattered');
+    const { tiles, borderConnectors } = buildMapTiles(
+      this.canvas,
+      geojson,
+      countries,
+      'scattered',
+      !this.displayOptions.startTilesNorthUp,
+    );
     this.tiles = tiles;
     this.borderConnectors = borderConnectors;
     this.connectorByKey = new Map(this.borderConnectors.map((c) => [c.key, c]));

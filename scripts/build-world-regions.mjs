@@ -32,6 +32,15 @@ function iso3FromAdm(adm) {
   return adm;
 }
 
+/** Départements métropolitains uniquement (hors DROM-COM : 971, 972, …). */
+function isMetroFranceDepartmentCode(code) {
+  const c = String(code).trim().toUpperCase();
+  if (c === '2A' || c === '2B') return true;
+  if (!/^\d+$/.test(c)) return false;
+  const n = parseInt(c, 10);
+  return n >= 1 && n <= 95;
+}
+
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -228,7 +237,7 @@ async function buildFranceDepartments() {
   for (const f of gj.features) {
     const code = f.properties?.code;
     const nom = f.properties?.nom ?? code;
-    if (!code) continue;
+    if (!code || !isMetroFranceDepartmentCode(code)) continue;
     const iso3 = `FR-${code}`;
     const geom = simplifyGeom(f.geometry, 0.006);
     const fc = turf.feature(geom);
@@ -262,7 +271,17 @@ async function buildFranceDepartments() {
 }
 
 async function buildUsaStates(admin1) {
-  const skip = new Set(['US-DC', 'US-PR', 'US-VI', 'US-GU', 'US-AS', 'US-MP', 'US-UM']);
+  const skip = new Set([
+    'US-DC',
+    'US-AK',
+    'US-HI',
+    'US-PR',
+    'US-VI',
+    'US-GU',
+    'US-AS',
+    'US-MP',
+    'US-UM',
+  ]);
   const features = [];
   const names = {};
   for (const f of admin1.features) {

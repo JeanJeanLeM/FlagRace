@@ -13,6 +13,7 @@ export const GAME_DIFFICULTY_PRESETS: Record<GameDifficulty, GameDisplayOptions>
     showConnectorDots: true,
     showOrientationBorder: true,
     doubleClickSnapNorth: true,
+    startTilesNorthUp: true,
   },
   medium: {
     showCountryLabels: true,
@@ -20,6 +21,7 @@ export const GAME_DIFFICULTY_PRESETS: Record<GameDifficulty, GameDisplayOptions>
     showConnectorDots: false,
     showOrientationBorder: false,
     doubleClickSnapNorth: true,
+    startTilesNorthUp: false,
   },
   expert: {
     showCountryLabels: false,
@@ -27,6 +29,7 @@ export const GAME_DIFFICULTY_PRESETS: Record<GameDifficulty, GameDisplayOptions>
     showConnectorDots: false,
     showOrientationBorder: false,
     doubleClickSnapNorth: false,
+    startTilesNorthUp: false,
   },
 };
 

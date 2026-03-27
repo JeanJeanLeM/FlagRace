@@ -134,12 +134,14 @@ export interface BuiltMapTiles {
 /**
  * Projection écran + tuiles locales (comme l’ancien buildTiles du puzzle).
  * `assembled` : tuiles déjà à la place cible, nord en haut (carte figée).
+ * `randomizeRotation` : si false, mode dispersé avec toutes les tuiles à 0° (nord en haut).
  */
 export function buildMapTiles(
   canvas: HTMLCanvasElement,
   geojson: GeoFeatureCollection,
   countries: string[],
   layout: MapTileLayout,
+  randomizeRotation = true,
 ): BuiltMapTiles {
   const cw = canvas.width;
   const ch = canvas.height;
@@ -213,13 +215,17 @@ export function buildMapTiles(
       tile.x = col * cellW + cellW / 2 + (Math.random() - 0.5) * cellW * 0.35;
       tile.y = row * cellH + cellH / 2 + (Math.random() - 0.5) * cellH * 0.35;
 
-      tile.angle = [0, 90, 180, 270][Math.floor(Math.random() * 4)]!;
+      if (randomizeRotation) {
+        tile.angle = [0, 90, 180, 270][Math.floor(Math.random() * 4)]!;
+      } else {
+        tile.angle = 0;
+      }
     }
     tile.zIndex = idx;
     return tile;
   });
 
-  if (layout === 'scattered') {
+  if (layout === 'scattered' && randomizeRotation) {
     let zeroes = tiles.filter((t) => t.angle === 0).length;
     const maxZero = Math.max(1, Math.floor(tiles.length / 4));
     const angles: [number, number, number] = [90, 180, 270];

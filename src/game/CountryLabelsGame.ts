@@ -74,6 +74,7 @@ export class CountryLabelsGame {
       showConnectorDots: false,
       showOrientationBorder: false,
       doubleClickSnapNorth: false,
+      startTilesNorthUp: false,
     });
     this.renderer.setAssembledNeutralFill(null);
     this.onHudUpdate = onHudUpdate;

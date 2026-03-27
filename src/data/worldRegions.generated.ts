@@ -226,7 +226,6 @@ export const FR_DEPARTMENT_IDS: readonly string[] = [
 ];
 
 export const USA_STATE_IDS: readonly string[] = [
-  "US-AK",
   "US-AL",
   "US-AR",
   "US-AZ",
@@ -236,7 +235,6 @@ export const USA_STATE_IDS: readonly string[] = [
   "US-DE",
   "US-FL",
   "US-GA",
-  "US-HI",
   "US-IA",
   "US-ID",
   "US-IL",
@@ -1522,12 +1520,6 @@ export const FR_DEPARTMENT_CAPITALS: CapitalEntry[] = [
 
 export const US_STATE_CAPITAL_ENTRIES: CapitalEntry[] = [
   {
-    "iso3": "US-AK",
-    "label": "Juneau",
-    "lon": -134.419722,
-    "lat": 58.301598
-  },
-  {
     "iso3": "US-AL",
     "label": "Montgomery",
     "lon": -86.3006489,
@@ -1580,12 +1572,6 @@ export const US_STATE_CAPITAL_ENTRIES: CapitalEntry[] = [
     "label": "Atlanta",
     "lon": -84.390264,
     "lat": 33.748992
-  },
-  {
-    "iso3": "US-HI",
-    "label": "Honolulu",
-    "lon": -157.857376,
-    "lat": 21.306114
   },
   {
     "iso3": "US-IA",
@@ -2047,7 +2033,6 @@ export const EXTRA_COUNTRY_NAME_FR: Record<string, string> = {
   "US-CA": "California",
   "US-NM": "New Mexico",
   "US-TX": "Texas",
-  "US-AK": "Alaska",
   "US-LA": "Louisiana",
   "US-MS": "Mississippi",
   "US-AL": "Alabama",
@@ -2063,7 +2048,6 @@ export const EXTRA_COUNTRY_NAME_FR: Record<string, string> = {
   "US-RI": "Rhode Island",
   "US-MA": "Massachusetts",
   "US-OR": "Oregon",
-  "US-HI": "Hawaii",
   "US-UT": "Utah",
   "US-WY": "Wyoming",
   "US-NV": "Nevada",

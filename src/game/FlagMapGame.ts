@@ -77,6 +77,7 @@ export class FlagMapGame {
       showConnectorDots: false,
       showOrientationBorder: false,
       doubleClickSnapNorth: false,
+      startTilesNorthUp: false,
     });
     this.renderer.setAssembledNeutralFill(NEUTRAL_TILE);
     this.onHudUpdate = onHudUpdate;

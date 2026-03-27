@@ -34,6 +34,7 @@ html, body {
 
 .screen {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -48,8 +49,7 @@ html, body {
   flex: 1;
   min-height: 0;
   align-items: center;
-  /* safe center : centré si tout tient à l’écran, sinon aligné en haut pour permettre le scroll */
-  justify-content: safe center;
+  justify-content: flex-start;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
@@ -581,6 +581,11 @@ html, body {
 
 #screen-game {
   background: var(--bg-dark);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 #game-header {
@@ -653,23 +658,28 @@ html, body {
 }
 
 .game-body {
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   flex-direction: row;
   min-height: 0;
   min-width: 0;
+  overflow: hidden;
 }
 
-/* Bandeau drapeaux : grille max 3 colonnes + scroll vertical dans la zone de jeu */
+/* Bandeau drapeaux : grille + scroll vertical dans la zone de jeu */
 .flag-dock {
+  flex: 0 0 auto;
   flex-shrink: 0;
   width: 276px;
   min-width: 0;
   min-height: 0;
-  max-height: 100%;
   align-self: stretch;
+  height: 100%;
+  max-height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 0.65rem 0.5rem;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -705,16 +715,17 @@ html, body {
   display: none;
 }
 
-/* Villes (mode capitales) : 3 colonnes + défilement vertical dans la zone de jeu */
+/* Villes / noms (colonne gauche) : grille + défilement vertical borné par la zone de jeu */
 .capitals-dock {
-  flex-shrink: 0;
+  flex: 0 0 300px;
   width: 300px;
   min-width: 0;
   min-height: 0;
-  max-height: 100%;
   align-self: stretch;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 0.55rem 0.5rem;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -826,7 +837,11 @@ html, body {
 
 @media (max-width: 640px) {
   .capitals-dock {
-    width: min(100%, 280px);
+    width: 100%;
+    max-height: min(38vh, 300px);
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
     padding: 0.45rem 0.4rem;
     column-gap: 0.3rem;
     row-gap: 0.35rem;
@@ -895,7 +910,11 @@ html, body {
 
 @media (max-width: 640px) {
   .flag-dock {
-    width: min(200px, 52vw);
+    width: 100%;
+    max-height: min(38vh, 300px);
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
     padding: 0.45rem 0.4rem;
     column-gap: 0.35rem;
     row-gap: 0.4rem;
@@ -905,7 +924,6 @@ html, body {
 
 @media (max-width: 380px) {
   .flag-dock {
-    width: min(168px, 48vw);
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

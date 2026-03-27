@@ -78,9 +78,6 @@
             <p id="menu-setup-mode-line" class="menu-setup-mode-line" aria-live="polite"></p>
           </div>
 
-          <h2 class="section-heading section-heading--inline">Carte / région</h2>
-          <div id="region-mode-grid" class="mode-grid" role="group" aria-label="Choisir une carte ou région"></div>
-
           <div id="flag-difficulty-only" class="puzzle-only-menu puzzle-only-menu--inactive" aria-hidden="true">
             <section class="difficulty-section" aria-labelledby="flag-difficulty-heading">
               <h2 id="flag-difficulty-heading" class="section-heading">Difficulté · Drapeaux</h2>
@@ -202,6 +199,7 @@
                 <span class="difficulty-icon" aria-hidden="true">🌿</span>
                 <span class="difficulty-name">Facile</span>
                 <ul class="difficulty-perks">
+                  <li>Tuiles déjà orientées nord en haut</li>
                   <li>Max d’indices à l’écran</li>
                   <li>Double-clic = nord en haut</li>
                 </ul>
@@ -217,6 +215,7 @@
                 <span class="difficulty-icon" aria-hidden="true">🎯</span>
                 <span class="difficulty-name">Moyen</span>
                 <ul class="difficulty-perks">
+                  <li>Rotations aléatoires au départ</li>
                   <li>Noms + couleurs</li>
                   <li>Double-clic nord seulement</li>
                 </ul>
@@ -232,6 +231,7 @@
                 <span class="difficulty-icon" aria-hidden="true">⛰️</span>
                 <span class="difficulty-name">Expert</span>
                 <ul class="difficulty-perks">
+                  <li>Rotations aléatoires au départ</li>
                   <li>Monochrome, sans texte</li>
                   <li>Pas de raccourci nord</li>
                 </ul>
@@ -298,6 +298,9 @@
               Lancer la partie
             </button>
           </div>
+
+          <h2 class="section-heading section-heading--inline">Carte / région</h2>
+          <div id="region-mode-grid" class="mode-grid" role="group" aria-label="Choisir une carte ou région"></div>
 
           <div id="menu-puzzle-controls-hint" class="controls-hint controls-hint--menu puzzle-only-menu--inactive" aria-hidden="true">
             <span>Glisser : déplacer</span>

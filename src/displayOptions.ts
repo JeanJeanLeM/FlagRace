@@ -8,6 +8,8 @@ export interface GameDisplayOptions {
   showOrientationBorder: boolean;
   /** Si true : double-clic sur une tuile (ou groupe en drag) remet le nord en haut. */
   doubleClickSnapNorth: boolean;
+  /** Si true : au lancement, toutes les tuiles sont déjà orientées nord en haut (pas de rotation aléatoire). */
+  startTilesNorthUp: boolean;
 }
 
 export const DEFAULT_DISPLAY_OPTIONS: GameDisplayOptions = {
@@ -16,6 +18,7 @@ export const DEFAULT_DISPLAY_OPTIONS: GameDisplayOptions = {
   showConnectorDots: true,
   showOrientationBorder: true,
   doubleClickSnapNorth: true,
+  startTilesNorthUp: false,
 };
 
 /** Remplissage des tuiles en mode « couleur unique » (contraste avec l’océan). */
