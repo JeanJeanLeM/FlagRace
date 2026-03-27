@@ -140,6 +140,15 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
     });
   }
 
+  function updateSelectedRegionLabel(): void {
+    const nameEl = screenMenu.querySelector('#world-menu-selected-name');
+    if (!nameEl) return;
+    const entry = catalogEntryForRegionId(selectedRegionId);
+    const label =
+      entry && 'label' in entry ? entry.label : selectedRegionId;
+    nameEl.textContent = label;
+  }
+
   function syncRegionPickersForGameType(): void {
     const canPickRegion =
       selectedGameType === 'puzzle-country' ||
@@ -190,6 +199,7 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
     ensureRegionCompatibleWithGameType();
     syncRegionPickersForGameType();
     refreshRegionPickersActiveState();
+    updateSelectedRegionLabel();
     syncPuzzleBlock(
       puzzleDifficulty,
       flagDifficulty,
@@ -220,6 +230,7 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
       ensureRegionCompatibleWithGameType();
       syncRegionPickersForGameType();
       refreshRegionPickersActiveState();
+      updateSelectedRegionLabel();
       syncPuzzleHint();
     });
   });
@@ -227,6 +238,7 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   function onSelectRegion(regionId: string): void {
     selectedRegionId = regionId;
     refreshRegionPickersActiveState();
+    updateSelectedRegionLabel();
   }
 
   screenMenu.querySelector('#region-mode-map-wrap')?.addEventListener('click', (ev) => {
@@ -286,4 +298,5 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   syncGameTypeCards();
   syncRegionPickersForGameType();
   refreshRegionPickersActiveState();
+  updateSelectedRegionLabel();
 }
