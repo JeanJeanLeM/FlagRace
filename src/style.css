@@ -357,7 +357,11 @@ html, body {
   border-radius: 12px;
   padding: 1.4rem 1rem;
   cursor: pointer;
-  transition: background 0.18s, border-color 0.18s, transform 0.14s;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.25s ease,
+    transform 0.14s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -366,12 +370,40 @@ html, body {
   text-align: center;
 }
 
+.mode-card:not(.disabled):not(.active):hover,
+.mode-card:not(.disabled):not(.active):focus-visible {
+  background: var(--card-hover);
+  border-color: rgba(255, 255, 255, 0.22);
+  outline: none;
+}
+
+/* Carte région / map sélectionnée : toujours visible (pas seulement au survol) */
+.mode-card.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 136, 0.4),
+    0 10px 36px rgba(0, 0, 0, 0.38);
+}
+
+.mode-card.active .mode-name {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.mode-card.active .mode-desc {
+  color: rgba(232, 232, 232, 0.92);
+}
+
 .mode-card.active:hover,
 .mode-card.active:focus-visible {
-  background: var(--accent-dim);
+  background: rgba(0, 255, 136, 0.22);
   border-color: var(--accent);
   transform: translateY(-2px);
   outline: none;
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 136, 0.5),
+    0 14px 44px rgba(0, 0, 0, 0.42);
 }
 
 .mode-card.disabled {
