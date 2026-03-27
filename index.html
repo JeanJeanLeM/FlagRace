@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>World Puzzle</title>
+  </head>
+  <body>
+    <div id="app">
+
+      <!-- ── Menu Screen ───────────────────────────── -->
+      <div id="screen-menu" class="screen">
+        <div class="menu-content">
+          <h1 class="game-title">World <span>Puzzle</span></h1>
+
+          <div id="menu-panel-game" class="menu-panel" aria-hidden="false">
+          <section class="game-type-section" aria-labelledby="game-type-heading">
+            <h2 id="game-type-heading" class="section-heading">Mode de jeu</h2>
+            <div class="game-type-grid" role="group" aria-labelledby="game-type-heading">
+              <button
+                type="button"
+                class="game-type-card game-type-card--puzzle active"
+                data-game-type="puzzle-country"
+                aria-pressed="true"
+                aria-label="Puzzle pays : assembler les tuiles pour reconstituer la carte"
+              >
+                <span class="game-type-card-glow" aria-hidden="true"></span>
+                <span class="game-type-icon" aria-hidden="true">🧩</span>
+                <span class="game-type-name">Puzzle pays</span>
+              </button>
+              <button
+                type="button"
+                class="game-type-card game-type-card--capitals"
+                data-game-type="capitals-map"
+                aria-pressed="false"
+                aria-label="Capitales : placer chaque étiquette sur le bon pays"
+              >
+                <span class="game-type-card-glow" aria-hidden="true"></span>
+                <span class="game-type-icon" aria-hidden="true">📍</span>
+                <span class="game-type-name">Capitales</span>
+              </button>
+              <button
+                type="button"
+                class="game-type-card game-type-card--flags"
+                data-game-type="flag-match"
+                aria-pressed="false"
+                aria-label="Drapeaux : placer chaque drapeau sur le bon pays"
+              >
+                <span class="game-type-card-glow" aria-hidden="true"></span>
+                <span class="game-type-icon" aria-hidden="true">🏳️</span>
+                <span class="game-type-name">Drapeaux</span>
+              </button>
+              <button
+                type="button"
+                class="game-type-card game-type-card--labels"
+                data-game-type="country-labels-map"
+                aria-pressed="false"
+                aria-label="Noms sur la carte : placer chaque nom sur le bon pays"
+              >
+                <span class="game-type-card-glow" aria-hidden="true"></span>
+                <span class="game-type-icon" aria-hidden="true">🏷️</span>
+                <span class="game-type-name">Noms sur la carte</span>
+              </button>
+            </div>
+          </section>
+          <div class="menu-actions">
+            <button type="button" id="btn-menu-continue" class="btn-menu-cta">
+              Continuer
+            </button>
+          </div>
+          </div>
+
+          <div id="menu-panel-setup" class="menu-panel menu-panel--hidden" aria-hidden="true">
+          <div class="menu-setup-header">
+            <button type="button" id="btn-menu-back-type" class="btn-menu-text">
+              ← Choisir un autre mode
+            </button>
+            <p id="menu-setup-mode-line" class="menu-setup-mode-line" aria-live="polite"></p>
+          </div>
+
+          <h2 class="section-heading section-heading--inline">Carte / région</h2>
+          <div id="region-mode-grid" class="mode-grid" role="group" aria-label="Choisir une carte ou région"></div>
+
+          <div id="flag-difficulty-only" class="puzzle-only-menu puzzle-only-menu--inactive" aria-hidden="true">
+            <section class="difficulty-section" aria-labelledby="flag-difficulty-heading">
+              <h2 id="flag-difficulty-heading" class="section-heading">Difficulté · Drapeaux</h2>
+              <div class="difficulty-grid flag-difficulty-grid" role="radiogroup" aria-labelledby="flag-difficulty-heading">
+                <button
+                  type="button"
+                  class="difficulty-card flag-difficulty-card difficulty-card--easy active"
+                  data-flag-difficulty="1"
+                  role="radio"
+                  aria-checked="true"
+                >
+                  <span class="difficulty-card-glow" aria-hidden="true"></span>
+                  <span class="difficulty-icon" aria-hidden="true">✅</span>
+                  <span class="difficulty-name">Niveau 1</span>
+                  <ul class="difficulty-perks">
+                    <li>Que des pays de la carte</li>
+                    <li>Zéro leurre</li>
+                  </ul>
+                </button>
+                <button
+                  type="button"
+                  class="difficulty-card flag-difficulty-card difficulty-card--medium"
+                  data-flag-difficulty="2"
+                  role="radio"
+                  aria-checked="false"
+                >
+                  <span class="difficulty-card-glow" aria-hidden="true"></span>
+                  <span class="difficulty-icon" aria-hidden="true">🔬</span>
+                  <span class="difficulty-name">Niveau 2</span>
+                  <ul class="difficulty-perks">
+                    <li>Niveau 1 + micro-États hors carte</li>
+                    <li>Ne placer que ce qui est sur la carte</li>
+                  </ul>
+                </button>
+                <button
+                  type="button"
+                  class="difficulty-card flag-difficulty-card difficulty-card--expert"
+                  data-flag-difficulty="3"
+                  role="radio"
+                  aria-checked="false"
+                >
+                  <span class="difficulty-card-glow" aria-hidden="true"></span>
+                  <span class="difficulty-icon" aria-hidden="true">🪤</span>
+                  <span class="difficulty-name">Niveau 3</span>
+                  <ul class="difficulty-perks">
+                    <li>Niveau 2 + faux amis</li>
+                    <li>Dock chargé en leurres</li>
+                  </ul>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div id="country-label-difficulty-only" class="puzzle-only-menu puzzle-only-menu--inactive" aria-hidden="true">
+            <section class="difficulty-section" aria-labelledby="country-label-difficulty-heading">
+              <h2 id="country-label-difficulty-heading" class="section-heading">Difficulté · Noms sur la carte</h2>
+              <div class="difficulty-grid flag-difficulty-grid" role="radiogroup" aria-labelledby="country-label-difficulty-heading">
+                <button
+                  type="button"
+                  class="difficulty-card country-label-difficulty-card difficulty-card--easy active"
+                  data-country-label-difficulty="1"
+                  role="radio"
+                  aria-checked="true"
+                >
+                  <span class="difficulty-card-glow" aria-hidden="true"></span>
+                  <span class="difficulty-icon" aria-hidden="true">🏳️</span>
+                  <span class="difficulty-name">Niveau 1</span>
+                  <ul class="difficulty-perks">
+                    <li>Drapeau emoji + nom</li>
+                    <li>Faux pays → retour gauche</li>
+                  </ul>
+                </button>
+                <button
+                  type="button"
+                  class="difficulty-card country-label-difficulty-card difficulty-card--medium"
+                  data-country-label-difficulty="2"
+                  role="radio"
+                  aria-checked="false"
+                >
+                  <span class="difficulty-card-glow" aria-hidden="true"></span>
+                  <span class="difficulty-icon" aria-hidden="true">📝</span>
+                  <span class="difficulty-name">Niveau 2</span>
+                  <ul class="difficulty-perks">
+                    <li>Nom seul, mêmes pays</li>
+                    <li>Pas d’emoji drapeau</li>
+                  </ul>
+                </button>
+                <button
+                  type="button"
+                  class="difficulty-card country-label-difficulty-card difficulty-card--expert"
+                  data-country-label-difficulty="3"
+                  role="radio"
+                  aria-checked="false"
+                >
+                  <span class="difficulty-card-glow" aria-hidden="true"></span>
+                  <span class="difficulty-icon" aria-hidden="true">🌍</span>
+                  <span class="difficulty-name">Niveau 3</span>
+                  <ul class="difficulty-perks">
+                    <li>Noms hors carte dans le dock</li>
+                    <li>Leurres : retour auto</li>
+                  </ul>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div id="puzzle-difficulty-only" class="puzzle-only-menu">
+          <section class="difficulty-section" aria-labelledby="difficulty-heading">
+            <h2 id="difficulty-heading" class="section-heading">Difficulté · Puzzle pays</h2>
+            <div class="difficulty-grid" role="radiogroup" aria-labelledby="difficulty-heading">
+              <button
+                type="button"
+                class="difficulty-card difficulty-card--easy active"
+                data-difficulty="easy"
+                role="radio"
+                aria-checked="true"
+              >
+                <span class="difficulty-card-glow" aria-hidden="true"></span>
+                <span class="difficulty-icon" aria-hidden="true">🌿</span>
+                <span class="difficulty-name">Facile</span>
+                <ul class="difficulty-perks">
+                  <li>Max d’indices à l’écran</li>
+                  <li>Double-clic = nord en haut</li>
+                </ul>
+              </button>
+              <button
+                type="button"
+                class="difficulty-card difficulty-card--medium"
+                data-difficulty="medium"
+                role="radio"
+                aria-checked="false"
+              >
+                <span class="difficulty-card-glow" aria-hidden="true"></span>
+                <span class="difficulty-icon" aria-hidden="true">🎯</span>
+                <span class="difficulty-name">Moyen</span>
+                <ul class="difficulty-perks">
+                  <li>Noms + couleurs</li>
+                  <li>Double-clic nord seulement</li>
+                </ul>
+              </button>
+              <button
+                type="button"
+                class="difficulty-card difficulty-card--expert"
+                data-difficulty="expert"
+                role="radio"
+                aria-checked="false"
+              >
+                <span class="difficulty-card-glow" aria-hidden="true"></span>
+                <span class="difficulty-icon" aria-hidden="true">⛰️</span>
+                <span class="difficulty-name">Expert</span>
+                <ul class="difficulty-perks">
+                  <li>Monochrome, sans texte</li>
+                  <li>Pas de raccourci nord</li>
+                </ul>
+              </button>
+            </div>
+          </section>
+          </div>
+
+          <div id="capitals-difficulty-only" class="puzzle-only-menu puzzle-only-menu--inactive" aria-hidden="true">
+            <section class="difficulty-section" aria-labelledby="capitals-difficulty-heading">
+              <h2 id="capitals-difficulty-heading" class="section-heading">Difficulté · Capitales</h2>
+              <div class="difficulty-grid" role="radiogroup" aria-labelledby="capitals-difficulty-heading">
+                <button
+                  type="button"
+                  class="difficulty-card capitals-difficulty-card difficulty-card--easy"
+                  data-capitals-difficulty="in-country"
+                  role="radio"
+                  aria-checked="false"
+                >
+                  <span class="difficulty-card-glow" aria-hidden="true"></span>
+                  <span class="difficulty-icon" aria-hidden="true">🗺️</span>
+                  <span class="difficulty-name">Pays</span>
+                  <ul class="difficulty-perks">
+                    <li>N’importe où dans le pays</li>
+                    <li>Capitale exacte non requise</li>
+                  </ul>
+                </button>
+                <button
+                  type="button"
+                  class="difficulty-card capitals-difficulty-card difficulty-card--medium active"
+                  data-capitals-difficulty="near-capital"
+                  role="radio"
+                  aria-checked="true"
+                >
+                  <span class="difficulty-card-glow" aria-hidden="true"></span>
+                  <span class="difficulty-icon" aria-hidden="true">📍</span>
+                  <span class="difficulty-name">Capitale</span>
+                  <ul class="difficulty-perks">
+                    <li>Bon pays + près du point</li>
+                    <li>Tolérance autour de la capitale</li>
+                  </ul>
+                </button>
+                <button
+                  type="button"
+                  class="difficulty-card capitals-difficulty-card difficulty-card--expert"
+                  data-capitals-difficulty="expert-decoys"
+                  role="radio"
+                  aria-checked="false"
+                >
+                  <span class="difficulty-card-glow" aria-hidden="true"></span>
+                  <span class="difficulty-icon" aria-hidden="true">🎭</span>
+                  <span class="difficulty-name">Pièges</span>
+                  <ul class="difficulty-perks">
+                    <li>Comme Capitale + leurres</li>
+                    <li>Fausse ville → retour</li>
+                  </ul>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div class="menu-actions menu-actions--start">
+            <button type="button" id="btn-menu-start" class="btn-menu-cta btn-menu-cta--primary">
+              Lancer la partie
+            </button>
+          </div>
+
+          <div id="menu-puzzle-controls-hint" class="controls-hint controls-hint--menu puzzle-only-menu--inactive" aria-hidden="true">
+            <span>Glisser : déplacer</span>
+            <span>Molette : rotation</span>
+            <span>Ctrl + molette : zoom</span>
+            <span>Double-clic : nord (Facile / Moyen)</span>
+            <span>Relâcher : aimant</span>
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Game Screen ───────────────────────────── -->
+      <div id="screen-game" class="screen hidden" data-game-kind="puzzle">
+        <div id="game-header">
+          <button id="btn-back">← Menu</button>
+          <span id="game-title-bar">World Puzzle</span>
+          <span class="game-zoom" aria-label="Zoom">
+            <button type="button" id="btn-zoom-out" title="Dézoomer (−)">−</button>
+            <button type="button" id="btn-zoom-reset" title="Vue de départ : centrage + zoom large (touche 0)">Défaut</button>
+            <button type="button" id="btn-zoom-in" title="Zoomer (+)">+</button>
+          </span>
+          <span id="game-stats">
+            <span class="game-stat">Temps <strong id="game-time">0:00</strong></span>
+            <span class="game-stat"><span id="progress-label">Connexions</span> <strong id="score-count">0</strong>/<strong id="score-max">0</strong></span>
+            <span class="game-stat">Score <strong id="score-points">0</strong></span>
+          </span>
+        </div>
+        <div id="game-body" class="game-body">
+          <aside id="capitals-dock" class="capitals-dock hidden" aria-label="Étiquettes à placer sur la carte"></aside>
+          <aside id="flag-dock" class="flag-dock hidden" aria-label="Drapeaux à placer, liste défilante"></aside>
+          <div id="game-canvas-wrap" class="game-canvas-wrap">
+            <canvas id="game-canvas" tabindex="0"></canvas>
+          </div>
+          <aside id="victory-panel" class="victory-panel hidden" aria-hidden="true">
+            <div class="victory-panel-inner">
+              <p class="victory-eyebrow" id="victory-eyebrow">Puzzle résolu</p>
+              <h2 class="victory-title" id="victory-title">Bravo !</h2>
+              <p class="victory-desc" id="victory-desc">Toutes les frontières du mode sont reliées.</p>
+              <dl class="victory-stats">
+                <div class="victory-stat-row">
+                  <dt>Temps</dt>
+                  <dd id="victory-time">—</dd>
+                </div>
+                <div class="victory-stat-row">
+                  <dt>Score</dt>
+                  <dd id="victory-score">—</dd>
+                </div>
+              </dl>
+              <div class="victory-actions">
+                <button type="button" id="btn-victory-replay" class="btn-victory btn-victory-primary">Rejouer</button>
+                <button type="button" id="btn-victory-menu" class="btn-victory btn-victory-secondary">Menu principal</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+        <div id="game-hint">Chrono · score · Molette : rotation · Double-clic : nord (selon diff.) · Ctrl+molette : zoom · Relâcher : aimant</div>
+      </div>
+
+    </div>
+
+    <div id="footer-credit">Données géographiques : Natural Earth (domaine public)</div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

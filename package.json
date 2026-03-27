@@ -1,0 +1,17 @@
+{
+  "name": "worldpuzzle",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:geo": "node scripts/build-north-africa.mjs",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@turf/turf": "^7.3.4",
+    "typescript": "~5.9.3",
+    "vite": "^8.0.1"
+  }
+}
