@@ -5,6 +5,12 @@ import { FlagMapGame } from './game/FlagMapGame.ts';
 import { CapitalsGame } from './game/CapitalsGame.ts';
 import { CountryLabelsGame } from './game/CountryLabelsGame.ts';
 import { REGIONS } from './data/regionConfig.ts';
+import {
+  FR_DEPARTMENT_CAPITALS,
+  US_STATE_CAPITAL_ENTRIES,
+  WORLD_CONTINENT_CAPITALS,
+} from './data/worldRegions.generated.ts';
+import { NORTH_AFRICA_CAPITALS } from './data/northAfricaCapitals.ts';
 import { getDisplayOptionsFromMenuSelection, initDifficultyMenu } from './gameDifficulty.ts';
 import { getFlagDifficultyFromMenu, initFlagDifficultyMenu } from './flagDifficulty.ts';
 import {
@@ -17,6 +23,14 @@ import {
   initCountryLabelDifficultyMenu,
 } from './countryLabelDifficulty.ts';
 import type { GameTypeId } from './gameModes.ts';
+
+/** Pool capitales pour tous les modes « capitales » (filtré par pays de la carte). */
+const ALL_MAP_CAPITALS = [
+  ...NORTH_AFRICA_CAPITALS,
+  ...WORLD_CONTINENT_CAPITALS,
+  ...FR_DEPARTMENT_CAPITALS,
+  ...US_STATE_CAPITAL_ENTRIES,
+];
 
 type ActiveGame = Game | FlagMapGame | CapitalsGame | CountryLabelsGame;
 
@@ -279,7 +293,7 @@ async function startCapitalsGame(regionId: string): Promise<void> {
   cg.setDockElement(capitalsDock);
   currentGame = cg;
 
-  await cg.load(region.geojsonUrl, region.countries, capitalsDiff);
+  await cg.load(region.geojsonUrl, region.countries, capitalsDiff, ALL_MAP_CAPITALS);
 }
 
 async function startCountryLabelsGame(regionId: string): Promise<void> {

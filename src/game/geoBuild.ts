@@ -1,5 +1,12 @@
 import { Tile } from './Tile.ts';
 import type { BorderConnectorRel } from './Renderer.ts';
+
+/** Séparateur de paires (IDs peuvent contenir `-`, ex. US-CA, FR-75). */
+const ADJ_PAIR_SEP = '\x1f';
+
+export function adjacencyPairKey(a: string, b: string): string {
+  return a < b ? `${a}${ADJ_PAIR_SEP}${b}` : `${b}${ADJ_PAIR_SEP}${a}`;
+}
 import { COUNTRY_COLORS } from '../data/regionConfig.ts';
 
 type LonLatRing = number[][];
@@ -232,7 +239,7 @@ export function buildMapTiles(
     const tb = tileMap.get(conn.b);
     if (!ta || !tb) continue;
     const P = project(conn.lon, conn.lat);
-    const key = conn.a < conn.b ? `${conn.a}-${conn.b}` : `${conn.b}-${conn.a}`;
+    const key = adjacencyPairKey(conn.a, conn.b);
     borderConnectors.push({
       key,
       a: conn.a,

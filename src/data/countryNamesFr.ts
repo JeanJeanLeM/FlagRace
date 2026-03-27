@@ -1,7 +1,9 @@
 import { flagAlpha2ForIso3 } from './flagAlpha2ByIso3.ts';
+import { EXTRA_COUNTRY_NAME_FR } from './worldRegions.generated.ts';
 
-/** Noms courts en français pour les pays du puzzle Nord Afrique + leurres du dock. */
+/** Noms courts en français pour les pays du puzzle Nord Afrique + leurres du dock + cartes monde. */
 const COUNTRY_NAME_FR: Record<string, string> = {
+  ...EXTRA_COUNTRY_NAME_FR,
   MAR: 'Maroc',
   ESH: 'Sahara occidental',
   DZA: 'Algérie',

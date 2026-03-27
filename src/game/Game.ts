@@ -3,7 +3,7 @@ import type { BorderConnectorRel, ViewCamera } from './Renderer.ts';
 import { Renderer } from './Renderer.ts';
 import { DEFAULT_DISPLAY_OPTIONS, type GameDisplayOptions } from '../displayOptions.ts';
 import { ADJACENCY as DEFAULT_ADJACENCY } from '../data/adjacency.ts';
-import { buildMapTiles, type GeoFeatureCollection } from './geoBuild.ts';
+import { adjacencyPairKey, buildMapTiles, type GeoFeatureCollection } from './geoBuild.ts';
 
 const CONNECT_THRESHOLD = 95;
 const MIN_ZOOM = 0.35;
@@ -285,7 +285,7 @@ export class Game {
       const ta = tileMap.get(a);
       const tb = tileMap.get(b);
       if (!ta || !tb) continue;
-      const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+      const key = adjacencyPairKey(a, b);
       const rel = this.connectorByKey.get(key);
       if (rel) {
         const [wax, way] = worldPointFromLocal(ta, rel.la[0], rel.la[1]);
@@ -309,8 +309,9 @@ export class Game {
       adj.get(x)!.add(y);
       adj.get(y)!.add(x);
     };
+    const sep = '\x1f';
     for (const key of pairs) {
-      const i = key.indexOf('-');
+      const i = key.indexOf(sep);
       if (i <= 0 || i >= key.length - 1) continue;
       link(key.slice(0, i), key.slice(i + 1));
     }
@@ -480,7 +481,7 @@ export class Game {
       const other = byId.get(otherId);
       if (!other) continue;
 
-      const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+      const key = adjacencyPairKey(a, b);
       const rel = this.connectorByKey.get(key);
       if (rel) {
         const [lx, ly] = tile.id === rel.a ? rel.la : rel.lb;

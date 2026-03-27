@@ -1,12 +1,17 @@
 /**
  * Multi-régions : une seule liste (`REGION_CATALOG`) pour le menu et la config jeu.
  *
- * Ajouter une carte jouable :
- * 1. Placer le GeoJSON dans `public/data/`.
- * 2. Ajouter une entrée `available: true` avec `countries`, couleurs dans `COUNTRY_COLORS`, données capitales/drapeaux si besoin.
- *
- * Carte « bientôt » : `available: false` (pas de GeoJSON chargé tant que ce n’est pas activé).
+ * Cartes continentales : `npm run build:geo:world` régénère GeoJSON + `worldRegions.generated.ts`.
+ * Couleurs tuiles : `COUNTRY_COLORS` pour Nord Afrique ; sinon teinte dérivée du code (`geoBuild.tileColorForId`).
  */
+
+import {
+  ASIA_COUNTRY_IDS,
+  EUROPE_COUNTRY_IDS,
+  FR_DEPARTMENT_IDS,
+  SOUTH_AMERICA_COUNTRY_IDS,
+  USA_STATE_IDS,
+} from './worldRegions.generated.ts';
 
 export const COUNTRY_COLORS: Record<string, string> = {
   MAR: '#E8C87A',
@@ -27,6 +32,8 @@ export interface RegionConfig {
   label: string;
   geojsonUrl: string;
   countries: string[];
+  /** false pour départements / États (pas de drapeau ISO au dock). */
+  supportsFlags: boolean;
 }
 
 /** Entrée menu + optionnellement données de partie (si `available`). */
@@ -35,11 +42,12 @@ export type RegionCatalogEntry =
       id: string;
       label: string;
       icon: string;
-      /** Sous-titres sous le titre (une ligne = un segment, séparés par <br> au rendu). */
       descriptionLines: string[];
       available: true;
       geojsonUrl: string;
       countries: string[];
+      /** défaut : true */
+      supportsFlags?: boolean;
     }
   | {
       id: string;
@@ -60,29 +68,62 @@ export const REGION_CATALOG: readonly RegionCatalogEntry[] = [
     countries: ['MAR', 'ESH', 'DZA', 'TUN', 'LBY', 'EGY', 'MRT', 'MLI', 'NER', 'TCD', 'SDN'],
   },
   {
+    id: 'europe',
+    label: 'Europe',
+    icon: '🇪🇺',
+    descriptionLines: ['Continent européen (Natural Earth)', `${EUROPE_COUNTRY_IDS.length} pays`],
+    available: true,
+    geojsonUrl: '/data/europe.geojson',
+    countries: [...EUROPE_COUNTRY_IDS],
+  },
+  {
+    id: 'south-america',
+    label: 'Amérique du Sud',
+    icon: '🌎',
+    descriptionLines: ['Hors Caraïbes et Amérique centrale', `${SOUTH_AMERICA_COUNTRY_IDS.length} pays`],
+    available: true,
+    geojsonUrl: '/data/south-america.geojson',
+    countries: [...SOUTH_AMERICA_COUNTRY_IDS],
+  },
+  {
+    id: 'asia',
+    label: 'Asie',
+    icon: '🌏',
+    descriptionLines: ['Continent asiatique (Natural Earth)', `${ASIA_COUNTRY_IDS.length} pays`],
+    available: true,
+    geojsonUrl: '/data/asia.geojson',
+    countries: [...ASIA_COUNTRY_IDS],
+  },
+  {
+    id: 'fr-departments',
+    label: 'France · départements',
+    icon: '🇫🇷',
+    descriptionLines: ['Métropole et outre-mer (gregoiredavid/france-geojson)', `${FR_DEPARTMENT_IDS.length} départements`],
+    available: true,
+    geojsonUrl: '/data/fr-departments.geojson',
+    countries: [...FR_DEPARTMENT_IDS],
+    supportsFlags: false,
+  },
+  {
+    id: 'usa-states',
+    label: 'États-Unis · États',
+    icon: '🇺🇸',
+    descriptionLines: ['50 États (hors D.C.)', `${USA_STATE_IDS.length} États`],
+    available: true,
+    geojsonUrl: '/data/usa-states.geojson',
+    countries: [...USA_STATE_IDS],
+    supportsFlags: false,
+  },
+  {
     id: 'africa',
     label: 'Afrique',
     icon: '🌍',
     descriptionLines: ['Bientôt disponible'],
     available: false,
   },
-  {
-    id: 'europe',
-    label: 'Europe',
-    icon: '🌍',
-    descriptionLines: ['Bientôt disponible'],
-    available: false,
-  },
-  {
-    id: 'asia',
-    label: 'Asie',
-    icon: '🌏',
-    descriptionLines: ['Bientôt disponible'],
-    available: false,
-  },
 ];
 
-/** Régions réellement jouables — utilisé par les 4 modes (chargement GeoJSON au démarrage de partie uniquement). */
+/** Régions réellement jouables — chargement GeoJSON au démarrage de partie uniquement. */
 export const REGIONS: RegionConfig[] = REGION_CATALOG.filter(
   (e): e is Extract<RegionCatalogEntry, { available: true }> => e.available,
 ).map((e) => ({
@@ -90,9 +131,15 @@ export const REGIONS: RegionConfig[] = REGION_CATALOG.filter(
   label: e.label,
   geojsonUrl: e.geojsonUrl,
   countries: e.countries,
+  supportsFlags: e.supportsFlags !== false,
 }));
 
 export function getDefaultRegionId(): string {
   const first = REGION_CATALOG.find((e) => e.available);
   return first?.id ?? 'north-africa';
+}
+
+export function regionSupportsFlags(regionId: string): boolean {
+  const r = REGIONS.find((x) => x.id === regionId);
+  return r?.supportsFlags ?? true;
 }

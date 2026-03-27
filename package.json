@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:geo": "node scripts/build-north-africa.mjs",
+    "build:geo:world": "node scripts/build-world-regions.mjs",
     "preview": "vite preview"
   },
   "devDependencies": {

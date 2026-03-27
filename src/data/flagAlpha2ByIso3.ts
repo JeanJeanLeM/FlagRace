@@ -1,3 +1,5 @@
+import { EXTRA_FLAG_ALPHA2_BY_ISO3 } from './worldRegions.generated.ts';
+
 /** ISO 3166-1 alpha-2 pour les drapeaux (ex. flagcdn.com). */
 export const FLAG_ALPHA2_BY_ISO3: Record<string, string> = {
   MAR: 'ma',
@@ -66,7 +68,12 @@ export const FLAG_DECOY_ALPHA2: Record<string, string> = {
 };
 
 export function flagAlpha2ForIso3(iso3: string): string | null {
-  return FLAG_ALPHA2_BY_ISO3[iso3] ?? FLAG_DECOY_ALPHA2[iso3] ?? null;
+  return (
+    FLAG_ALPHA2_BY_ISO3[iso3] ??
+    FLAG_DECOY_ALPHA2[iso3] ??
+    EXTRA_FLAG_ALPHA2_BY_ISO3[iso3] ??
+    null
+  );
 }
 
 export function flagImageUrl(iso3: string, width = 160): string | null {

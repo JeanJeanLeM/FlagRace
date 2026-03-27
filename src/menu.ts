@@ -1,4 +1,4 @@
-import { REGION_CATALOG, getDefaultRegionId } from './data/regionConfig.ts';
+import { REGION_CATALOG, getDefaultRegionId, regionSupportsFlags } from './data/regionConfig.ts';
 import { DEFAULT_GAME_TYPE, GAME_TYPE_LABELS, type GameTypeId } from './gameModes.ts';
 
 function renderRegionModeGrid(container: HTMLElement): void {
@@ -115,6 +115,31 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   const capitalsDifficulty = menuRootEl.querySelector<HTMLElement>('#capitals-difficulty-only');
   const countryLabelDifficulty = menuRootEl.querySelector<HTMLElement>('#country-label-difficulty-only');
   const typeCards = menuRootEl.querySelectorAll<HTMLButtonElement>('.game-type-card[data-game-type]');
+  const flagTypeBtn = menuRootEl.querySelector<HTMLButtonElement>('.game-type-card[data-game-type="flag-match"]');
+
+  function syncFlagGameForRegion(): void {
+    const ok = regionSupportsFlags(selectedRegionId);
+    if (flagTypeBtn) {
+      flagTypeBtn.disabled = !ok;
+      flagTypeBtn.classList.toggle('game-type-card--unavailable', !ok);
+      flagTypeBtn.setAttribute('aria-disabled', ok ? 'false' : 'true');
+      flagTypeBtn.title = ok ? '' : 'Pas de drapeaux ISO pour cette carte (départements, États US).';
+    }
+    if (!ok && selectedGameType === 'flag-match') {
+      selectedGameType = DEFAULT_GAME_TYPE;
+      syncGameTypeCards();
+      syncPuzzleBlock(
+        menuRootEl,
+        puzzleDifficulty,
+        flagDifficulty,
+        capitalsDifficulty,
+        countryLabelDifficulty,
+        selectedGameType,
+      );
+      syncPuzzleHint();
+      updateSetupSummary();
+    }
+  }
 
   function syncGameTypeCards(): void {
     typeCards.forEach((btn) => {
@@ -154,6 +179,7 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
     );
     syncPuzzleHint();
     updateSetupSummary();
+    syncFlagGameForRegion();
     btnStart?.focus();
   }
 
@@ -162,8 +188,8 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   }
 
   typeCards.forEach((btn) => {
-    if (btn.disabled) return;
     btn.addEventListener('click', () => {
+      if (btn.disabled) return;
       const t = btn.dataset['gameType'] as GameTypeId | undefined;
       if (!t || t === selectedGameType) return;
       selectedGameType = t;
@@ -181,6 +207,7 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
         if (el.disabled || el.classList.contains('disabled')) return;
         el.classList.toggle('active', el === btn);
       });
+      syncFlagGameForRegion();
     });
   });
 
@@ -206,4 +233,5 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   );
   syncPuzzleHint();
   syncGameTypeCards();
+  syncFlagGameForRegion();
 }
