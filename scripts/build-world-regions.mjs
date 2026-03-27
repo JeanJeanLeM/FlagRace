@@ -288,6 +288,34 @@ function filterOutEuropeanOverseasPolygons(geometry) {
   return { type: 'MultiPolygon', coordinates: kept };
 }
 
+/** Silhouette complète Russie (menu carte monde) — le jeu Europe garde la version découpée ~60°E. */
+function buildRussiaFullFeature(world) {
+  for (const f of world.features) {
+    const p = f.properties ?? {};
+    const adm = p.ADM0_A3;
+    if (!adm || adm === '-99' || EXCLUDED_ADM.has(adm)) continue;
+    if (iso3FromAdm(adm) !== 'RUS') continue;
+    const geom = simplifyGeom(f.geometry, 0.018);
+    let c;
+    try {
+      c = turf.getCoord(turf.centroid(turf.feature(geom)));
+    } catch {
+      return null;
+    }
+    const nameFr = p.NAME_FR || p.NAME || 'RUS';
+    return {
+      type: 'Feature',
+      properties: {
+        iso3: 'RUS',
+        name: nameFr,
+        centroid: [c[0], c[1]],
+      },
+      geometry: geom,
+    };
+  }
+  return null;
+}
+
 function buildEuropeFeaturesFromWorld(world) {
   const out = [];
   for (const f of world.features) {
@@ -539,6 +567,13 @@ async function main() {
   const usaOnly = ncaFeats.filter((f) => f.properties.iso3 === 'USA');
   writeGeojson('france-country.geojson', fraOnly, []);
   writeGeojson('usa-country.geojson', usaOnly, []);
+
+  const russiaFull = buildRussiaFullFeature(world);
+  if (russiaFull) {
+    writeGeojson('russia-country.geojson', [russiaFull], []);
+  } else {
+    console.warn('Russie (RUS) introuvable dans Natural Earth — russia-country.geojson non écrit');
+  }
 
   console.log('Téléchargement NE 10m admin-1 + départements FR…');
   const admin1 = await fetchJson(NE10ADM1);

@@ -1,9 +1,11 @@
 /**
- * AdSense : chargé uniquement si VITE_ADSENSE_CLIENT est défini et après consentement.
- * Blocs manuels : VITE_ADSENSE_SLOT_MENU / VITE_ADSENSE_SLOT_MENU_BOTTOM (IDs depuis AdSense).
- * Sans slots : seul le script est chargé → annonces automatiques si activées dans le compte AdSense.
+ * AdSense : après consentement, charge le même script que la balise officielle
+ * (pagead2.googlesyndication.com/.../adsbygoogle.js?client=…).
+ * ID éditeur par défaut World Puzzle ; surcharger avec VITE_ADSENSE_CLIENT ou désactiver avec `off`.
+ * Blocs manuels : VITE_ADSENSE_SLOT_MENU / VITE_ADSENSE_SLOT_MENU_BOTTOM.
  */
 
+const DEFAULT_ADSENSE_CLIENT = 'ca-pub-8944795420097131';
 const CONSENT_KEY = 'worldpuzzle-ads-consent';
 
 declare global {
@@ -13,8 +15,10 @@ declare global {
 }
 
 function publisherId(): string | undefined {
-  const v = import.meta.env.VITE_ADSENSE_CLIENT?.trim();
-  return v && v.startsWith('ca-pub-') ? v : undefined;
+  const raw = import.meta.env.VITE_ADSENSE_CLIENT?.trim();
+  if (raw === 'off') return undefined;
+  if (raw?.startsWith('ca-pub-')) return raw;
+  return DEFAULT_ADSENSE_CLIENT;
 }
 
 function slotMenu(): string | undefined {

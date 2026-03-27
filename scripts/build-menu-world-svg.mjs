@@ -43,6 +43,14 @@ function geometryToD(geometry) {
   return '';
 }
 
+function filterFeatureCollection(fc, { excludeIso3 = [] } = {}) {
+  const skip = new Set(excludeIso3);
+  return {
+    type: 'FeatureCollection',
+    features: (fc.features ?? []).filter((f) => !skip.has(f.properties?.iso3)),
+  };
+}
+
 function combineToPath(fc) {
   const combined = turf.combine(fc);
   const feat = combined.features[0];
@@ -68,17 +76,25 @@ const layers = [
 ];
 
 function pathEl(region, d) {
-  const isPin = region === 'usa' || region === 'france';
-  const fill = isPin ? 'rgba(255, 214, 120, 0.35)' : 'rgba(0, 255, 136, 0.14)';
-  const stroke = isPin ? 'rgba(255, 220, 140, 0.95)' : 'rgba(0, 255, 136, 0.42)';
-  const sw = isPin ? 1.4 : 0.85;
-  return `  <path class="world-menu-region" data-region="${region}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" d="${d}"/>\n`;
+  return `  <path class="world-menu-region" data-region="${region}" d="${d}"/>\n`;
 }
 
 function main() {
   const paths = [];
+  const russiaPath = path.join(DATA, 'russia-country.geojson');
+
   for (const L of layers) {
-    const fc = readFc(L.file);
+    let fc = readFc(L.file);
+    if (L.region === 'europe') {
+      fc = filterFeatureCollection(fc, { excludeIso3: ['RUS'] });
+    }
+    if (L.region === 'asia' && fs.existsSync(russiaPath)) {
+      const rusFc = JSON.parse(fs.readFileSync(russiaPath, 'utf8'));
+      fc = {
+        type: 'FeatureCollection',
+        features: [...(fc.features ?? []), ...(rusFc.features ?? [])],
+      };
+    }
     const d = L.combine ? combineToPath(fc) : singleFeaturePath(fc);
     if (!d) {
       console.warn('Chemin vide pour', L.region);

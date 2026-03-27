@@ -462,23 +462,89 @@ html, body {
 .world-menu-svg .world-menu-region {
   cursor: pointer;
   outline: none;
+  stroke: none;
   transition: fill 0.16s ease, stroke 0.16s ease, opacity 0.16s ease;
 }
 
-.world-menu-svg .world-menu-region:hover:not(.disabled):not(.active) {
-  fill: rgba(0, 255, 136, 0.28) !important;
-  stroke: rgba(0, 255, 200, 0.65) !important;
+/* Une couleur par zone menu ; pas de contour interne (stroke none sauf focus / actif). */
+.world-menu-svg .world-menu-region[data-region='africa'] {
+  fill: rgba(210, 140, 95, 0.44);
+}
+.world-menu-svg .world-menu-region[data-region='africa']:hover:not(.disabled):not(.active) {
+  fill: rgba(232, 168, 120, 0.58);
+}
+.world-menu-svg .world-menu-region[data-region='africa'].active {
+  fill: rgba(248, 190, 145, 0.72);
+}
+
+.world-menu-svg .world-menu-region[data-region='south-america'] {
+  fill: rgba(95, 195, 130, 0.44);
+}
+.world-menu-svg .world-menu-region[data-region='south-america']:hover:not(.disabled):not(.active) {
+  fill: rgba(120, 218, 155, 0.58);
+}
+.world-menu-svg .world-menu-region[data-region='south-america'].active {
+  fill: rgba(150, 235, 180, 0.72);
+}
+
+.world-menu-svg .world-menu-region[data-region='asia'] {
+  fill: rgba(230, 165, 75, 0.44);
+}
+.world-menu-svg .world-menu-region[data-region='asia']:hover:not(.disabled):not(.active) {
+  fill: rgba(245, 195, 110, 0.58);
+}
+.world-menu-svg .world-menu-region[data-region='asia'].active {
+  fill: rgba(255, 215, 140, 0.72);
+}
+
+.world-menu-svg .world-menu-region[data-region='north-central-america'] {
+  fill: rgba(85, 155, 220, 0.44);
+}
+.world-menu-svg .world-menu-region[data-region='north-central-america']:hover:not(.disabled):not(.active) {
+  fill: rgba(115, 185, 245, 0.58);
+}
+.world-menu-svg .world-menu-region[data-region='north-central-america'].active {
+  fill: rgba(150, 210, 255, 0.72);
+}
+
+.world-menu-svg .world-menu-region[data-region='europe'] {
+  fill: rgba(155, 125, 210, 0.44);
+}
+.world-menu-svg .world-menu-region[data-region='europe']:hover:not(.disabled):not(.active) {
+  fill: rgba(185, 155, 235, 0.58);
+}
+.world-menu-svg .world-menu-region[data-region='europe'].active {
+  fill: rgba(210, 185, 255, 0.72);
+}
+
+.world-menu-svg .world-menu-region[data-region='usa'] {
+  fill: rgba(255, 200, 105, 0.48);
+}
+.world-menu-svg .world-menu-region[data-region='usa']:hover:not(.disabled):not(.active) {
+  fill: rgba(255, 220, 140, 0.62);
+}
+.world-menu-svg .world-menu-region[data-region='usa'].active {
+  fill: rgba(255, 235, 170, 0.78);
+}
+
+.world-menu-svg .world-menu-region[data-region='france'] {
+  fill: rgba(110, 165, 255, 0.48);
+}
+.world-menu-svg .world-menu-region[data-region='france']:hover:not(.disabled):not(.active) {
+  fill: rgba(140, 190, 255, 0.62);
+}
+.world-menu-svg .world-menu-region[data-region='france'].active {
+  fill: rgba(175, 210, 255, 0.78);
 }
 
 .world-menu-svg .world-menu-region:focus-visible {
-  stroke: var(--accent) !important;
-  stroke-width: 2px !important;
+  stroke: var(--accent);
+  stroke-width: 2px;
 }
 
 .world-menu-svg .world-menu-region.active {
-  fill: rgba(0, 255, 136, 0.4) !important;
-  stroke: var(--accent) !important;
-  stroke-width: 1.6px !important;
+  stroke: var(--accent);
+  stroke-width: 1.6px;
 }
 
 .world-menu-svg .world-menu-region.disabled {
