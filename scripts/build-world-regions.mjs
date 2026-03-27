@@ -227,6 +227,43 @@ function clipRussiaWestOfMeridian(geometry) {
   }
 }
 
+/**
+ * Après intersection avec [-180…60°E], des îlots extrême-est (coord. négatives / ligne de date)
+ * restent dans l’enveloppe et se dessinent à l’ouest de la carte. On ne garde que les morceaux
+ * dont le centroïde est en Europe (Kaliningrad + masse ouest des Oural).
+ */
+const RUSSIA_FRAG_LON_MIN = 14;
+const RUSSIA_FRAG_LON_MAX = RUSSIA_EAST_BOUND_LON + 2;
+
+function russiaFragmentCentroidOk(lon, lat) {
+  if (lat < 40 || lat > 83) return false;
+  if (lon < RUSSIA_FRAG_LON_MIN || lon > RUSSIA_FRAG_LON_MAX) return false;
+  return true;
+}
+
+function dropRussiaPacificArtifacts(geometry) {
+  const polys =
+    geometry.type === 'Polygon'
+      ? [geometry.coordinates]
+      : geometry.type === 'MultiPolygon'
+        ? geometry.coordinates
+        : [];
+  const kept = [];
+  for (const rings of polys) {
+    if (!rings?.[0]?.length) continue;
+    try {
+      const polyF = turf.polygon(rings);
+      const [lon, lat] = turf.getCoord(turf.centroid(polyF));
+      if (russiaFragmentCentroidOk(lon, lat)) kept.push(rings);
+    } catch {
+      /* ignore */
+    }
+  }
+  if (!kept.length) return null;
+  if (kept.length === 1) return { type: 'Polygon', coordinates: kept[0] };
+  return { type: 'MultiPolygon', coordinates: kept };
+}
+
 /** Ne garde que les îlots/polygones d’un pays dont le centroïde tombe en Europe proche. */
 function filterOutEuropeanOverseasPolygons(geometry) {
   const polys =
@@ -261,8 +298,13 @@ function buildEuropeFeaturesFromWorld(world) {
     const iso3 = iso3FromAdm(adm);
 
     let raw = f.geometry;
-    let processed =
-      iso3 === 'RUS' ? clipRussiaWestOfMeridian(raw) : filterOutEuropeanOverseasPolygons(raw);
+    let processed;
+    if (iso3 === 'RUS') {
+      const clipped = clipRussiaWestOfMeridian(raw);
+      processed = clipped ? dropRussiaPacificArtifacts(clipped) : null;
+    } else {
+      processed = filterOutEuropeanOverseasPolygons(raw);
+    }
     if (!processed) continue;
 
     const geom = simplifyGeom(processed, 0.018);
