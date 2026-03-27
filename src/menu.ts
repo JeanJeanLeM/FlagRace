@@ -24,14 +24,12 @@ function renderRegionExtraChips(container: HTMLElement | null): void {
 }
 
 function syncPuzzleBlock(
-  menuRoot: HTMLElement | null,
   puzzleDifficulty: HTMLElement | null,
   flagDifficulty: HTMLElement | null,
   capitalsDifficulty: HTMLElement | null,
   countryLabelDifficulty: HTMLElement | null,
   selectedGameType: GameTypeId,
 ): void {
-  if (!menuRoot) return;
   const showPuzzleDifficulty = selectedGameType === 'puzzle-country';
   puzzleDifficulty?.classList.toggle('puzzle-only-menu--inactive', !showPuzzleDifficulty);
   puzzleDifficulty?.setAttribute('aria-hidden', showPuzzleDifficulty ? 'false' : 'true');
@@ -49,46 +47,76 @@ function syncPuzzleBlock(
   countryLabelDifficulty?.setAttribute('aria-hidden', showCountryLabelDifficulty ? 'false' : 'true');
 }
 
+function setRegionInteractive(el: Element, disabled: boolean): void {
+  if (el instanceof HTMLButtonElement) {
+    el.disabled = disabled;
+    el.classList.toggle('disabled', disabled);
+    el.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+    return;
+  }
+  el.classList.toggle('disabled', disabled);
+  (el as HTMLElement).style.pointerEvents = disabled ? 'none' : '';
+  el.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+  el.setAttribute('tabindex', disabled ? '-1' : '0');
+}
+
 export type MenuStartSelection = { gameType: GameTypeId; regionId: string };
 
-let menuPanelGame: HTMLElement | null = null;
-let menuPanelSetup: HTMLElement | null = null;
-
 export function resetMenuToGamePick(): void {
-  if (!menuPanelGame || !menuPanelSetup) return;
-  menuPanelSetup.classList.add('menu-panel--hidden');
-  menuPanelSetup.setAttribute('aria-hidden', 'true');
-  menuPanelGame.classList.remove('menu-panel--hidden');
-  menuPanelGame.setAttribute('aria-hidden', 'false');
-  document.getElementById('btn-menu-continue')?.focus();
+  const modal = document.getElementById('difficulty-modal');
+  modal?.classList.add('hidden');
+  modal?.setAttribute('aria-hidden', 'true');
+}
+
+async function injectWorldMapSvg(host: HTMLElement | null): Promise<void> {
+  if (!host) return;
+  try {
+    const res = await fetch('/world-menu-map.svg');
+    if (!res.ok) throw new Error(String(res.status));
+    const text = await res.text();
+    host.innerHTML = text;
+    const svg = host.querySelector('svg');
+    svg?.classList.add('world-menu-svg');
+    svg?.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    host.querySelectorAll('.world-menu-region').forEach((path) => {
+      path.setAttribute('role', 'button');
+      path.setAttribute('tabindex', '0');
+      const id = path.getAttribute('data-region');
+      const meta = id ? catalogEntryForRegionId(id) : undefined;
+      if (meta && 'descriptionLines' in meta) {
+        path.setAttribute('aria-label', `${meta.label}. ${meta.descriptionLines.join(', ')}`);
+      }
+    });
+  } catch {
+    host.innerHTML =
+      '<p class="world-map-fallback">Carte menu indisponible. Lance <code>npm run build:menu-map</code> à la racine du projet.</p>';
+  }
 }
 
 export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
-  const el = document.getElementById('screen-menu');
-  if (!el) return;
-  const menuRoot: HTMLElement = el;
+  const screenMenuEl = document.getElementById('screen-menu');
+  if (!screenMenuEl) return;
+  const screenMenu: HTMLElement = screenMenuEl;
 
   let selectedGameType: GameTypeId = DEFAULT_GAME_TYPE;
   let selectedRegionId = getDefaultRegionId();
 
-  const extraEl = menuRoot.querySelector<HTMLElement>('#region-mode-extra');
+  const extraEl = screenMenu.querySelector<HTMLElement>('#region-mode-extra');
   renderRegionExtraChips(extraEl);
 
-  menuPanelGame = menuRoot.querySelector('#menu-panel-game');
-  menuPanelSetup = menuRoot.querySelector('#menu-panel-setup');
-  const btnContinue = menuRoot.querySelector<HTMLButtonElement>('#btn-menu-continue');
-  const btnBackType = menuRoot.querySelector<HTMLButtonElement>('#btn-menu-back-type');
-  const btnStart = menuRoot.querySelector<HTMLButtonElement>('#btn-menu-start');
-  const setupModeLine = menuRoot.querySelector<HTMLElement>('#menu-setup-mode-line');
-  const puzzleControlsHint = menuRoot.querySelector<HTMLElement>('#menu-puzzle-controls-hint');
+  const puzzleDifficulty = document.querySelector<HTMLElement>('#puzzle-difficulty-only');
+  const flagDifficulty = document.querySelector<HTMLElement>('#flag-difficulty-only');
+  const capitalsDifficulty = document.querySelector<HTMLElement>('#capitals-difficulty-only');
+  const countryLabelDifficulty = document.querySelector<HTMLElement>('#country-label-difficulty-only');
+  const puzzleControlsHint = screenMenu.querySelector<HTMLElement>('#menu-puzzle-controls-hint');
+  const typeCards = screenMenu.querySelectorAll<HTMLButtonElement>('.game-type-card[data-game-type]');
 
-  const puzzleDifficulty = menuRoot.querySelector<HTMLElement>('#puzzle-difficulty-only');
-  const flagDifficulty = menuRoot.querySelector<HTMLElement>('#flag-difficulty-only');
-  const capitalsDifficulty = menuRoot.querySelector<HTMLElement>('#capitals-difficulty-only');
-  const countryLabelDifficulty = menuRoot.querySelector<HTMLElement>('#country-label-difficulty-only');
-  const typeCards = menuRoot.querySelectorAll<HTMLButtonElement>('.game-type-card[data-game-type]');
+  const difficultyModal = document.getElementById('difficulty-modal');
+  const difficultyModalSub = document.getElementById('difficulty-modal-sub');
+  const btnStart = screenMenu.querySelector<HTMLButtonElement>('#btn-menu-start');
+  const btnDifficultyCancel = document.getElementById('btn-difficulty-cancel');
+  const btnDifficultyConfirm = document.getElementById('btn-difficulty-confirm');
 
-  /** Modes drapeaux : seules les cartes avec drapeaux ISO (pas départements FR ni États US). */
   const FLAG_BLOCKED_REGION_TITLE =
     'Pas de drapeaux ISO pour cette carte (départements, États US).';
 
@@ -100,11 +128,15 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   }
 
   function refreshRegionPickersActiveState(): void {
-    menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-map-wrap [data-region]').forEach((btn) => {
-      const id = btn.dataset['region'];
+    screenMenu.querySelectorAll('#region-mode-map-wrap [data-region]').forEach((el) => {
+      const id = el.getAttribute('data-region');
       if (!id) return;
-      const on = id === selectedRegionId && !btn.disabled;
-      btn.classList.toggle('active', on);
+      const dis =
+        el instanceof HTMLButtonElement
+          ? el.disabled
+          : el.classList.contains('disabled') || el.getAttribute('aria-disabled') === 'true';
+      const on = id === selectedRegionId && !dis;
+      el.classList.toggle('active', on);
     });
   }
 
@@ -114,26 +146,25 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
       selectedGameType === 'flag-match' ||
       selectedGameType === 'capitals-map' ||
       selectedGameType === 'country-labels-map';
-    menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-map-wrap [data-region]').forEach((btn) => {
-      const id = btn.dataset['region'];
+    screenMenu.querySelectorAll('#region-mode-map-wrap [data-region]').forEach((el) => {
+      const id = el.getAttribute('data-region');
       if (!id) return;
       const blockForFlags = selectedGameType === 'flag-match' && !regionSupportsFlags(id);
-      btn.disabled = !canPickRegion || blockForFlags;
-      btn.classList.toggle('disabled', !canPickRegion || blockForFlags);
-      btn.setAttribute('aria-disabled', blockForFlags ? 'true' : 'false');
+      const off = !canPickRegion || blockForFlags;
+      setRegionInteractive(el, off);
       const base = catalogEntryForRegionId(id);
       if (blockForFlags) {
-        btn.title = FLAG_BLOCKED_REGION_TITLE;
+        if (el instanceof HTMLElement) el.title = FLAG_BLOCKED_REGION_TITLE;
         if (base && 'descriptionLines' in base) {
-          btn.setAttribute(
+          el.setAttribute(
             'aria-label',
             `${base.label}. ${FLAG_BLOCKED_REGION_TITLE} ${base.descriptionLines.join(', ')}`,
           );
         }
       } else {
-        btn.title = '';
+        if (el instanceof HTMLElement) el.title = '';
         if (base && 'descriptionLines' in base) {
-          btn.setAttribute('aria-label', `${base.label}. ${base.descriptionLines.join(', ')}`);
+          el.setAttribute('aria-label', `${base.label}. ${base.descriptionLines.join(', ')}`);
         }
       }
     });
@@ -155,36 +186,28 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
     puzzleControlsHint?.setAttribute('aria-hidden', show ? 'false' : 'true');
   }
 
-  function updateSetupSummary(): void {
-    if (setupModeLine) {
-      setupModeLine.textContent = GAME_TYPE_LABELS[selectedGameType];
-    }
-  }
-
-  function showSetupPanel(): void {
-    if (!menuPanelGame || !menuPanelSetup) return;
-    menuPanelGame.classList.add('menu-panel--hidden');
-    menuPanelGame.setAttribute('aria-hidden', 'true');
-    menuPanelSetup.classList.remove('menu-panel--hidden');
-    menuPanelSetup.setAttribute('aria-hidden', 'false');
+  function openDifficultyModal(): void {
+    ensureRegionCompatibleWithGameType();
+    syncRegionPickersForGameType();
+    refreshRegionPickersActiveState();
     syncPuzzleBlock(
-      menuRoot,
       puzzleDifficulty,
       flagDifficulty,
       capitalsDifficulty,
       countryLabelDifficulty,
       selectedGameType,
     );
-    syncPuzzleHint();
-    updateSetupSummary();
-    ensureRegionCompatibleWithGameType();
-    syncRegionPickersForGameType();
-    refreshRegionPickersActiveState();
-    btnStart?.focus();
+    if (difficultyModalSub) {
+      difficultyModalSub.textContent = GAME_TYPE_LABELS[selectedGameType];
+    }
+    difficultyModal?.classList.remove('hidden');
+    difficultyModal?.setAttribute('aria-hidden', 'false');
+    btnDifficultyConfirm?.focus();
   }
 
-  function showGamePickPanel(): void {
+  function closeDifficultyModal(): void {
     resetMenuToGamePick();
+    btnStart?.focus();
   }
 
   typeCards.forEach((btn) => {
@@ -194,32 +217,65 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
       if (!t || t === selectedGameType) return;
       selectedGameType = t;
       syncGameTypeCards();
+      ensureRegionCompatibleWithGameType();
+      syncRegionPickersForGameType();
+      refreshRegionPickersActiveState();
+      syncPuzzleHint();
     });
   });
 
-  menuRoot.querySelector('#region-mode-map-wrap')?.addEventListener('click', (ev) => {
-    const btn = (ev.target as HTMLElement).closest<HTMLButtonElement>('[data-region]');
-    if (!btn || btn.disabled || btn.classList.contains('disabled')) return;
-    const mode = btn.dataset['region'];
-    if (!mode) return;
-    selectedRegionId = mode;
+  function onSelectRegion(regionId: string): void {
+    selectedRegionId = regionId;
     refreshRegionPickersActiveState();
+  }
+
+  screenMenu.querySelector('#region-mode-map-wrap')?.addEventListener('click', (ev) => {
+    const el = (ev.target as HTMLElement).closest<SVGElement | HTMLButtonElement>('[data-region]');
+    if (!el || el.classList.contains('disabled') || el.getAttribute('aria-disabled') === 'true')
+      return;
+    if (el instanceof HTMLButtonElement && el.disabled) return;
+    const mode = el.getAttribute('data-region');
+    if (!mode) return;
+    onSelectRegion(mode);
   });
 
-  btnContinue?.addEventListener('click', () => {
-    showSetupPanel();
-  });
-
-  btnBackType?.addEventListener('click', () => {
-    showGamePickPanel();
+  screenMenu.querySelector('#region-mode-map-wrap')?.addEventListener('keydown', (ev) => {
+    const ke = ev as KeyboardEvent;
+    if (ke.key !== 'Enter' && ke.key !== ' ') return;
+    const el = (ev.target as HTMLElement).closest<SVGElement>('[data-region].world-menu-region');
+    if (!el || el.classList.contains('disabled') || el.getAttribute('aria-disabled') === 'true')
+      return;
+    ke.preventDefault();
+    const mode = el.getAttribute('data-region');
+    if (mode) onSelectRegion(mode);
   });
 
   btnStart?.addEventListener('click', () => {
-    onStart({ gameType: selectedGameType, regionId: selectedRegionId });
+    openDifficultyModal();
   });
 
+  btnDifficultyCancel?.addEventListener('click', () => {
+    closeDifficultyModal();
+  });
+
+  difficultyModal?.querySelector('[data-difficulty-modal-close]')?.addEventListener('click', () => {
+    closeDifficultyModal();
+  });
+
+  btnDifficultyConfirm?.addEventListener('click', () => {
+    onStart({ gameType: selectedGameType, regionId: selectedRegionId });
+    closeDifficultyModal();
+  });
+
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Escape') return;
+    if (!difficultyModal || difficultyModal.classList.contains('hidden')) return;
+    closeDifficultyModal();
+  });
+
+  void injectWorldMapSvg(screenMenu.querySelector('#world-menu-svg-host'));
+
   syncPuzzleBlock(
-    menuRoot,
     puzzleDifficulty,
     flagDifficulty,
     capitalsDifficulty,

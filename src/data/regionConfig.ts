@@ -29,6 +29,17 @@ export const COUNTRY_COLORS: Record<string, string> = {
   SDN: '#98B8A0',
 };
 
+/**
+ * Limite le cadre lon/lat utilisé pour calculer l’échelle de la carte (tuiles + projection).
+ * Les sommets sont clampés avant min/max : ex. `maxLat` ignore le Svalbard pour zoomer sur l’Europe continentale.
+ */
+export type MapViewBBoxClamp = {
+  minLon?: number;
+  maxLon?: number;
+  minLat?: number;
+  maxLat?: number;
+};
+
 export interface RegionConfig {
   id: string;
   label: string;
@@ -36,6 +47,8 @@ export interface RegionConfig {
   countries: string[];
   /** false pour départements / États (pas de drapeau ISO au dock). */
   supportsFlags: boolean;
+  /** Optionnel : cadrage carte (puzzle, drapeaux, capitales, noms). */
+  mapViewBBoxClamp?: MapViewBBoxClamp;
 }
 
 /** Entrée menu + optionnellement données de partie (si `available`). */
@@ -52,6 +65,7 @@ export type RegionCatalogEntry =
       supportsFlags?: boolean;
       /** false : carte « fine » sous la carte monde (départements, États). */
       showOnWorldMap?: boolean;
+      mapViewBBoxClamp?: MapViewBBoxClamp;
     }
   | {
       id: string;
@@ -94,6 +108,8 @@ export const REGION_CATALOG: readonly RegionCatalogEntry[] = [
     available: true,
     geojsonUrl: '/data/europe.geojson',
     countries: [...EUROPE_COUNTRY_IDS],
+    /** ~72°N : exclut Svalbard / extrême nord du bbox de vue (carte plus zoomée). */
+    mapViewBBoxClamp: { maxLat: 72 },
   },
   {
     id: 'africa',
@@ -164,6 +180,7 @@ export const REGIONS: RegionConfig[] = REGION_CATALOG.filter(
   geojsonUrl: e.geojsonUrl,
   countries: e.countries,
   supportsFlags: e.supportsFlags !== false,
+  mapViewBBoxClamp: e.mapViewBBoxClamp,
 }));
 
 export function getDefaultRegionId(): string {

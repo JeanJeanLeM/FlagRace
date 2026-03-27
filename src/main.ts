@@ -23,6 +23,7 @@ import {
   initCountryLabelDifficultyMenu,
 } from './countryLabelDifficulty.ts';
 import type { GameTypeId } from './gameModes.ts';
+import { initAdsense } from './adsense.ts';
 
 /** Pool capitales pour tous les modes « capitales » (filtré par pays de la carte). */
 const ALL_MAP_CAPITALS = [
@@ -236,7 +237,7 @@ async function startPuzzleGame(regionId: string): Promise<void> {
     applyHudToDom(hud, canvas);
   }, displayOpts);
 
-  await currentGame.load(region.geojsonUrl, region.countries);
+  await currentGame.load(region.geojsonUrl, region.countries, region.mapViewBBoxClamp);
 }
 
 async function startFlagGame(regionId: string): Promise<void> {
@@ -270,7 +271,7 @@ async function startFlagGame(regionId: string): Promise<void> {
   fg.setDockElement(dock);
   currentGame = fg;
 
-  await fg.load(region.geojsonUrl, region.countries, flagDiff);
+  await fg.load(region.geojsonUrl, region.countries, flagDiff, region.mapViewBBoxClamp);
 }
 
 async function startCapitalsGame(regionId: string): Promise<void> {
@@ -307,7 +308,13 @@ async function startCapitalsGame(regionId: string): Promise<void> {
   cg.setDockElement(capitalsDock);
   currentGame = cg;
 
-  await cg.load(region.geojsonUrl, region.countries, capitalsDiff, ALL_MAP_CAPITALS);
+  await cg.load(
+    region.geojsonUrl,
+    region.countries,
+    capitalsDiff,
+    ALL_MAP_CAPITALS,
+    region.mapViewBBoxClamp,
+  );
 }
 
 async function startCountryLabelsGame(regionId: string): Promise<void> {
@@ -342,7 +349,7 @@ async function startCountryLabelsGame(regionId: string): Promise<void> {
   lg.setDockElement(dock);
   currentGame = lg;
 
-  await lg.load(region.geojsonUrl, region.countries, labelDiff);
+  await lg.load(region.geojsonUrl, region.countries, labelDiff, region.mapViewBBoxClamp);
 }
 
 async function handleMenuStart(sel: { gameType: GameTypeId; regionId: string }): Promise<void> {
@@ -414,4 +421,5 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-victory-menu')?.addEventListener('click', () => backToMenu());
   window.addEventListener('resize', onWindowResize);
   showScreen('screen-menu');
+  initAdsense();
 });

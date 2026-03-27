@@ -13,7 +13,7 @@
         <div class="menu-content">
           <h1 class="game-title">World <span>Puzzle</span></h1>
 
-          <div id="menu-panel-game" class="menu-panel" aria-hidden="false">
+          <div id="menu-panel-main" class="menu-panel" aria-hidden="false">
           <section class="game-type-section" aria-labelledby="game-type-heading">
             <h2 id="game-type-heading" class="section-heading">Mode de jeu</h2>
             <div class="game-type-grid" role="group" aria-labelledby="game-type-heading">
@@ -63,20 +63,60 @@
               </button>
             </div>
           </section>
-          <div class="menu-actions">
-            <button type="button" id="btn-menu-continue" class="btn-menu-cta">
-              Continuer
-            </button>
-          </div>
+
+          <div id="ad-menu-wrap" class="ad-wrap hidden" aria-hidden="true">
+            <p class="ad-wrap-label">Publicité</p>
+            <div id="ad-menu" class="ad-slot"></div>
           </div>
 
-          <div id="menu-panel-setup" class="menu-panel menu-panel--hidden" aria-hidden="true">
-          <div class="menu-setup-header">
-            <button type="button" id="btn-menu-back-type" class="btn-menu-text">
-              ← Choisir un autre mode
-            </button>
-            <p id="menu-setup-mode-line" class="menu-setup-mode-line" aria-live="polite"></p>
+          <h2 class="section-heading section-heading--inline">Carte du monde</h2>
+          <p class="world-map-hint">
+            Carte réelle (côtes simplifiées) : clique un continent. Les zones <strong>USA</strong> et
+            <strong>France</strong> (pays seuls) sont au-dessus — priorité au clic sur ces pays.
+          </p>
+          <div id="region-mode-map-wrap" class="region-mode-map-wrap">
+            <div id="world-menu-svg-host" class="world-menu-svg-host" aria-label="Carte interactive"></div>
+            <p class="region-extra-heading">Cartes plus détaillées</p>
+            <div
+              id="region-mode-extra"
+              class="region-mode-extra"
+              role="group"
+              aria-label="France par département ou États-Unis par État"
+            ></div>
           </div>
+
+          <div id="menu-puzzle-controls-hint" class="controls-hint controls-hint--menu puzzle-only-menu--inactive" aria-hidden="true">
+            <span>Glisser : déplacer</span>
+            <span>Molette : rotation</span>
+            <span>Ctrl + molette : zoom</span>
+            <span>Double-clic : nord (Facile / Moyen)</span>
+            <span>Relâcher : aimant</span>
+          </div>
+
+          <div id="ad-menu-bottom-wrap" class="ad-wrap hidden" aria-hidden="true">
+            <p class="ad-wrap-label">Publicité</p>
+            <div id="ad-menu-bottom" class="ad-slot"></div>
+          </div>
+
+          <div class="menu-actions menu-actions--start">
+            <button type="button" id="btn-menu-start" class="btn-menu-cta btn-menu-cta--primary">
+              Lancer la partie
+            </button>
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="difficulty-modal" class="difficulty-modal hidden" aria-hidden="true">
+        <div class="difficulty-modal__backdrop" data-difficulty-modal-close tabindex="-1"></div>
+        <div
+          class="difficulty-modal__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="difficulty-modal-title"
+        >
+          <h2 id="difficulty-modal-title" class="difficulty-modal__title">Avant de jouer</h2>
+          <p id="difficulty-modal-sub" class="difficulty-modal__sub"></p>
 
           <div id="flag-difficulty-only" class="puzzle-only-menu puzzle-only-menu--inactive" aria-hidden="true">
             <section class="difficulty-section" aria-labelledby="flag-difficulty-heading">
@@ -293,83 +333,9 @@
             </section>
           </div>
 
-          <div class="menu-actions menu-actions--start">
-            <button type="button" id="btn-menu-start" class="btn-menu-cta btn-menu-cta--primary">
-              Lancer la partie
-            </button>
-          </div>
-
-          <h2 class="section-heading section-heading--inline">Carte du monde</h2>
-          <p class="world-map-hint">
-            Clique un continent ; <strong>USA</strong> et <strong>France</strong> sont aussi sélectionnables seuls sur la carte.
-          </p>
-          <div id="region-mode-map-wrap" class="region-mode-map-wrap">
-            <div class="world-blocks-grid" role="group" aria-label="Régions sur la carte du monde">
-              <div class="world-cell world-cell--na">
-                <button type="button" class="world-block" data-region="north-central-america">
-                  <span class="world-block-ico" aria-hidden="true">🌎</span>
-                  <span class="world-block-txt">Amérique du Nord<br />et centrale</span>
-                </button>
-                <button
-                  type="button"
-                  class="world-pin world-pin--usa"
-                  data-region="usa"
-                  title="États-Unis (un pays)"
-                >
-                  <span class="world-pin-flag" aria-hidden="true">🇺🇸</span>
-                  <span class="world-pin-lbl">USA</span>
-                </button>
-              </div>
-              <div class="world-cell world-cell--eu">
-                <button type="button" class="world-block" data-region="europe">
-                  <span class="world-block-ico" aria-hidden="true">🇪🇺</span>
-                  <span class="world-block-txt">Europe</span>
-                </button>
-                <button
-                  type="button"
-                  class="world-pin world-pin--fr"
-                  data-region="france"
-                  title="France (un pays)"
-                >
-                  <span class="world-pin-flag" aria-hidden="true">🇫🇷</span>
-                  <span class="world-pin-lbl">France</span>
-                </button>
-              </div>
-              <div class="world-cell world-cell--as">
-                <button type="button" class="world-block" data-region="asia">
-                  <span class="world-block-ico" aria-hidden="true">🌏</span>
-                  <span class="world-block-txt">Asie</span>
-                </button>
-              </div>
-              <div class="world-cell world-cell--af">
-                <button type="button" class="world-block" data-region="africa">
-                  <span class="world-block-ico" aria-hidden="true">🌍</span>
-                  <span class="world-block-txt">Afrique</span>
-                </button>
-              </div>
-              <div class="world-cell world-cell--sa">
-                <button type="button" class="world-block" data-region="south-america">
-                  <span class="world-block-ico" aria-hidden="true">🌎</span>
-                  <span class="world-block-txt">Amérique<br />du Sud</span>
-                </button>
-              </div>
-            </div>
-            <p class="region-extra-heading">Cartes plus détaillées</p>
-            <div
-              id="region-mode-extra"
-              class="region-mode-extra"
-              role="group"
-              aria-label="France par département ou États-Unis par État"
-            ></div>
-          </div>
-
-          <div id="menu-puzzle-controls-hint" class="controls-hint controls-hint--menu puzzle-only-menu--inactive" aria-hidden="true">
-            <span>Glisser : déplacer</span>
-            <span>Molette : rotation</span>
-            <span>Ctrl + molette : zoom</span>
-            <span>Double-clic : nord (Facile / Moyen)</span>
-            <span>Relâcher : aimant</span>
-          </div>
+          <div class="difficulty-modal__actions">
+            <button type="button" id="btn-difficulty-cancel" class="btn-menu-text">Annuler</button>
+            <button type="button" id="btn-difficulty-confirm" class="btn-menu-cta btn-menu-cta--primary">Jouer</button>
           </div>
         </div>
       </div>
@@ -431,7 +397,11 @@
 
     </div>
 
-    <div id="footer-credit">Données géographiques : Natural Earth (domaine public)</div>
+    <footer id="site-footer">
+      <a href="/confidentialite.html">Confidentialité</a>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <span id="footer-credit">Données géographiques : Natural Earth (domaine public)</span>
+    </footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

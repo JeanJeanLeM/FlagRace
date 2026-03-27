@@ -8,6 +8,7 @@ import { countryNameFr, flagEmojiFromIso3 } from '../data/countryNamesFr.ts';
 import type { GameHudState } from './Game.ts';
 import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
 import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
+import type { MapViewBBoxClamp } from '../data/regionConfig.ts';
 
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
@@ -59,6 +60,7 @@ export class CountryLabelsGame {
   private frozenElapsedMs: number | null = null;
   private fc: GeoFeatureCollection | null = null;
   private countriesList: string[] = [];
+  private mapViewBBoxClamp: MapViewBBoxClamp | undefined;
   private difficulty: CountryLabelDifficulty = 1;
   private eventsBound = false;
   private camera: ViewCamera = { cx: 0, cy: 0, scale: DEFAULT_VIEW_SCALE };
@@ -75,6 +77,7 @@ export class CountryLabelsGame {
   } | null = null;
   private panPointerId: number | null = null;
   private gaveUp = false;
+  private hoveredPlacedLabelId: string | null = null;
 
   constructor(canvas: HTMLCanvasElement, onHudUpdate?: (state: GameHudState) => void) {
     this.canvas = canvas;
@@ -95,12 +98,18 @@ export class CountryLabelsGame {
     this.dockEl = el;
   }
 
-  async load(geojsonUrl: string, countries: string[], difficulty: CountryLabelDifficulty): Promise<void> {
+  async load(
+    geojsonUrl: string,
+    countries: string[],
+    difficulty: CountryLabelDifficulty,
+    mapViewBBoxClamp?: MapViewBBoxClamp,
+  ): Promise<void> {
     this.difficulty = difficulty;
     const res = await fetch(geojsonUrl);
     const geojson = (await res.json()) as GeoFeatureCollection;
     this.fc = geojson;
     this.countriesList = countries;
+    this.mapViewBBoxClamp = mapViewBBoxClamp;
     this.buildWorld(geojson, countries);
     this.gameStartMs = performance.now();
     this.gaveUp = false;
@@ -124,6 +133,7 @@ export class CountryLabelsGame {
     this.animFrame = null;
     this.winPhase = 'none';
     this.gaveUp = false;
+    this.hoveredPlacedLabelId = null;
     this.gameStartMs = null;
     this.frozenElapsedMs = null;
     this.endCanvasPan();
@@ -209,7 +219,14 @@ export class CountryLabelsGame {
   }
 
   private buildWorld(geojson: GeoFeatureCollection, countries: string[]): void {
-    const { tiles, borderConnectors } = buildMapTiles(this.canvas, geojson, countries, 'assembled');
+    const { tiles, borderConnectors } = buildMapTiles(
+      this.canvas,
+      geojson,
+      countries,
+      'assembled',
+      true,
+      this.mapViewBBoxClamp,
+    );
     this.tiles = tiles;
     this.borderConnectors = borderConnectors;
 
@@ -240,6 +257,7 @@ export class CountryLabelsGame {
     });
 
     this.markers = items;
+    this.hoveredPlacedLabelId = null;
     this.resetCameraToMap();
     this.winPhase = 'none';
     this.gaveUp = false;
@@ -425,6 +443,35 @@ export class CountryLabelsGame {
     this.canvas.style.cursor = 'default';
   }
 
+  private updatePlacedLabelHover(clientX: number, clientY: number): void {
+    const { x, y } = this.clientToCanvasPixels(clientX, clientY);
+    const w = this.screenToWorld(x, y);
+    const hitR = 20 / this.camera.scale;
+    let hit: string | null = null;
+    const placed = this.markers.filter((m) => m.placed);
+    placed.sort((a, b) => b.zIndex - a.zIndex);
+    for (const m of placed) {
+      if (Math.hypot(w.x - m.x, w.y - m.y) <= hitR) {
+        hit = m.id;
+        break;
+      }
+    }
+    if (hit !== this.hoveredPlacedLabelId) {
+      this.hoveredPlacedLabelId = hit;
+    }
+    const overPin = hit !== null;
+    if (this.canvasPan === null && !this.dragMarker && !this.ghostEl) {
+      this.canvas.style.cursor = overPin ? 'pointer' : 'default';
+    }
+  }
+
+  private onCanvasPointerLeave = (): void => {
+    this.hoveredPlacedLabelId = null;
+    if (this.canvasPan === null && !this.dragMarker && !this.ghostEl) {
+      this.canvas.style.cursor = 'default';
+    }
+  };
+
   private onCanvasPointerDown = (e: PointerEvent): void => {
     if (e.button !== 0 || this.dragMarker || this.ghostEl) return;
     const { x, y } = this.clientToCanvasPixels(e.clientX, e.clientY);
@@ -443,6 +490,9 @@ export class CountryLabelsGame {
   };
 
   private onCanvasPointerMove = (e: PointerEvent): void => {
+    if (this.canvasPan === null && !this.dragMarker && !this.ghostEl) {
+      this.updatePlacedLabelHover(e.clientX, e.clientY);
+    }
     if (this.canvasPan === null || e.pointerId !== this.panPointerId) return;
     const { x, y } = this.clientToCanvasPixels(e.clientX, e.clientY);
     const p = this.canvasPan;
@@ -501,6 +551,7 @@ export class CountryLabelsGame {
         label: m.displayLabel,
         visual: 'validated' as const,
         dragging: false,
+        showLabel: this.hoveredPlacedLabelId === m.id,
       }));
   }
 
@@ -624,6 +675,7 @@ export class CountryLabelsGame {
     this.canvas.addEventListener('pointermove', this.onCanvasPointerMove);
     this.canvas.addEventListener('pointerup', this.onCanvasPointerUp);
     this.canvas.addEventListener('pointercancel', this.onCanvasPointerUp);
+    this.canvas.addEventListener('pointerleave', this.onCanvasPointerLeave);
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     this.canvas.addEventListener('keydown', this.onCanvasKeyDown);
   }
@@ -634,6 +686,7 @@ export class CountryLabelsGame {
     this.canvas.removeEventListener('pointermove', this.onCanvasPointerMove);
     this.canvas.removeEventListener('pointerup', this.onCanvasPointerUp);
     this.canvas.removeEventListener('pointercancel', this.onCanvasPointerUp);
+    this.canvas.removeEventListener('pointerleave', this.onCanvasPointerLeave);
     this.canvas.removeEventListener('wheel', this.onWheel);
     this.canvas.removeEventListener('keydown', this.onCanvasKeyDown);
   }

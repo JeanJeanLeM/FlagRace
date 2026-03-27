@@ -2,6 +2,7 @@ import { Tile, worldPointFromLocal } from './Tile.ts';
 import type { BorderConnectorRel, ViewCamera } from './Renderer.ts';
 import { Renderer } from './Renderer.ts';
 import { DEFAULT_DISPLAY_OPTIONS, type GameDisplayOptions } from '../displayOptions.ts';
+import type { MapViewBBoxClamp } from '../data/regionConfig.ts';
 import { ADJACENCY as DEFAULT_ADJACENCY } from '../data/adjacency.ts';
 import { adjacencyPairKey, buildMapTiles, type GeoFeatureCollection } from './geoBuild.ts';
 import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
@@ -79,6 +80,7 @@ export class Game {
   private countriesList: string[] = [];
   /** Frontières pour score / collage : GeoJSON `wp_adjacency` ou repli Nord Afrique. */
   private borderAdjacency: [string, string][] = DEFAULT_ADJACENCY;
+  private mapViewBBoxClamp: MapViewBBoxClamp | undefined;
   private eventsBound = false;
   private camera: ViewCamera = { cx: 0, cy: 0, scale: DEFAULT_VIEW_SCALE };
   private displayOptions: GameDisplayOptions;
@@ -95,11 +97,12 @@ export class Game {
     this.onHudUpdate = onHudUpdate;
   }
 
-  async load(geojsonUrl: string, countries: string[]): Promise<void> {
+  async load(geojsonUrl: string, countries: string[], mapViewBBoxClamp?: MapViewBBoxClamp): Promise<void> {
     const res = await fetch(geojsonUrl);
     const geojson = (await res.json()) as GeoFeatureCollection;
     this.fc = geojson;
     this.countriesList = countries;
+    this.mapViewBBoxClamp = mapViewBBoxClamp;
     this.borderAdjacency =
       geojson.wp_adjacency && geojson.wp_adjacency.length > 0
         ? geojson.wp_adjacency
@@ -156,6 +159,7 @@ export class Game {
       countries,
       'scattered',
       !this.displayOptions.startTilesNorthUp,
+      this.mapViewBBoxClamp,
     );
     this.tiles = tiles;
     this.borderConnectors = borderConnectors;

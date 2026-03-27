@@ -28,6 +28,11 @@ export interface CapitalMarkerDraw {
   /** `validated` = bonne position (vert) ; `draft` = mauvaise pose, épingle + nom sans cadre ni contour lourd */
   visual: 'validated' | 'draft';
   dragging: boolean;
+  /**
+   * Validé : `true` affiche le libellé ; `false` n’affiche que l’épingle (survol géré par le jeu).
+   * Brouillon / drag : ignoré, le texte est toujours affiché.
+   */
+  showLabel?: boolean;
 }
 
 export class Renderer {
@@ -121,17 +126,20 @@ export class Renderer {
   private drawCapitalMarker(m: CapitalMarkerDraw, worldScale: number): void {
     const { ctx } = this;
     const inv = 1 / worldScale;
-    const r = (m.visual === 'validated' ? 10 : 9) * inv;
+    const r = (m.visual === 'validated' ? 6.2 : 5.8) * inv;
     const pinY = m.y;
+
+    const showText =
+      m.dragging || m.visual === 'draft' || (m.visual === 'validated' && m.showLabel === true);
 
     ctx.save();
     ctx.translate(m.x, pinY);
 
     if (m.dragging) {
       ctx.shadowColor = 'rgba(0,0,0,0.45)';
-      ctx.shadowBlur = 14 * inv;
-      ctx.shadowOffsetX = 4 * inv;
-      ctx.shadowOffsetY = 4 * inv;
+      ctx.shadowBlur = 10 * inv;
+      ctx.shadowOffsetX = 3 * inv;
+      ctx.shadowOffsetY = 3 * inv;
     }
 
     ctx.beginPath();
@@ -147,7 +155,7 @@ export class Renderer {
     } else {
       ctx.fillStyle = 'rgba(0, 220, 140, 0.92)';
       ctx.strokeStyle = 'rgba(200, 255, 230, 0.95)';
-      ctx.lineWidth = 2 * inv;
+      ctx.lineWidth = 1.35 * inv;
       ctx.fill();
       ctx.stroke();
     }
@@ -156,11 +164,16 @@ export class Renderer {
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
 
-    const fs = 13.5 * inv;
+    if (!showText) {
+      ctx.restore();
+      return;
+    }
+
+    const fs = (m.visual === 'draft' ? 11.2 : 10.5) * inv;
     ctx.font = `700 ${fs}px system-ui, "Segoe UI", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
-    const labelY = -r * 1.42 - 5 * inv;
+    const labelY = -r * 1.42 - 4 * inv;
 
     if (m.visual === 'draft') {
       ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
@@ -174,7 +187,7 @@ export class Renderer {
     } else {
       ctx.lineJoin = 'round';
       ctx.miterLimit = 2;
-      ctx.lineWidth = 3.2 * inv;
+      ctx.lineWidth = 2.6 * inv;
       ctx.strokeStyle = 'rgba(255, 252, 248, 0.94)';
       ctx.strokeText(m.label, 0, labelY);
       ctx.fillStyle = 'rgba(14, 22, 34, 0.96)';

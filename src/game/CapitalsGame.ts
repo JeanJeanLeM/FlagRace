@@ -11,6 +11,7 @@ import {
 } from './Game.ts';
 import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
 import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
+import type { MapViewBBoxClamp } from '../data/regionConfig.ts';
 
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
@@ -66,6 +67,7 @@ export class CapitalsGame {
   private fc: GeoFeatureCollection | null = null;
   private countriesList: string[] = [];
   private capitalEntries: CapitalEntry[] = [];
+  private mapViewBBoxClamp: MapViewBBoxClamp | undefined;
   private difficulty: CapitalsDifficultyId = 'near-capital';
   private eventsBound = false;
   private camera: ViewCamera = { cx: 0, cy: 0, scale: DEFAULT_VIEW_SCALE };
@@ -87,6 +89,8 @@ export class CapitalsGame {
   } | null = null;
   private panPointerId: number | null = null;
   private gaveUp = false;
+  /** Capitale validée sous le curseur : affiche le nom au survol. */
+  private hoveredPlacedMarkerId: string | null = null;
 
   constructor(canvas: HTMLCanvasElement, onHudUpdate?: (state: GameHudState) => void) {
     this.canvas = canvas;
@@ -113,12 +117,14 @@ export class CapitalsGame {
     countries: string[],
     difficulty: CapitalsDifficultyId,
     capitals: CapitalEntry[] = [],
+    mapViewBBoxClamp?: MapViewBBoxClamp,
   ): Promise<void> {
     this.difficulty = difficulty;
     const res = await fetch(geojsonUrl);
     const geojson = (await res.json()) as GeoFeatureCollection;
     this.fc = geojson;
     this.countriesList = countries;
+    this.mapViewBBoxClamp = mapViewBBoxClamp;
     this.capitalEntries = capitals.filter((c) => countries.includes(c.iso3));
     this.toleranceWorld = toleranceWorldRadius(this.canvas);
     this.buildWorld(geojson, countries, this.capitalEntries);
@@ -144,6 +150,7 @@ export class CapitalsGame {
     this.animFrame = null;
     this.winPhase = 'none';
     this.gaveUp = false;
+    this.hoveredPlacedMarkerId = null;
     this.gameStartMs = null;
     this.frozenElapsedMs = null;
     this.endDockDrag();
@@ -237,12 +244,19 @@ export class CapitalsGame {
   }
 
   private buildWorld(geojson: GeoFeatureCollection, countries: string[], capitals: CapitalEntry[]): void {
-    const { tiles, borderConnectors } = buildMapTiles(this.canvas, geojson, countries, 'assembled');
+    const { tiles, borderConnectors } = buildMapTiles(
+      this.canvas,
+      geojson,
+      countries,
+      'assembled',
+      true,
+      this.mapViewBBoxClamp,
+    );
     this.tiles = tiles;
     this.borderConnectors = borderConnectors;
     this.tileById = new Map(tiles.map((t) => [t.id, t]));
 
-    const project = createLonLatProjector(this.canvas, geojson, countries);
+    const project = createLonLatProjector(this.canvas, geojson, countries, this.mapViewBBoxClamp);
     const list = capitals.filter((c) => countries.includes(c.iso3));
 
     const capItems: MapMarker[] = list.map((c) => {
@@ -311,6 +325,7 @@ export class CapitalsGame {
 
     this.markers = all;
     this.distanceScale = 1;
+    this.hoveredPlacedMarkerId = null;
     this.resetCameraToMap();
     this.winPhase = 'none';
     this.gaveUp = false;
@@ -467,7 +482,7 @@ export class CapitalsGame {
 
   private pickDraftCapitalAtCanvasPx(sx: number, sy: number): MapMarker | null {
     const w = this.screenToWorld(sx, sy);
-    const hitR = (28 / this.camera.scale) * this.distanceScale;
+    const hitR = (22 / this.camera.scale) * this.distanceScale;
     const candidates = this.markers.filter(
       (m) => m.kind === 'capital' && m.onMapDraft && !m.placed,
     );
@@ -477,6 +492,45 @@ export class CapitalsGame {
     }
     return null;
   }
+
+  private updatePlacedCapitalHover(clientX: number, clientY: number): void {
+    const { x, y } = this.clientToCanvasPixels(clientX, clientY);
+    const w = this.screenToWorld(x, y);
+    const hitR = (20 / this.camera.scale) * this.distanceScale;
+    let hit: string | null = null;
+    const placed = this.markers.filter((m) => m.kind === 'capital' && m.placed);
+    placed.sort((a, b) => b.zIndex - a.zIndex);
+    for (const m of placed) {
+      if (Math.hypot(w.x - m.x, w.y - m.y) <= hitR) {
+        hit = m.id;
+        break;
+      }
+    }
+    if (hit !== this.hoveredPlacedMarkerId) {
+      this.hoveredPlacedMarkerId = hit;
+    }
+    const overPin = hit !== null;
+    if (
+      this.canvasPan === null &&
+      !this.dragCanvasMarker &&
+      !this.dragDockMarker &&
+      !this.ghostEl
+    ) {
+      this.canvas.style.cursor = overPin ? 'pointer' : 'default';
+    }
+  }
+
+  private onCanvasPointerLeave = (): void => {
+    this.hoveredPlacedMarkerId = null;
+    if (
+      this.canvasPan === null &&
+      !this.dragCanvasMarker &&
+      !this.dragDockMarker &&
+      !this.ghostEl
+    ) {
+      this.canvas.style.cursor = 'default';
+    }
+  };
 
   private onCanvasPointerDown = (e: PointerEvent): void => {
     if (e.button !== 0 || this.dragDockMarker || this.ghostEl) return;
@@ -508,6 +562,14 @@ export class CapitalsGame {
   };
 
   private onCanvasPointerMove = (e: PointerEvent): void => {
+    if (
+      this.canvasPan === null &&
+      !this.dragCanvasMarker &&
+      !this.dragDockMarker &&
+      !this.ghostEl
+    ) {
+      this.updatePlacedCapitalHover(e.clientX, e.clientY);
+    }
     if (this.canvasPan !== null && e.pointerId === this.panPointerId) {
       const { x, y } = this.clientToCanvasPixels(e.clientX, e.clientY);
       const p = this.canvasPan;
@@ -634,6 +696,7 @@ export class CapitalsGame {
         label: m.label,
         visual: (m.placed ? 'validated' : 'draft') as 'validated' | 'draft',
         dragging: false,
+        showLabel: !m.placed || this.hoveredPlacedMarkerId === m.id,
       }));
     if (dragging) {
       rest.push({
@@ -642,6 +705,7 @@ export class CapitalsGame {
         label: dragging.label,
         visual: 'draft',
         dragging: true,
+        showLabel: true,
       });
     }
     return rest;
@@ -784,6 +848,7 @@ export class CapitalsGame {
     this.canvas.addEventListener('pointermove', this.onCanvasPointerMove);
     this.canvas.addEventListener('pointerup', this.onCanvasPointerUp);
     this.canvas.addEventListener('pointercancel', this.onCanvasPointerUp);
+    this.canvas.addEventListener('pointerleave', this.onCanvasPointerLeave);
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     this.canvas.addEventListener('keydown', this.onCanvasKeyDown);
   }
@@ -795,6 +860,7 @@ export class CapitalsGame {
     this.canvas.removeEventListener('pointermove', this.onCanvasPointerMove);
     this.canvas.removeEventListener('pointerup', this.onCanvasPointerUp);
     this.canvas.removeEventListener('pointercancel', this.onCanvasPointerUp);
+    this.canvas.removeEventListener('pointerleave', this.onCanvasPointerLeave);
     this.canvas.removeEventListener('wheel', this.onWheel);
     this.canvas.removeEventListener('keydown', this.onCanvasKeyDown);
   }

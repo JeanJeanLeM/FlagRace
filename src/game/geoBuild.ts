@@ -7,7 +7,7 @@ const ADJ_PAIR_SEP = '\x1f';
 export function adjacencyPairKey(a: string, b: string): string {
   return a < b ? `${a}${ADJ_PAIR_SEP}${b}` : `${b}${ADJ_PAIR_SEP}${a}`;
 }
-import { COUNTRY_COLORS } from '../data/regionConfig.ts';
+import { COUNTRY_COLORS, type MapViewBBoxClamp } from '../data/regionConfig.ts';
 
 type LonLatRing = number[][];
 type LonLatPolygon = LonLatRing[];
@@ -61,6 +61,7 @@ export function createLonLatProjector(
   canvas: HTMLCanvasElement,
   geojson: GeoFeatureCollection,
   countries: string[],
+  mapViewBBoxClamp?: MapViewBBoxClamp,
 ): LonLatProjector | null {
   const cw = canvas.width;
   const ch = canvas.height;
@@ -71,13 +72,10 @@ export function createLonLatProjector(
   const features = geojson.features.filter((f) => countries.includes(f.properties.iso3));
   if (!features.length) return null;
 
-  const bbox: BBox = {
-    minLon: Infinity,
-    maxLon: -Infinity,
-    minLat: Infinity,
-    maxLat: -Infinity,
-  };
-  for (const f of features) expandBboxFromGeometry(f.geometry, bbox);
+  let bbox = computeFeaturesBBox(features, mapViewBBoxClamp);
+  if (!bboxValid(bbox) && mapViewBBoxClamp) {
+    bbox = computeFeaturesBBox(features, undefined);
+  }
 
   const padLon = (bbox.maxLon - bbox.minLon) * 0.02 || 0.5;
   const padLat = (bbox.maxLat - bbox.minLat) * 0.02 || 0.5;
@@ -100,6 +98,21 @@ export function createLonLatProjector(
   };
 }
 
+function bboxValid(b: BBox): boolean {
+  return b.minLon < b.maxLon && b.minLat < b.maxLat;
+}
+
+function computeFeaturesBBox(features: GeoFeature[], clamp?: MapViewBBoxClamp): BBox {
+  const bbox: BBox = {
+    minLon: Infinity,
+    maxLon: -Infinity,
+    minLat: Infinity,
+    maxLat: -Infinity,
+  };
+  for (const f of features) expandBboxFromGeometry(f.geometry, bbox, clamp);
+  return bbox;
+}
+
 function geomToPolygons(geom: GeoFeature['geometry']): LonLatPolygon[] {
   if (geom.type === 'Polygon') {
     return [geom.coordinates as LonLatRing[]];
@@ -110,13 +123,23 @@ function geomToPolygons(geom: GeoFeature['geometry']): LonLatPolygon[] {
   return [];
 }
 
-function expandBboxFromGeometry(geom: GeoFeature['geometry'], bbox: BBox): void {
+function expandBboxFromGeometry(
+  geom: GeoFeature['geometry'],
+  bbox: BBox,
+  clamp?: MapViewBBoxClamp,
+): void {
   const polys = geomToPolygons(geom);
   for (const rings of polys) {
     for (const ring of rings) {
       for (const c of ring) {
-        const lon = c[0]!;
-        const lat = c[1]!;
+        let lon = c[0]!;
+        let lat = c[1]!;
+        if (clamp) {
+          if (clamp.minLon !== undefined) lon = Math.max(lon, clamp.minLon);
+          if (clamp.maxLon !== undefined) lon = Math.min(lon, clamp.maxLon);
+          if (clamp.minLat !== undefined) lat = Math.max(lat, clamp.minLat);
+          if (clamp.maxLat !== undefined) lat = Math.min(lat, clamp.maxLat);
+        }
         bbox.minLon = Math.min(bbox.minLon, lon);
         bbox.maxLon = Math.max(bbox.maxLon, lon);
         bbox.minLat = Math.min(bbox.minLat, lat);
@@ -144,6 +167,7 @@ export function buildMapTiles(
   countries: string[],
   layout: MapTileLayout,
   randomizeRotation = true,
+  mapViewBBoxClamp?: MapViewBBoxClamp,
 ): BuiltMapTiles {
   const cw = canvas.width;
   const ch = canvas.height;
@@ -152,7 +176,7 @@ export function buildMapTiles(
   const order = new Map(countries.map((iso, i) => [iso, i] as const));
   features.sort((a, b) => (order.get(a.properties.iso3) ?? 99) - (order.get(b.properties.iso3) ?? 99));
 
-  const project = createLonLatProjector(canvas, geojson, countries);
+  const project = createLonLatProjector(canvas, geojson, countries, mapViewBBoxClamp);
   if (!project) return { tiles: [], borderConnectors: [] };
 
   const tiles: Tile[] = features.map((feature, idx) => {

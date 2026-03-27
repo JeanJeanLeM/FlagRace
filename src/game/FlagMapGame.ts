@@ -9,6 +9,7 @@ import type { FlagDockDifficulty } from '../flagDifficulty.ts';
 import type { GameHudState } from './Game.ts';
 import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
 import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
+import type { MapViewBBoxClamp } from '../data/regionConfig.ts';
 
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
@@ -60,6 +61,7 @@ export class FlagMapGame {
   private winPhase: 'none' | 'victory' = 'none';
   private fc: GeoFeatureCollection | null = null;
   private countriesList: string[] = [];
+  private mapViewBBoxClamp: MapViewBBoxClamp | undefined;
   /** Tous les ISO3 affichés dans le dock (carte + leurres). */
   private dockIso3List: string[] = [];
   private flagDifficulty: FlagDockDifficulty = 1;
@@ -98,11 +100,13 @@ export class FlagMapGame {
     geojsonUrl: string,
     countries: string[],
     difficulty: FlagDockDifficulty = 1,
+    mapViewBBoxClamp?: MapViewBBoxClamp,
   ): Promise<void> {
     const res = await fetch(geojsonUrl);
     const geojson = (await res.json()) as GeoFeatureCollection;
     this.fc = geojson;
     this.countriesList = countries;
+    this.mapViewBBoxClamp = mapViewBBoxClamp;
     this.flagDifficulty = difficulty;
     this.dockIso3List = buildFlagDockIso3List(countries, difficulty);
     this.dockIso3List.sort((a, b) =>
@@ -142,6 +146,8 @@ export class FlagMapGame {
       this.fc,
       this.countriesList,
       'assembled',
+      true,
+      this.mapViewBBoxClamp,
     );
     this.tiles = tiles;
     this.borderConnectors = borderConnectors;
@@ -235,6 +241,8 @@ export class FlagMapGame {
       this.fc,
       this.countriesList,
       'assembled',
+      true,
+      this.mapViewBBoxClamp,
     );
     this.tiles = tiles;
     this.borderConnectors = borderConnectors;
