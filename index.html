@@ -299,8 +299,69 @@
             </button>
           </div>
 
-          <h2 class="section-heading section-heading--inline">Carte / région</h2>
-          <div id="region-mode-grid" class="mode-grid" role="group" aria-label="Choisir une carte ou région"></div>
+          <h2 class="section-heading section-heading--inline">Carte du monde</h2>
+          <p class="world-map-hint">
+            Clique un continent ; <strong>USA</strong> et <strong>France</strong> sont aussi sélectionnables seuls sur la carte.
+          </p>
+          <div id="region-mode-map-wrap" class="region-mode-map-wrap">
+            <div class="world-blocks-grid" role="group" aria-label="Régions sur la carte du monde">
+              <div class="world-cell world-cell--na">
+                <button type="button" class="world-block" data-region="north-central-america">
+                  <span class="world-block-ico" aria-hidden="true">🌎</span>
+                  <span class="world-block-txt">Amérique du Nord<br />et centrale</span>
+                </button>
+                <button
+                  type="button"
+                  class="world-pin world-pin--usa"
+                  data-region="usa"
+                  title="États-Unis (un pays)"
+                >
+                  <span class="world-pin-flag" aria-hidden="true">🇺🇸</span>
+                  <span class="world-pin-lbl">USA</span>
+                </button>
+              </div>
+              <div class="world-cell world-cell--eu">
+                <button type="button" class="world-block" data-region="europe">
+                  <span class="world-block-ico" aria-hidden="true">🇪🇺</span>
+                  <span class="world-block-txt">Europe</span>
+                </button>
+                <button
+                  type="button"
+                  class="world-pin world-pin--fr"
+                  data-region="france"
+                  title="France (un pays)"
+                >
+                  <span class="world-pin-flag" aria-hidden="true">🇫🇷</span>
+                  <span class="world-pin-lbl">France</span>
+                </button>
+              </div>
+              <div class="world-cell world-cell--as">
+                <button type="button" class="world-block" data-region="asia">
+                  <span class="world-block-ico" aria-hidden="true">🌏</span>
+                  <span class="world-block-txt">Asie</span>
+                </button>
+              </div>
+              <div class="world-cell world-cell--af">
+                <button type="button" class="world-block" data-region="africa">
+                  <span class="world-block-ico" aria-hidden="true">🌍</span>
+                  <span class="world-block-txt">Afrique</span>
+                </button>
+              </div>
+              <div class="world-cell world-cell--sa">
+                <button type="button" class="world-block" data-region="south-america">
+                  <span class="world-block-ico" aria-hidden="true">🌎</span>
+                  <span class="world-block-txt">Amérique<br />du Sud</span>
+                </button>
+              </div>
+            </div>
+            <p class="region-extra-heading">Cartes plus détaillées</p>
+            <div
+              id="region-mode-extra"
+              class="region-mode-extra"
+              role="group"
+              aria-label="France par département ou États-Unis par État"
+            ></div>
+          </div>
 
           <div id="menu-puzzle-controls-hint" class="controls-hint controls-hint--menu puzzle-only-menu--inactive" aria-hidden="true">
             <span>Glisser : déplacer</span>

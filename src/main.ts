@@ -11,7 +11,6 @@ import {
   US_STATE_CAPITAL_ENTRIES,
   WORLD_CONTINENT_CAPITALS,
 } from './data/worldRegions.generated.ts';
-import { NORTH_AFRICA_CAPITALS } from './data/northAfricaCapitals.ts';
 import { getDisplayOptionsFromMenuSelection, initDifficultyMenu } from './gameDifficulty.ts';
 import { getFlagDifficultyFromMenu, initFlagDifficultyMenu } from './flagDifficulty.ts';
 import {
@@ -27,7 +26,6 @@ import type { GameTypeId } from './gameModes.ts';
 
 /** Pool capitales pour tous les modes « capitales » (filtré par pays de la carte). */
 const ALL_MAP_CAPITALS = [
-  ...NORTH_AFRICA_CAPITALS,
   ...WORLD_CONTINENT_CAPITALS,
   ...FR_DEPARTMENT_CAPITALS,
   ...US_STATE_CAPITAL_ENTRIES,

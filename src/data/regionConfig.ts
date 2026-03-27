@@ -2,13 +2,15 @@
  * Multi-régions : une seule liste (`REGION_CATALOG`) pour le menu et la config jeu.
  *
  * Cartes continentales : `npm run build:geo:world` régénère GeoJSON + `worldRegions.generated.ts`.
- * Couleurs tuiles : `COUNTRY_COLORS` pour Nord Afrique ; sinon teinte dérivée du code (`geoBuild.tileColorForId`).
+ * Couleurs tuiles : `COUNTRY_COLORS` pour quelques pays (ex. Maghreb) ; sinon `geoBuild.tileColorForId`.
  */
 
 import {
+  AFRICA_COUNTRY_IDS,
   ASIA_COUNTRY_IDS,
   EUROPE_COUNTRY_IDS,
   FR_DEPARTMENT_IDS,
+  NORTH_CENTRAL_AMERICA_COUNTRY_IDS,
   SOUTH_AMERICA_COUNTRY_IDS,
   USA_STATE_IDS,
 } from './worldRegions.generated.ts';
@@ -48,6 +50,8 @@ export type RegionCatalogEntry =
       countries: string[];
       /** défaut : true */
       supportsFlags?: boolean;
+      /** false : carte « fine » sous la carte monde (départements, États). */
+      showOnWorldMap?: boolean;
     }
   | {
       id: string;
@@ -59,13 +63,25 @@ export type RegionCatalogEntry =
 
 export const REGION_CATALOG: readonly RegionCatalogEntry[] = [
   {
-    id: 'north-africa',
-    label: 'Nord Afrique',
-    icon: '🌍',
-    descriptionLines: ['Sahara · Sahel · Maghreb', '11 pays'],
+    id: 'north-central-america',
+    label: 'Amérique du N. & centrale',
+    icon: '🌎',
+    descriptionLines: [
+      'USA, Canada, Mexique, isthme, Caraïbes (Natural Earth · hors Groenland)',
+      `${NORTH_CENTRAL_AMERICA_COUNTRY_IDS.length} pays`,
+    ],
     available: true,
-    geojsonUrl: '/data/north-africa.geojson',
-    countries: ['MAR', 'ESH', 'DZA', 'TUN', 'LBY', 'EGY', 'MRT', 'MLI', 'NER', 'TCD', 'SDN'],
+    geojsonUrl: '/data/north-central-america.geojson',
+    countries: [...NORTH_CENTRAL_AMERICA_COUNTRY_IDS],
+  },
+  {
+    id: 'south-america',
+    label: 'Amérique du Sud',
+    icon: '🌎',
+    descriptionLines: ['Hors Caraïbes et Amérique centrale', `${SOUTH_AMERICA_COUNTRY_IDS.length} pays`],
+    available: true,
+    geojsonUrl: '/data/south-america.geojson',
+    countries: [...SOUTH_AMERICA_COUNTRY_IDS],
   },
   {
     id: 'europe',
@@ -80,13 +96,13 @@ export const REGION_CATALOG: readonly RegionCatalogEntry[] = [
     countries: [...EUROPE_COUNTRY_IDS],
   },
   {
-    id: 'south-america',
-    label: 'Amérique du Sud',
-    icon: '🌎',
-    descriptionLines: ['Hors Caraïbes et Amérique centrale', `${SOUTH_AMERICA_COUNTRY_IDS.length} pays`],
+    id: 'africa',
+    label: 'Afrique',
+    icon: '🌍',
+    descriptionLines: ['Continent africain (Natural Earth)', `${AFRICA_COUNTRY_IDS.length} pays`],
     available: true,
-    geojsonUrl: '/data/south-america.geojson',
-    countries: [...SOUTH_AMERICA_COUNTRY_IDS],
+    geojsonUrl: '/data/africa.geojson',
+    countries: [...AFRICA_COUNTRY_IDS],
   },
   {
     id: 'asia',
@@ -98,6 +114,24 @@ export const REGION_CATALOG: readonly RegionCatalogEntry[] = [
     countries: [...ASIA_COUNTRY_IDS],
   },
   {
+    id: 'france',
+    label: 'France',
+    icon: '🇫🇷',
+    descriptionLines: ['Pays unique · métropole (hors outre-mer)', '1 pays'],
+    available: true,
+    geojsonUrl: '/data/france-country.geojson',
+    countries: ['FRA'],
+  },
+  {
+    id: 'usa',
+    label: 'États-Unis',
+    icon: '🇺🇸',
+    descriptionLines: ['Pays unique · silhouette complète', '1 pays'],
+    available: true,
+    geojsonUrl: '/data/usa-country.geojson',
+    countries: ['USA'],
+  },
+  {
     id: 'fr-departments',
     label: 'France · départements',
     icon: '🇫🇷',
@@ -106,6 +140,7 @@ export const REGION_CATALOG: readonly RegionCatalogEntry[] = [
     geojsonUrl: '/data/fr-departments.geojson',
     countries: [...FR_DEPARTMENT_IDS],
     supportsFlags: false,
+    showOnWorldMap: false,
   },
   {
     id: 'usa-states',
@@ -116,13 +151,7 @@ export const REGION_CATALOG: readonly RegionCatalogEntry[] = [
     geojsonUrl: '/data/usa-states.geojson',
     countries: [...USA_STATE_IDS],
     supportsFlags: false,
-  },
-  {
-    id: 'africa',
-    label: 'Afrique',
-    icon: '🌍',
-    descriptionLines: ['Bientôt disponible'],
-    available: false,
+    showOnWorldMap: false,
   },
 ];
 
@@ -138,11 +167,17 @@ export const REGIONS: RegionConfig[] = REGION_CATALOG.filter(
 }));
 
 export function getDefaultRegionId(): string {
-  const first = REGION_CATALOG.find((e) => e.available);
-  return first?.id ?? 'north-africa';
+  for (const e of REGION_CATALOG) {
+    if (e.available && e.showOnWorldMap !== false) return e.id;
+  }
+  return 'europe';
 }
 
 export function regionSupportsFlags(regionId: string): boolean {
   const r = REGIONS.find((x) => x.id === regionId);
   return r?.supportsFlags ?? true;
+}
+
+export function catalogEntryForRegionId(regionId: string): RegionCatalogEntry | undefined {
+  return REGION_CATALOG.find((e) => e.id === regionId);
 }

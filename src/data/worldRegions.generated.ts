@@ -126,6 +126,103 @@ export const ASIA_COUNTRY_IDS: readonly string[] = [
   "YEM"
 ];
 
+export const AFRICA_COUNTRY_IDS: readonly string[] = [
+  "AGO",
+  "BDI",
+  "BEN",
+  "BFA",
+  "BWA",
+  "CAF",
+  "CIV",
+  "CMR",
+  "COD",
+  "COG",
+  "COM",
+  "CPV",
+  "DJI",
+  "DZA",
+  "EGY",
+  "ERI",
+  "ESH",
+  "ETH",
+  "GAB",
+  "GHA",
+  "GIN",
+  "GMB",
+  "GNB",
+  "GNQ",
+  "KEN",
+  "LBR",
+  "LBY",
+  "LSO",
+  "MAR",
+  "MDG",
+  "MLI",
+  "MOZ",
+  "MRT",
+  "MWI",
+  "NAM",
+  "NER",
+  "NGA",
+  "RWA",
+  "SDN",
+  "SDS",
+  "SEN",
+  "SLE",
+  "SOL",
+  "SOM",
+  "STP",
+  "SWZ",
+  "TCD",
+  "TGO",
+  "TUN",
+  "TZA",
+  "UGA",
+  "ZAF",
+  "ZMB",
+  "ZWE"
+];
+
+export const NORTH_CENTRAL_AMERICA_COUNTRY_IDS: readonly string[] = [
+  "ABW",
+  "AIA",
+  "ATG",
+  "BHS",
+  "BLM",
+  "BLZ",
+  "BMU",
+  "BRB",
+  "CAN",
+  "CRI",
+  "CUB",
+  "CUW",
+  "CYM",
+  "DMA",
+  "DOM",
+  "GRD",
+  "GTM",
+  "HND",
+  "HTI",
+  "JAM",
+  "KNA",
+  "LCA",
+  "MAF",
+  "MEX",
+  "MSR",
+  "NIC",
+  "PAN",
+  "PRI",
+  "SLV",
+  "SPM",
+  "SXM",
+  "TCA",
+  "TTO",
+  "USA",
+  "VCT",
+  "VGB",
+  "VIR"
+];
+
 export const FR_DEPARTMENT_IDS: readonly string[] = [
   "FR-01",
   "FR-02",
@@ -914,6 +1011,18 @@ export const WORLD_CONTINENT_CAPITALS: CapitalEntry[] = [
     "lat": 41.32
   },
   {
+    "iso3": "AGO",
+    "label": "Luanda",
+    "lon": 13.22,
+    "lat": -8.83
+  },
+  {
+    "iso3": "BFA",
+    "label": "Ouagadougou",
+    "lon": -1.52,
+    "lat": 12.37
+  },
+  {
     "iso3": "TLS",
     "label": "Dili",
     "lon": 125.6,
@@ -932,10 +1041,538 @@ export const WORLD_CONTINENT_CAPITALS: CapitalEntry[] = [
     "lat": 15.37
   },
   {
+    "iso3": "BDI",
+    "label": "Gitega",
+    "lon": 29.93,
+    "lat": -3.43
+  },
+  {
+    "iso3": "BEN",
+    "label": "Porto-Novo",
+    "lon": 2.62,
+    "lat": 6.48
+  },
+  {
+    "iso3": "BWA",
+    "label": "Gaborone",
+    "lon": 25.9,
+    "lat": -24.63
+  },
+  {
     "iso3": "VNM",
     "label": "Hanoi",
     "lon": 105.85,
     "lat": 21.03
+  },
+  {
+    "iso3": "EGY",
+    "label": "Cairo",
+    "lon": 31.25,
+    "lat": 30.05
+  },
+  {
+    "iso3": "COM",
+    "label": "Moroni",
+    "lon": 43.23,
+    "lat": -11.7
+  },
+  {
+    "iso3": "COG",
+    "label": "Brazzaville",
+    "lon": 15.28,
+    "lat": -4.25
+  },
+  {
+    "iso3": "COD",
+    "label": "Kinshasa",
+    "lon": 15.3,
+    "lat": -4.32
+  },
+  {
+    "iso3": "CAF",
+    "label": "Bangui",
+    "lon": 18.58,
+    "lat": 4.37
+  },
+  {
+    "iso3": "CIV",
+    "label": "Yamoussoukro",
+    "lon": -5.27,
+    "lat": 6.82
+  },
+  {
+    "iso3": "CPV",
+    "label": "Praia",
+    "lon": -23.52,
+    "lat": 14.92
+  },
+  {
+    "iso3": "ERI",
+    "label": "Asmara",
+    "lon": 38.93,
+    "lat": 15.33
+  },
+  {
+    "iso3": "DZA",
+    "label": "Algiers",
+    "lon": 3.05,
+    "lat": 36.75
+  },
+  {
+    "iso3": "DJI",
+    "label": "Djibouti",
+    "lon": 43.15,
+    "lat": 11.58
+  },
+  {
+    "iso3": "ESH",
+    "label": "El Aaiún",
+    "lon": 27.14,
+    "lat": -13.28
+  },
+  {
+    "iso3": "CMR",
+    "label": "Yaoundé",
+    "lon": 11.5,
+    "lat": 3.85
+  },
+  {
+    "iso3": "GAB",
+    "label": "Libreville",
+    "lon": 9.45,
+    "lat": 0.38
+  },
+  {
+    "iso3": "MAR",
+    "label": "Rabat",
+    "lon": -6.82,
+    "lat": 34.02
+  },
+  {
+    "iso3": "GIN",
+    "label": "Conakry",
+    "lon": -13.7,
+    "lat": 9.5
+  },
+  {
+    "iso3": "GMB",
+    "label": "Banjul",
+    "lon": -16.57,
+    "lat": 13.45
+  },
+  {
+    "iso3": "LBY",
+    "label": "Tripoli",
+    "lon": 13.17,
+    "lat": 32.88
+  },
+  {
+    "iso3": "ETH",
+    "label": "Addis Ababa",
+    "lon": 38.7,
+    "lat": 9.03
+  },
+  {
+    "iso3": "GHA",
+    "label": "Accra",
+    "lon": -0.22,
+    "lat": 5.55
+  },
+  {
+    "iso3": "LBR",
+    "label": "Monrovia",
+    "lon": -10.8,
+    "lat": 6.3
+  },
+  {
+    "iso3": "GNB",
+    "label": "Bissau",
+    "lon": -15.58,
+    "lat": 11.85
+  },
+  {
+    "iso3": "GNQ",
+    "label": "Ciudad de la Paz",
+    "lon": 10.49,
+    "lat": 1.35
+  },
+  {
+    "iso3": "KEN",
+    "label": "Nairobi",
+    "lon": 36.82,
+    "lat": -1.28
+  },
+  {
+    "iso3": "LSO",
+    "label": "Maseru",
+    "lon": 27.48,
+    "lat": -29.32
+  },
+  {
+    "iso3": "SDN",
+    "label": "Khartoum",
+    "lon": 32.53,
+    "lat": 15.6
+  },
+  {
+    "iso3": "MWI",
+    "label": "Lilongwe",
+    "lon": 33.78,
+    "lat": -13.97
+  },
+  {
+    "iso3": "SEN",
+    "label": "Dakar",
+    "lon": -17.63,
+    "lat": 14.73
+  },
+  {
+    "iso3": "MRT",
+    "label": "Nouakchott",
+    "lon": -15.97,
+    "lat": 18.07
+  },
+  {
+    "iso3": "NER",
+    "label": "Niamey",
+    "lon": 2.12,
+    "lat": 13.52
+  },
+  {
+    "iso3": "MDG",
+    "label": "Antananarivo",
+    "lon": 47.52,
+    "lat": -18.92
+  },
+  {
+    "iso3": "NGA",
+    "label": "Abuja",
+    "lon": 7.53,
+    "lat": 9.08
+  },
+  {
+    "iso3": "MLI",
+    "label": "Bamako",
+    "lon": -8,
+    "lat": 12.65
+  },
+  {
+    "iso3": "RWA",
+    "label": "Kigali",
+    "lon": 30.05,
+    "lat": -1.95
+  },
+  {
+    "iso3": "MOZ",
+    "label": "Maputo",
+    "lon": 32.58,
+    "lat": -25.95
+  },
+  {
+    "iso3": "NAM",
+    "label": "Windhoek",
+    "lon": 17.08,
+    "lat": -22.57
+  },
+  {
+    "iso3": "SLE",
+    "label": "Freetown",
+    "lon": -13.23,
+    "lat": 8.48
+  },
+  {
+    "iso3": "STP",
+    "label": "São Tomé",
+    "lon": 6.73,
+    "lat": 0.34
+  },
+  {
+    "iso3": "TCD",
+    "label": "N'Djamena",
+    "lon": 15.03,
+    "lat": 12.1
+  },
+  {
+    "iso3": "SWZ",
+    "label": "Mbabane",
+    "lon": 31.13,
+    "lat": -26.32
+  },
+  {
+    "iso3": "TGO",
+    "label": "Lomé",
+    "lon": 1.21,
+    "lat": 6.14
+  },
+  {
+    "iso3": "ZAF",
+    "label": "Pretoria",
+    "lon": 28.22,
+    "lat": -25.7
+  },
+  {
+    "iso3": "SOM",
+    "label": "Mogadishu",
+    "lon": 45.33,
+    "lat": 2.07
+  },
+  {
+    "iso3": "ZMB",
+    "label": "Lusaka",
+    "lon": 28.28,
+    "lat": -15.42
+  },
+  {
+    "iso3": "TZA",
+    "label": "Dodoma",
+    "lon": 35.75,
+    "lat": -6.16
+  },
+  {
+    "iso3": "UGA",
+    "label": "Kampala",
+    "lon": 32.55,
+    "lat": 0.32
+  },
+  {
+    "iso3": "TUN",
+    "label": "Tunis",
+    "lon": 10.18,
+    "lat": 36.8
+  },
+  {
+    "iso3": "SLB",
+    "label": "Honiara",
+    "lon": 159.95,
+    "lat": -9.43
+  },
+  {
+    "iso3": "ATG",
+    "label": "Saint John's",
+    "lon": -61.85,
+    "lat": 17.12
+  },
+  {
+    "iso3": "AIA",
+    "label": "The Valley",
+    "lon": -63.05,
+    "lat": 18.22
+  },
+  {
+    "iso3": "BLZ",
+    "label": "Belmopan",
+    "lon": -88.77,
+    "lat": 17.25
+  },
+  {
+    "iso3": "BMU",
+    "label": "Hamilton",
+    "lon": -64.78,
+    "lat": 32.28
+  },
+  {
+    "iso3": "CAN",
+    "label": "Ottawa",
+    "lon": -75.7,
+    "lat": 45.42
+  },
+  {
+    "iso3": "ABW",
+    "label": "Oranjestad",
+    "lon": -70.03,
+    "lat": 12.52
+  },
+  {
+    "iso3": "CRI",
+    "label": "San José",
+    "lon": -84.09,
+    "lat": 9.93
+  },
+  {
+    "iso3": "BLM",
+    "label": "Gustavia",
+    "lon": -62.85,
+    "lat": 17.88
+  },
+  {
+    "iso3": "CUB",
+    "label": "Havana",
+    "lon": -82.35,
+    "lat": 23.12
+  },
+  {
+    "iso3": "ZWE",
+    "label": "Harare",
+    "lon": 31.03,
+    "lat": -17.82
+  },
+  {
+    "iso3": "BHS",
+    "label": "Nassau",
+    "lon": -77.35,
+    "lat": 25.08
+  },
+  {
+    "iso3": "BRB",
+    "label": "Bridgetown",
+    "lon": -59.62,
+    "lat": 13.1
+  },
+  {
+    "iso3": "JAM",
+    "label": "Kingston",
+    "lon": -76.79358,
+    "lat": 17.99702
+  },
+  {
+    "iso3": "CUW",
+    "label": "Willemstad",
+    "lon": -68.92,
+    "lat": 12.1
+  },
+  {
+    "iso3": "KNA",
+    "label": "Basseterre",
+    "lon": -62.72,
+    "lat": 17.3
+  },
+  {
+    "iso3": "LCA",
+    "label": "Castries",
+    "lon": -61,
+    "lat": 14
+  },
+  {
+    "iso3": "MAF",
+    "label": "Marigot",
+    "lon": -63.08,
+    "lat": 18.07
+  },
+  {
+    "iso3": "DMA",
+    "label": "Roseau",
+    "lon": -61.4,
+    "lat": 15.3
+  },
+  {
+    "iso3": "DOM",
+    "label": "Santo Domingo",
+    "lon": -69.9,
+    "lat": 18.47
+  },
+  {
+    "iso3": "GTM",
+    "label": "Guatemala City",
+    "lon": -90.52,
+    "lat": 14.62
+  },
+  {
+    "iso3": "CYM",
+    "label": "George Town",
+    "lon": -81.38,
+    "lat": 19.3
+  },
+  {
+    "iso3": "HND",
+    "label": "Tegucigalpa",
+    "lon": -87.22,
+    "lat": 14.1
+  },
+  {
+    "iso3": "GRD",
+    "label": "St. George's",
+    "lon": -64.68,
+    "lat": 32.38
+  },
+  {
+    "iso3": "HTI",
+    "label": "Port-au-Prince",
+    "lon": -72.33,
+    "lat": 18.53
+  },
+  {
+    "iso3": "MEX",
+    "label": "Mexico City",
+    "lon": -99.13,
+    "lat": 19.43
+  },
+  {
+    "iso3": "NIC",
+    "label": "Managua",
+    "lon": -86.25,
+    "lat": 12.13
+  },
+  {
+    "iso3": "SLV",
+    "label": "San Salvador",
+    "lon": -89.2,
+    "lat": 13.7
+  },
+  {
+    "iso3": "TTO",
+    "label": "Port of Spain",
+    "lon": -61.52,
+    "lat": 10.65
+  },
+  {
+    "iso3": "PAN",
+    "label": "Panama City",
+    "lon": -79.53,
+    "lat": 8.97
+  },
+  {
+    "iso3": "PRI",
+    "label": "San Juan",
+    "lon": -66.12,
+    "lat": 18.47
+  },
+  {
+    "iso3": "SPM",
+    "label": "Saint-Pierre",
+    "lon": -56.18,
+    "lat": 46.77
+  },
+  {
+    "iso3": "SXM",
+    "label": "Philipsburg",
+    "lon": -63.03,
+    "lat": 18.02
+  },
+  {
+    "iso3": "TCA",
+    "label": "Cockburn Town",
+    "lon": -71.14,
+    "lat": 21.46
+  },
+  {
+    "iso3": "VCT",
+    "label": "Kingstown",
+    "lon": -61.22,
+    "lat": 13.13
+  },
+  {
+    "iso3": "MSR",
+    "label": "Plymouth",
+    "lon": -62.22,
+    "lat": 16.7
+  },
+  {
+    "iso3": "USA",
+    "label": "Washington, D.C.",
+    "lon": -77.05,
+    "lat": 38.89
+  },
+  {
+    "iso3": "VIR",
+    "label": "Charlotte Amalie",
+    "lon": -64.93,
+    "lat": 18.35
+  },
+  {
+    "iso3": "VGB",
+    "label": "Road Town",
+    "lon": -64.62,
+    "lat": 18.42
   }
 ];
 
@@ -1917,10 +2554,100 @@ export const EXTRA_COUNTRY_NAME_FR: Record<string, string> = {
   "TKM": "Turkménistan",
   "TWN": "Taïwan",
   "UZB": "Ouzbékistan",
+  "AGO": "Angola",
+  "BFA": "Burkina Faso",
   "TLS": "Timor oriental",
   "TUR": "Turquie",
   "YEM": "Yémen",
+  "BDI": "Burundi",
+  "BEN": "Bénin",
+  "BWA": "Botswana",
   "VNM": "Viêt Nam",
+  "EGY": "Égypte",
+  "COM": "Comores",
+  "COG": "Congo",
+  "COD": "Congo (Rép. dém.)",
+  "CAF": "République centrafricaine",
+  "CIV": "Côte d'Ivoire",
+  "CPV": "Îles du Cap-Vert",
+  "ERI": "Érythrée",
+  "DZA": "Algérie",
+  "DJI": "Djibouti",
+  "ESH": "Sahara Occidental",
+  "CMR": "Cameroun",
+  "GAB": "Gabon",
+  "MAR": "Maroc",
+  "GIN": "Guinée",
+  "GMB": "Gambie",
+  "LBY": "Libye",
+  "ETH": "Éthiopie",
+  "GHA": "Ghana",
+  "LBR": "Liberia",
+  "GNB": "Guinée-Bissau",
+  "GNQ": "Guinée équatoriale",
+  "KEN": "Kenya",
+  "LSO": "Lesotho",
+  "SDN": "Soudan",
+  "MWI": "Malawi",
+  "SEN": "Sénégal",
+  "MRT": "Mauritanie",
+  "NER": "Niger",
+  "MDG": "Madagascar",
+  "NGA": "Nigéria",
+  "MLI": "Mali",
+  "RWA": "Rwanda",
+  "MOZ": "Mozambique",
+  "NAM": "Namibie",
+  "SLE": "Sierra Leone",
+  "STP": "São Tomé et Príncipe",
+  "TCD": "Tchad",
+  "SWZ": "Swaziland",
+  "TGO": "Togo",
+  "ZAF": "Afrique du Sud",
+  "SOM": "Somalie",
+  "ZMB": "Zambie",
+  "TZA": "Tanzanie",
+  "UGA": "Ouganda",
+  "TUN": "Tunisie",
+  "SLB": "Îles Salomon",
+  "ATG": "Antigua-et-Barbuda",
+  "AIA": "Anguilla",
+  "BLZ": "Belize",
+  "BMU": "Bermudes",
+  "CAN": "Canada",
+  "ABW": "Aruba",
+  "CRI": "Costa Rica",
+  "BLM": "Saint-Barthélemy",
+  "CUB": "Cuba",
+  "ZWE": "Zimbabwe",
+  "BHS": "Bahamas",
+  "BRB": "Barbade",
+  "JAM": "Jamaïque",
+  "CUW": "Curaçao",
+  "KNA": "Saint-Christophe-et-Niévès",
+  "LCA": "Sainte-Lucie",
+  "MAF": "Saint-Martin",
+  "DMA": "Dominique",
+  "DOM": "République dominicaine",
+  "GTM": "Guatemala",
+  "CYM": "Îles Caïmans",
+  "HND": "Honduras",
+  "GRD": "Grenade",
+  "HTI": "Haïti",
+  "MEX": "Mexique",
+  "NIC": "Nicaragua",
+  "SLV": "Salvador",
+  "TTO": "Trinité-et-Tobago",
+  "PAN": "Panama",
+  "PRI": "Porto Rico",
+  "SPM": "Saint-Pierre-et-Miquelon",
+  "SXM": "Saint-Martin",
+  "TCA": "Îles Turques-et-Caïques",
+  "VCT": "Saint-Vincent-et-les-Grenadines",
+  "MSR": "Montserrat",
+  "USA": "États-Unis",
+  "VIR": "Îles Vierges des États-Unis",
+  "VGB": "Îles Vierges britanniques",
   "FR-01": "Ain",
   "FR-02": "Aisne",
   "FR-03": "Allier",
@@ -2175,8 +2902,98 @@ export const EXTRA_FLAG_ALPHA2_BY_ISO3: Record<string, string> = {
   "TKM": "tm",
   "TWN": "tw",
   "UZB": "uz",
+  "AGO": "ao",
+  "BFA": "bf",
   "TLS": "tl",
   "TUR": "tr",
   "YEM": "ye",
-  "VNM": "vn"
+  "BDI": "bi",
+  "BEN": "bj",
+  "BWA": "bw",
+  "VNM": "vn",
+  "EGY": "eg",
+  "COM": "km",
+  "COG": "cg",
+  "COD": "cd",
+  "CAF": "cf",
+  "CIV": "ci",
+  "CPV": "cv",
+  "ERI": "er",
+  "DZA": "dz",
+  "DJI": "dj",
+  "ESH": "eh",
+  "CMR": "cm",
+  "GAB": "ga",
+  "MAR": "ma",
+  "GIN": "gn",
+  "GMB": "gm",
+  "LBY": "ly",
+  "ETH": "et",
+  "GHA": "gh",
+  "LBR": "lr",
+  "GNB": "gw",
+  "GNQ": "gq",
+  "KEN": "ke",
+  "LSO": "ls",
+  "SDN": "sd",
+  "MWI": "mw",
+  "SEN": "sn",
+  "MRT": "mr",
+  "NER": "ne",
+  "MDG": "mg",
+  "NGA": "ng",
+  "MLI": "ml",
+  "RWA": "rw",
+  "MOZ": "mz",
+  "NAM": "na",
+  "SLE": "sl",
+  "STP": "st",
+  "TCD": "td",
+  "SWZ": "sz",
+  "TGO": "tg",
+  "ZAF": "za",
+  "SOM": "so",
+  "ZMB": "zm",
+  "TZA": "tz",
+  "UGA": "ug",
+  "TUN": "tn",
+  "SLB": "sb",
+  "ATG": "ag",
+  "AIA": "ai",
+  "BLZ": "bz",
+  "BMU": "bm",
+  "CAN": "ca",
+  "ABW": "aw",
+  "CRI": "cr",
+  "BLM": "bl",
+  "CUB": "cu",
+  "ZWE": "zw",
+  "BHS": "bs",
+  "BRB": "bb",
+  "JAM": "jm",
+  "CUW": "cw",
+  "KNA": "kn",
+  "LCA": "lc",
+  "MAF": "mf",
+  "DMA": "dm",
+  "DOM": "do",
+  "GTM": "gt",
+  "CYM": "ky",
+  "HND": "hn",
+  "GRD": "gd",
+  "HTI": "ht",
+  "MEX": "mx",
+  "NIC": "ni",
+  "SLV": "sv",
+  "TTO": "tt",
+  "PAN": "pa",
+  "PRI": "pr",
+  "SPM": "pm",
+  "SXM": "sx",
+  "TCA": "tc",
+  "VCT": "vc",
+  "MSR": "ms",
+  "USA": "us",
+  "VIR": "vi",
+  "VGB": "vg"
 };

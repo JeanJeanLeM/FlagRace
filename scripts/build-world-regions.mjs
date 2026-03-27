@@ -1,5 +1,5 @@
 /**
- * Génère les GeoJSON Europe, Amérique du Sud, Asie, départements FR, États US
+ * Génère les GeoJSON Europe, Am. du N. & centrale, Am. du Sud, Asie, Afrique, FR, US
  * + fichiers TS (capitales, noms FR, alpha-2 drapeaux) pour restcountries.
  *
  * Usage : node scripts/build-world-regions.mjs
@@ -475,6 +475,8 @@ function writeGeneratedTs({
   europeIds,
   southAmericaIds,
   asiaIds,
+  africaIds,
+  northCentralAmericaIds,
   frDeptIds,
   usaStateIds,
 }) {
@@ -488,6 +490,10 @@ export const EUROPE_COUNTRY_IDS: readonly string[] = ${JSON.stringify(europeIds,
 export const SOUTH_AMERICA_COUNTRY_IDS: readonly string[] = ${JSON.stringify(southAmericaIds, null, 2)};
 
 export const ASIA_COUNTRY_IDS: readonly string[] = ${JSON.stringify(asiaIds, null, 2)};
+
+export const AFRICA_COUNTRY_IDS: readonly string[] = ${JSON.stringify(africaIds, null, 2)};
+
+export const NORTH_CENTRAL_AMERICA_COUNTRY_IDS: readonly string[] = ${JSON.stringify(northCentralAmericaIds, null, 2)};
 
 export const FR_DEPARTMENT_IDS: readonly string[] = ${JSON.stringify(frDeptIds, null, 2)};
 
@@ -514,14 +520,25 @@ async function main() {
   const europeFeats = buildEuropeFeaturesFromWorld(world);
   const saFeats = pickCountries(world, (p) => p.CONTINENT === 'South America');
   const asiaFeats = pickCountries(world, (p) => p.CONTINENT === 'Asia');
+  const africaFeats = pickCountries(world, (p) => p.CONTINENT === 'Africa');
+  const ncaFeats = pickCountries(world, (p) => p.CONTINENT === 'North America');
 
   const euAdj = findAdjacencyPairs(europeFeats);
   const saAdj = findAdjacencyPairs(saFeats);
   const asAdj = findAdjacencyPairs(asiaFeats);
+  const afAdj = findAdjacencyPairs(africaFeats);
+  const ncaAdj = findAdjacencyPairs(ncaFeats);
 
   writeGeojson('europe.geojson', europeFeats, euAdj);
   writeGeojson('south-america.geojson', saFeats, saAdj);
   writeGeojson('asia.geojson', asiaFeats, asAdj);
+  writeGeojson('africa.geojson', africaFeats, afAdj);
+  writeGeojson('north-central-america.geojson', ncaFeats, ncaAdj);
+
+  const fraOnly = europeFeats.filter((f) => f.properties.iso3 === 'FRA');
+  const usaOnly = ncaFeats.filter((f) => f.properties.iso3 === 'USA');
+  writeGeojson('france-country.geojson', fraOnly, []);
+  writeGeojson('usa-country.geojson', usaOnly, []);
 
   console.log('Téléchargement NE 10m admin-1 + départements FR…');
   const admin1 = await fetchJson(NE10ADM1);
@@ -532,6 +549,8 @@ async function main() {
     ...europeFeats.map((f) => f.properties.iso3),
     ...saFeats.map((f) => f.properties.iso3),
     ...asiaFeats.map((f) => f.properties.iso3),
+    ...africaFeats.map((f) => f.properties.iso3),
+    ...ncaFeats.map((f) => f.properties.iso3),
   ];
 
   console.log('restcountries.com (capitales + noms + alpha-2)…', isoUnion.length, 'codes');
@@ -540,6 +559,8 @@ async function main() {
   const europeIds = europeFeats.map((f) => f.properties.iso3);
   const southAmericaIds = saFeats.map((f) => f.properties.iso3);
   const asiaIds = asiaFeats.map((f) => f.properties.iso3);
+  const africaIds = africaFeats.map((f) => f.properties.iso3);
+  const northCentralAmericaIds = ncaFeats.map((f) => f.properties.iso3);
   const frDeptIds = deptCapitals.map((c) => c.iso3);
   const usaStateIds = usCaps.map((c) => c.iso3);
 
@@ -554,6 +575,8 @@ async function main() {
     europeIds,
     southAmericaIds,
     asiaIds,
+    africaIds,
+    northCentralAmericaIds,
     frDeptIds,
     usaStateIds,
   });

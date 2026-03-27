@@ -1,49 +1,24 @@
 import {
   REGION_CATALOG,
   REGIONS,
+  catalogEntryForRegionId,
   getDefaultRegionId,
   regionSupportsFlags,
 } from './data/regionConfig.ts';
 import { DEFAULT_GAME_TYPE, GAME_TYPE_LABELS, type GameTypeId } from './gameModes.ts';
 
-function renderRegionModeGrid(container: HTMLElement): void {
+function renderRegionExtraChips(container: HTMLElement | null): void {
+  if (!container) return;
   container.replaceChildren();
-  let firstPlayable: HTMLButtonElement | null = null;
   for (const region of REGION_CATALOG) {
+    if (!region.available) continue;
+    if (region.showOnWorldMap !== false) continue;
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.classList.add('mode-card');
-    if (!region.available) {
-      btn.classList.add('disabled');
-      btn.disabled = true;
-      btn.setAttribute('aria-disabled', 'true');
-      btn.setAttribute('aria-label', `${region.label}, bientôt disponible`);
-    } else {
-      btn.dataset['mode'] = region.id;
-      if (!firstPlayable) {
-        firstPlayable = btn;
-        btn.classList.add('active');
-      }
-      btn.setAttribute('aria-label', `${region.label}. ${region.descriptionLines.join(', ')}`);
-    }
-
-    const icon = document.createElement('div');
-    icon.className = 'mode-icon';
-    icon.setAttribute('aria-hidden', 'true');
-    icon.textContent = region.icon;
-
-    const name = document.createElement('div');
-    name.className = 'mode-name';
-    name.textContent = region.label;
-
-    const desc = document.createElement('div');
-    desc.className = 'mode-desc';
-    region.descriptionLines.forEach((line, i) => {
-      if (i > 0) desc.appendChild(document.createElement('br'));
-      desc.appendChild(document.createTextNode(line));
-    });
-
-    btn.append(icon, name, desc);
+    btn.className = 'region-extra-chip';
+    btn.dataset['region'] = region.id;
+    btn.textContent = region.label;
+    btn.setAttribute('aria-label', `${region.label}. ${region.descriptionLines.join(', ')}`);
     container.appendChild(btn);
   }
 }
@@ -72,15 +47,6 @@ function syncPuzzleBlock(
   const showCountryLabelDifficulty = selectedGameType === 'country-labels-map';
   countryLabelDifficulty?.classList.toggle('puzzle-only-menu--inactive', !showCountryLabelDifficulty);
   countryLabelDifficulty?.setAttribute('aria-hidden', showCountryLabelDifficulty ? 'false' : 'true');
-
-  const canPickRegion =
-    selectedGameType === 'puzzle-country' ||
-    selectedGameType === 'flag-match' ||
-    selectedGameType === 'capitals-map' ||
-    selectedGameType === 'country-labels-map';
-  menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-grid .mode-card[data-mode]').forEach((btn) => {
-    btn.disabled = !canPickRegion;
-  });
 }
 
 export type MenuStartSelection = { gameType: GameTypeId; regionId: string };
@@ -105,8 +71,8 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   let selectedGameType: GameTypeId = DEFAULT_GAME_TYPE;
   let selectedRegionId = getDefaultRegionId();
 
-  const regionGrid = menuRoot.querySelector<HTMLElement>('#region-mode-grid');
-  if (regionGrid) renderRegionModeGrid(regionGrid);
+  const extraEl = menuRoot.querySelector<HTMLElement>('#region-mode-extra');
+  renderRegionExtraChips(extraEl);
 
   menuPanelGame = menuRoot.querySelector('#menu-panel-game');
   menuPanelSetup = menuRoot.querySelector('#menu-panel-setup');
@@ -133,34 +99,39 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
     if (fallback) selectedRegionId = fallback.id;
   }
 
-  function refreshRegionGridActiveState(): void {
-    menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-grid .mode-card[data-mode]').forEach((btn) => {
-      const id = btn.dataset['mode'];
+  function refreshRegionPickersActiveState(): void {
+    menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-map-wrap [data-region]').forEach((btn) => {
+      const id = btn.dataset['region'];
       if (!id) return;
       const on = id === selectedRegionId && !btn.disabled;
       btn.classList.toggle('active', on);
     });
   }
 
-  function syncRegionGridForGameType(): void {
-    menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-grid .mode-card[data-mode]').forEach((btn) => {
-      const id = btn.dataset['mode'];
+  function syncRegionPickersForGameType(): void {
+    const canPickRegion =
+      selectedGameType === 'puzzle-country' ||
+      selectedGameType === 'flag-match' ||
+      selectedGameType === 'capitals-map' ||
+      selectedGameType === 'country-labels-map';
+    menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-map-wrap [data-region]').forEach((btn) => {
+      const id = btn.dataset['region'];
       if (!id) return;
       const blockForFlags = selectedGameType === 'flag-match' && !regionSupportsFlags(id);
-      btn.disabled = blockForFlags;
-      btn.classList.toggle('disabled', blockForFlags);
+      btn.disabled = !canPickRegion || blockForFlags;
+      btn.classList.toggle('disabled', !canPickRegion || blockForFlags);
       btn.setAttribute('aria-disabled', blockForFlags ? 'true' : 'false');
+      const base = catalogEntryForRegionId(id);
       if (blockForFlags) {
         btn.title = FLAG_BLOCKED_REGION_TITLE;
-        const base = REGION_CATALOG.find((e) => e.id === id && e.available === true);
-        const desc = base && 'descriptionLines' in base ? base.descriptionLines.join(', ') : '';
-        btn.setAttribute(
-          'aria-label',
-          `${base?.label ?? id}. ${FLAG_BLOCKED_REGION_TITLE}${desc ? ` ${desc}` : ''}`,
-        );
+        if (base && 'descriptionLines' in base) {
+          btn.setAttribute(
+            'aria-label',
+            `${base.label}. ${FLAG_BLOCKED_REGION_TITLE} ${base.descriptionLines.join(', ')}`,
+          );
+        }
       } else {
         btn.title = '';
-        const base = REGION_CATALOG.find((e) => e.id === id && e.available === true);
         if (base && 'descriptionLines' in base) {
           btn.setAttribute('aria-label', `${base.label}. ${base.descriptionLines.join(', ')}`);
         }
@@ -207,8 +178,8 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
     syncPuzzleHint();
     updateSetupSummary();
     ensureRegionCompatibleWithGameType();
-    syncRegionGridForGameType();
-    refreshRegionGridActiveState();
+    syncRegionPickersForGameType();
+    refreshRegionPickersActiveState();
     btnStart?.focus();
   }
 
@@ -226,17 +197,13 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
     });
   });
 
-  menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-grid .mode-card[data-mode]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      if (btn.disabled || btn.classList.contains('disabled')) return;
-      const mode = btn.dataset['mode'];
-      if (!mode) return;
-      selectedRegionId = mode;
-      menuRoot.querySelectorAll<HTMLButtonElement>('#region-mode-grid .mode-card[data-mode]').forEach((el) => {
-        if (el.disabled || el.classList.contains('disabled')) return;
-        el.classList.toggle('active', el === btn);
-      });
-    });
+  menuRoot.querySelector('#region-mode-map-wrap')?.addEventListener('click', (ev) => {
+    const btn = (ev.target as HTMLElement).closest<HTMLButtonElement>('[data-region]');
+    if (!btn || btn.disabled || btn.classList.contains('disabled')) return;
+    const mode = btn.dataset['region'];
+    if (!mode) return;
+    selectedRegionId = mode;
+    refreshRegionPickersActiveState();
   });
 
   btnContinue?.addEventListener('click', () => {
@@ -261,4 +228,6 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   );
   syncPuzzleHint();
   syncGameTypeCards();
+  syncRegionPickersForGameType();
+  refreshRegionPickersActiveState();
 }

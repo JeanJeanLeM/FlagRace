@@ -381,6 +381,15 @@ export class Game {
     return this.tiles.filter((t) => seen.has(t.id));
   }
 
+  /** Carte à une seule tuile sans arête (ex. France ou USA pays) : victoire si bien posée et nord OK. */
+  private isSingleTileAssemblyWin(): boolean {
+    if (this.tiles.length !== 1) return false;
+    const t = this.tiles[0]!;
+    const thr = CONNECT_THRESHOLD * this.distanceScale;
+    const posOk = Math.hypot(t.x - t.targetX, t.y - t.targetY) < thr;
+    return posOk && t.isCorrectAngle;
+  }
+
   private updateScore(): void {
     const total = this.countAdjacencyTotal();
     const connected = this.computeConnectedPairs().size;
@@ -390,7 +399,10 @@ export class Game {
       return;
     }
 
-    const nowWon = connected === total && total > 0;
+    const nowWon =
+      this.tiles.length === 1 && total === 0
+        ? this.isSingleTileAssemblyWin()
+        : connected === total && total > 0;
 
     if (nowWon && this.winPhase === 'none') {
       if (this.gameStartMs !== null) {

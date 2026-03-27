@@ -3,7 +3,6 @@ import type { BorderConnectorRel, ViewCamera } from './Renderer.ts';
 import { Renderer, type CapitalMarkerDraw } from './Renderer.ts';
 import { buildMapTiles, createLonLatProjector, type GeoFeatureCollection } from './geoBuild.ts';
 import type { CapitalEntry } from '../data/northAfricaCapitals.ts';
-import { NORTH_AFRICA_CAPITALS } from '../data/northAfricaCapitals.ts';
 import { NEIGHBOR_LEURE_CITIES, SECOND_CITY_BY_ISO3 } from '../data/capitalsDecoys.ts';
 import type { CapitalsDifficultyId } from '../capitalsDifficulty.ts';
 import {
@@ -113,7 +112,7 @@ export class CapitalsGame {
     geojsonUrl: string,
     countries: string[],
     difficulty: CapitalsDifficultyId,
-    capitals: CapitalEntry[] = NORTH_AFRICA_CAPITALS,
+    capitals: CapitalEntry[] = [],
   ): Promise<void> {
     this.difficulty = difficulty;
     const res = await fetch(geojsonUrl);
