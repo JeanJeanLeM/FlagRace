@@ -224,7 +224,7 @@ export class FlagMapGame {
       const img = this.flagImages.get(iso3);
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'flag-dock-item';
+      btn.className = img ? 'flag-dock-item' : 'flag-dock-item flag-dock-item--text';
       btn.dataset['iso3'] = iso3;
       btn.title = 'Glisser sur le pays';
       if (img) {
