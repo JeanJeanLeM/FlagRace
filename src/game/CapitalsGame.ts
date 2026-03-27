@@ -10,6 +10,7 @@ import {
   computeGameScore,
   type GameHudState,
 } from './Game.ts';
+import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
 import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
 
 const MIN_ZOOM = 0.35;
@@ -86,6 +87,7 @@ export class CapitalsGame {
     scale: number;
   } | null = null;
   private panPointerId: number | null = null;
+  private gaveUp = false;
 
   constructor(canvas: HTMLCanvasElement, onHudUpdate?: (state: GameHudState) => void) {
     this.canvas = canvas;
@@ -122,6 +124,7 @@ export class CapitalsGame {
     this.toleranceWorld = toleranceWorldRadius(this.canvas);
     this.buildWorld(geojson, countries, this.capitalEntries);
     this.gameStartMs = performance.now();
+    this.gaveUp = false;
     this.frozenElapsedMs = null;
     this.dockEl?.classList.remove('hidden');
     if (!this.eventsBound) {
@@ -141,6 +144,7 @@ export class CapitalsGame {
     if (this.animFrame !== null) cancelAnimationFrame(this.animFrame);
     this.animFrame = null;
     this.winPhase = 'none';
+    this.gaveUp = false;
     this.gameStartMs = null;
     this.frozenElapsedMs = null;
     this.endDockDrag();
@@ -193,6 +197,32 @@ export class CapitalsGame {
 
   resetView(): void {
     this.resetCameraToMap();
+  }
+
+  giveUp(): void {
+    if (this.winPhase !== 'none' || this.gameStartMs === null) return;
+    for (const m of this.capitalMarkersOnly()) {
+      const tile = this.tileById.get(m.iso3);
+      if (!tile) continue;
+      if (this.difficulty === 'in-country') {
+        m.x = tile.targetX;
+        m.y = tile.targetY;
+      } else {
+        m.x = m.targetX;
+        m.y = m.targetY;
+      }
+      m.onMapDraft = false;
+      m.placed = true;
+      m.zIndex = -1;
+    }
+    this.gaveUp = true;
+    this.frozenElapsedMs = abandonFrozenElapsedMs(this.gameStartMs);
+    this.winPhase = 'victory';
+    this.endCanvasDrag();
+    this.endDockDrag();
+    const caps = this.capitalMarkersOnly();
+    this.fillDock();
+    this.emitHud(caps.length, caps.length);
   }
 
   zoomIn(): void {
@@ -284,6 +314,7 @@ export class CapitalsGame {
     this.distanceScale = 1;
     this.resetCameraToMap();
     this.winPhase = 'none';
+    this.gaveUp = false;
     this.endDockDrag();
     this.updateOutcome();
     this.fillDock();
@@ -625,12 +656,18 @@ export class CapitalsGame {
 
   private emitHud(placed: number, totalCapitals: number): void {
     const elapsedMs = this.getElapsedMs();
-    const score = computeGameScore(placed, totalCapitals, elapsedMs / 1000);
+    let score = computeGameScore(placed, totalCapitals, elapsedMs / 1000);
+    if (this.gaveUp) score = scoreAfterAbandonFlat(score);
+    const rawV =
+      this.frozenElapsedMs !== null
+        ? computeGameScore(placed, totalCapitals, this.frozenElapsedMs / 1000)
+        : 0;
     const victorySummary =
       this.winPhase === 'victory' && this.frozenElapsedMs !== null
         ? {
             timeLabel: formatElapsedLabel(this.frozenElapsedMs),
-            score: computeGameScore(placed, totalCapitals, this.frozenElapsedMs / 1000),
+            score: this.gaveUp ? scoreAfterAbandonFlat(rawV) : rawV,
+            gaveUp: this.gaveUp,
           }
         : null;
     this.onHudUpdate?.({

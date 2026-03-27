@@ -7,6 +7,7 @@ import { countryNameFr } from '../data/countryNamesFr.ts';
 import { buildFlagDockIso3List } from '../data/flagDecoys.ts';
 import type { FlagDockDifficulty } from '../flagDifficulty.ts';
 import type { GameHudState } from './Game.ts';
+import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
 import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
 
 const MIN_ZOOM = 0.35;
@@ -77,6 +78,7 @@ export class FlagMapGame {
     scale: number;
   } | null = null;
   private panPointerId: number | null = null;
+  private gaveUp = false;
   constructor(canvas: HTMLCanvasElement, onHudUpdate?: (state: GameHudState) => void) {
     this.canvas = canvas;
     this.renderer = new Renderer(canvas);
@@ -109,6 +111,7 @@ export class FlagMapGame {
     this.placed.clear();
     this.renderer.clearTileFlags();
     this.winPhase = 'none';
+    this.gaveUp = false;
     this.frozenElapsedMs = null;
     this.gameStartMs = performance.now();
 
@@ -155,6 +158,7 @@ export class FlagMapGame {
     if (this.animFrame !== null) cancelAnimationFrame(this.animFrame);
     this.animFrame = null;
     this.winPhase = 'none';
+    this.gaveUp = false;
     this.gameStartMs = null;
     this.frozenElapsedMs = null;
     this.unbindEvents();
@@ -181,6 +185,22 @@ export class FlagMapGame {
 
   resetView(): void {
     this.resetCameraToMap();
+  }
+
+  giveUp(): void {
+    if (this.winPhase !== 'none' || this.gameStartMs === null) return;
+    this.gaveUp = true;
+    for (const iso3 of this.countriesList) {
+      this.placed.add(iso3);
+      const img = this.flagImages.get(iso3);
+      if (img) this.renderer.setTileFlag(iso3, img);
+    }
+    this.frozenElapsedMs = abandonFrozenElapsedMs(this.gameStartMs);
+    this.winPhase = 'victory';
+    this.endCanvasPan();
+    this.endDrag();
+    this.refreshDock();
+    this.emitHud();
   }
 
   rescaleWorldFromCanvasResize(oldWidth: number, oldHeight: number): void {
@@ -489,17 +509,18 @@ export class FlagMapGame {
     const total = this.countriesList.length;
     const connected = this.placed.size;
     const elapsedMs = this.getElapsedMs();
-    const score = computeFlagHudScore(connected, total, elapsedMs / 1000, this.flagDifficulty);
+    let score = computeFlagHudScore(connected, total, elapsedMs / 1000, this.flagDifficulty);
+    if (this.gaveUp) score = scoreAfterAbandonFlat(score);
+    const rawV =
+      this.frozenElapsedMs !== null
+        ? computeFlagHudScore(connected, total, this.frozenElapsedMs / 1000, this.flagDifficulty)
+        : 0;
     const victorySummary =
       this.winPhase === 'victory' && this.frozenElapsedMs !== null
         ? {
             timeLabel: formatElapsedLabel(this.frozenElapsedMs),
-            score: computeFlagHudScore(
-              connected,
-              total,
-              this.frozenElapsedMs / 1000,
-              this.flagDifficulty,
-            ),
+            score: this.gaveUp ? scoreAfterAbandonFlat(rawV) : rawV,
+            gaveUp: this.gaveUp,
           }
         : null;
     this.onHudUpdate?.({

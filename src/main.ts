@@ -1,6 +1,7 @@
 import './style.css';
 import { initMenu, resetMenuToGamePick } from './menu.ts';
 import { Game, type GameHudState } from './game/Game.ts';
+import { ABANDON_FLAT_SCORE_PENALTY } from './game/abandon.ts';
 import { FlagMapGame } from './game/FlagMapGame.ts';
 import { CapitalsGame } from './game/CapitalsGame.ts';
 import { CountryLabelsGame } from './game/CountryLabelsGame.ts';
@@ -176,6 +177,11 @@ function applyHudToDom(hud: GameHudState, canvas: HTMLCanvasElement): void {
   if (maxEl) maxEl.textContent = String(hud.total);
   if (pointsEl) pointsEl.textContent = String(hud.score);
 
+  const abandonBtn = document.getElementById('btn-abandon');
+  if (abandonBtn instanceof HTMLButtonElement) {
+    abandonBtn.disabled = hud.isComplete;
+  }
+
   const open = hud.victorySummary !== null;
   if (open !== victoryPanelOpen) {
     victoryPanelOpen = open;
@@ -187,6 +193,16 @@ function applyHudToDom(hud: GameHudState, canvas: HTMLCanvasElement): void {
       const sEl = document.getElementById('victory-score');
       if (tEl) tEl.textContent = hud.victorySummary.timeLabel;
       if (sEl) sEl.textContent = String(hud.victorySummary.score);
+      const eyebrow = document.getElementById('victory-eyebrow');
+      const vTitle = document.getElementById('victory-title');
+      const desc = document.getElementById('victory-desc');
+      if (hud.victorySummary.gaveUp) {
+        if (eyebrow) eyebrow.textContent = 'Abandon';
+        if (vTitle) vTitle.textContent = 'Solution affichée';
+        if (desc) {
+          desc.textContent = `+1 minute au chrono, −${ABANDON_FLAT_SCORE_PENALTY} points, et placement automatique des éléments restants.`;
+        }
+      }
       document.getElementById('btn-victory-replay')?.focus();
     } else {
       panel?.classList.add('hidden');
@@ -382,6 +398,17 @@ document.addEventListener('DOMContentLoaded', () => {
     void handleMenuStart(sel);
   });
   document.getElementById('btn-back')?.addEventListener('click', backToMenu);
+  document.getElementById('btn-abandon')?.addEventListener('click', () => {
+    if (!currentGame || victoryPanelOpen) return;
+    if (
+      !confirm(
+        'Abandonner cette partie ? +1 minute au chrono, pénalité de points, et les éléments restants seront placés automatiquement.',
+      )
+    ) {
+      return;
+    }
+    currentGame.giveUp();
+  });
   document.getElementById('btn-zoom-in')?.addEventListener('click', () => currentGame?.zoomIn());
   document.getElementById('btn-zoom-out')?.addEventListener('click', () => currentGame?.zoomOut());
   document.getElementById('btn-zoom-reset')?.addEventListener('click', () => currentGame?.resetView());

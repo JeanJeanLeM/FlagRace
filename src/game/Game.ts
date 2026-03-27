@@ -4,6 +4,7 @@ import { Renderer } from './Renderer.ts';
 import { DEFAULT_DISPLAY_OPTIONS, type GameDisplayOptions } from '../displayOptions.ts';
 import { ADJACENCY as DEFAULT_ADJACENCY } from '../data/adjacency.ts';
 import { adjacencyPairKey, buildMapTiles, type GeoFeatureCollection } from './geoBuild.ts';
+import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
 
 const CONNECT_THRESHOLD = 95;
 const MIN_ZOOM = 0.35;
@@ -27,7 +28,7 @@ export interface GameHudState {
   score: number;
   isComplete: boolean;
   /** Résumé fin de partie (panneau HTML) ; null tant que le puzzle n’est pas résolu. */
-  victorySummary: null | { timeLabel: string; score: number };
+  victorySummary: null | { timeLabel: string; score: number; gaveUp?: boolean };
 }
 
 export function computeGameScore(connected: number, total: number, elapsedSec: number): number {
@@ -67,6 +68,7 @@ export class Game {
   private animFrame: number | null = null;
   /** Puzzle entièrement connecté : affichage du panneau de fin. */
   private winPhase: 'none' | 'victory' = 'none';
+  private gaveUp = false;
   /** Facteur pour seuils de collage / connexion après redimensionnement du canvas. */
   private distanceScale = 1;
   private onHudUpdate?: (state: GameHudState) => void;
@@ -121,10 +123,30 @@ export class Game {
     if (this.animFrame !== null) cancelAnimationFrame(this.animFrame);
     this.animFrame = null;
     this.winPhase = 'none';
+    this.gaveUp = false;
     this.gameStartMs = null;
     this.frozenElapsedMs = null;
     this.unbindEvents();
     this.eventsBound = false;
+  }
+
+  /** Place toutes les tuiles au bon endroit, pénalité temps + points, fin de partie. */
+  giveUp(): void {
+    if (this.winPhase !== 'none' || this.gameStartMs === null || this.tiles.length === 0) return;
+    for (const t of this.tiles) {
+      t.x = t.targetX;
+      t.y = t.targetY;
+      t.snapNorth();
+    }
+    this.gaveUp = true;
+    this.frozenElapsedMs = abandonFrozenElapsedMs(this.gameStartMs);
+    this.winPhase = 'victory';
+    this.dragState = null;
+    this.cameraPan = null;
+    this.renderer.setDraggedGroup(null);
+    this.canvas.style.cursor = 'default';
+    const connected = this.computeConnectedPairs().size;
+    this.emitHud(connected);
   }
 
   private buildTiles(geojson: GeoFeatureCollection, countries: string[]): void {
@@ -143,6 +165,7 @@ export class Game {
     this.distanceScale = 1;
     this.resetCameraToPuzzle();
     this.winPhase = 'none';
+    this.gaveUp = false;
     this.updateScore();
   }
 
@@ -275,12 +298,18 @@ export class Game {
   private emitHud(connected: number): void {
     const total = this.countAdjacencyTotal();
     const elapsedMs = this.getElapsedMs();
-    const score = computeGameScore(connected, total, elapsedMs / 1000);
+    let score = computeGameScore(connected, total, elapsedMs / 1000);
+    if (this.gaveUp) score = scoreAfterAbandonFlat(score);
+    const rawVictoryScore =
+      this.frozenElapsedMs !== null
+        ? computeGameScore(connected, total, this.frozenElapsedMs / 1000)
+        : 0;
     const victorySummary =
       this.winPhase === 'victory' && this.frozenElapsedMs !== null
         ? {
             timeLabel: formatElapsedLabel(this.frozenElapsedMs),
-            score: computeGameScore(connected, total, this.frozenElapsedMs / 1000),
+            score: this.gaveUp ? scoreAfterAbandonFlat(rawVictoryScore) : rawVictoryScore,
+            gaveUp: this.gaveUp,
           }
         : null;
     this.onHudUpdate?.({
@@ -355,6 +384,12 @@ export class Game {
   private updateScore(): void {
     const total = this.countAdjacencyTotal();
     const connected = this.computeConnectedPairs().size;
+
+    if (this.winPhase === 'victory') {
+      this.emitHud(connected);
+      return;
+    }
+
     const nowWon = connected === total && total > 0;
 
     if (nowWon && this.winPhase === 'none') {
@@ -362,9 +397,7 @@ export class Game {
         this.frozenElapsedMs = performance.now() - this.gameStartMs;
       }
       this.winPhase = 'victory';
-    }
-
-    if (!nowWon) {
+    } else if (!nowWon) {
       this.winPhase = 'none';
       this.frozenElapsedMs = null;
     }

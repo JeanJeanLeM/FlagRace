@@ -689,6 +689,30 @@ html, body {
   font-weight: 600;
 }
 
+.btn-abandon {
+  background: rgba(180, 60, 60, 0.2);
+  border: 1px solid rgba(255, 120, 120, 0.35);
+  color: #f0b0b0;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.btn-abandon:hover:not(:disabled) {
+  color: #fff;
+  border-color: rgba(255, 160, 160, 0.55);
+  background: rgba(200, 70, 70, 0.35);
+}
+
+.btn-abandon:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .game-body {
   flex: 1 1 0;
   display: flex;

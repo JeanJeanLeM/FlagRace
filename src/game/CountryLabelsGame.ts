@@ -6,6 +6,7 @@ import { buildFlagDockIso3List } from '../data/flagDecoys.ts';
 import type { CountryLabelDifficulty } from '../countryLabelDifficulty.ts';
 import { countryNameFr, flagEmojiFromIso3 } from '../data/countryNamesFr.ts';
 import type { GameHudState } from './Game.ts';
+import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
 import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
 
 const MIN_ZOOM = 0.35;
@@ -73,6 +74,7 @@ export class CountryLabelsGame {
     scale: number;
   } | null = null;
   private panPointerId: number | null = null;
+  private gaveUp = false;
 
   constructor(canvas: HTMLCanvasElement, onHudUpdate?: (state: GameHudState) => void) {
     this.canvas = canvas;
@@ -101,6 +103,7 @@ export class CountryLabelsGame {
     this.countriesList = countries;
     this.buildWorld(geojson, countries);
     this.gameStartMs = performance.now();
+    this.gaveUp = false;
     this.frozenElapsedMs = null;
     this.dockEl?.classList.remove('hidden');
     if (!this.eventsBound) {
@@ -120,6 +123,7 @@ export class CountryLabelsGame {
     if (this.animFrame !== null) cancelAnimationFrame(this.animFrame);
     this.animFrame = null;
     this.winPhase = 'none';
+    this.gaveUp = false;
     this.gameStartMs = null;
     this.frozenElapsedMs = null;
     this.endCanvasPan();
@@ -171,6 +175,27 @@ export class CountryLabelsGame {
     this.resetCameraToMap();
   }
 
+  giveUp(): void {
+    if (this.winPhase !== 'none' || this.gameStartMs === null) return;
+    for (const m of this.mapMarkers()) {
+      const tile = this.tiles.find((t) => t.id === m.iso3);
+      if (!tile) continue;
+      m.x = tile.targetX;
+      m.y = tile.targetY;
+      m.placed = true;
+      m.zIndex = -1;
+    }
+    this.gaveUp = true;
+    this.frozenElapsedMs = abandonFrozenElapsedMs(this.gameStartMs);
+    this.winPhase = 'victory';
+    this.endCanvasPan();
+    this.endDockDrag();
+    const caps = this.mapMarkers();
+    const placed = caps.filter((x) => x.placed).length;
+    this.fillDock();
+    this.emitHud(placed, caps.length);
+  }
+
   zoomIn(): void {
     this.zoomAtCanvasCenter(ZOOM_STEP);
   }
@@ -217,6 +242,7 @@ export class CountryLabelsGame {
     this.markers = items;
     this.resetCameraToMap();
     this.winPhase = 'none';
+    this.gaveUp = false;
     this.endDockDrag();
     this.updateOutcome();
     this.fillDock();
@@ -486,17 +512,18 @@ export class CountryLabelsGame {
 
   private emitHud(placed: number, totalMapLabels: number): void {
     const elapsedMs = this.getElapsedMs();
-    const score = computeLabelHudScore(placed, totalMapLabels, elapsedMs / 1000, this.difficulty);
+    let score = computeLabelHudScore(placed, totalMapLabels, elapsedMs / 1000, this.difficulty);
+    if (this.gaveUp) score = scoreAfterAbandonFlat(score);
+    const rawV =
+      this.frozenElapsedMs !== null
+        ? computeLabelHudScore(placed, totalMapLabels, this.frozenElapsedMs / 1000, this.difficulty)
+        : 0;
     const victorySummary =
       this.winPhase === 'victory' && this.frozenElapsedMs !== null
         ? {
             timeLabel: formatElapsedLabel(this.frozenElapsedMs),
-            score: computeLabelHudScore(
-              placed,
-              totalMapLabels,
-              this.frozenElapsedMs / 1000,
-              this.difficulty,
-            ),
+            score: this.gaveUp ? scoreAfterAbandonFlat(rawV) : rawV,
+            gaveUp: this.gaveUp,
           }
         : null;
     this.onHudUpdate?.({
