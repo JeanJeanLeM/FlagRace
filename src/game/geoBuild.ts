@@ -87,13 +87,15 @@ export function createLonLatProjector(
   const latMax = bbox.maxLat + padLat;
   const lonRange = lonMax - lonMin;
   const latRange = latMax - latMin;
+  /** Latitude moyenne du cadre : compresse l’axe est–ouest pour respecter le rapport km/km (sinon carte étirée en largeur). */
   const meanLatRad = (((latMin + latMax) / 2) * Math.PI) / 180;
-  const cosLat = Math.cos(meanLatRad);
-  const scale = Math.min(availW / lonRange, availH / (latRange * cosLat));
+  const cosLat = Math.max(Math.cos(meanLatRad), 0.2);
+  const xSpan = lonRange * cosLat;
+  const scale = Math.min(availW / xSpan, availH / latRange);
 
   return (lon: number, lat: number): [number, number] => {
-    const x = padding + (lon - lonMin) * scale;
-    const y = padding + (latMax - lat) * scale * cosLat;
+    const x = padding + (lon - lonMin) * scale * cosLat;
+    const y = padding + (latMax - lat) * scale;
     return [x, y];
   };
 }

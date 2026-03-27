@@ -942,579 +942,579 @@ export const WORLD_CONTINENT_CAPITALS: CapitalEntry[] = [
 export const FR_DEPARTMENT_CAPITALS: CapitalEntry[] = [
   {
     "iso3": "FR-01",
-    "label": "Préfecture · Ain",
-    "lon": 5.433406076923073,
-    "lat": 46.114800076923096
+    "label": "Bourg-en-Bresse",
+    "lon": 5.2258,
+    "lat": 46.2052
   },
   {
     "iso3": "FR-02",
-    "label": "Préfecture · Aisne",
-    "lon": 3.4872981034482735,
-    "lat": 49.457175431034486
+    "label": "Laon",
+    "lon": 3.6244,
+    "lat": 49.5631
   },
   {
     "iso3": "FR-03",
-    "label": "Préfecture · Allier",
-    "lon": 3.1432152406417107,
-    "lat": 46.407061925133696
+    "label": "Moulins",
+    "lon": 3.3336,
+    "lat": 46.5645
   },
   {
     "iso3": "FR-04",
-    "label": "Préfecture · Alpes-de-Haute-Provence",
-    "lon": 6.255934131736528,
-    "lat": 44.139352634730535
+    "label": "Digne-les-Bains",
+    "lon": 6.2359,
+    "lat": 44.0925
   },
   {
     "iso3": "FR-05",
-    "label": "Préfecture · Hautes-Alpes",
-    "lon": 6.184897166666668,
-    "lat": 44.64330572222223
+    "label": "Gap",
+    "lon": 6.0726,
+    "lat": 44.5594
   },
   {
     "iso3": "FR-06",
-    "label": "Préfecture · Alpes-Maritimes",
-    "lon": 7.074538455882353,
-    "lat": 43.86073360294119
+    "label": "Nice",
+    "lon": 7.2619,
+    "lat": 43.7102
   },
   {
     "iso3": "FR-07",
-    "label": "Préfecture · Ardèche",
-    "lon": 4.381405270270269,
-    "lat": 44.79421810810811
+    "label": "Privas",
+    "lon": 4.5988,
+    "lat": 44.736
   },
   {
     "iso3": "FR-08",
-    "label": "Préfecture · Ardennes",
-    "lon": 4.722430460526318,
-    "lat": 49.64045230263156
+    "label": "Charleville-Mézières",
+    "lon": 4.7196,
+    "lat": 49.7739
   },
   {
     "iso3": "FR-09",
-    "label": "Préfecture · Ariège",
-    "lon": 1.5202844444444448,
-    "lat": 42.98557320987654
+    "label": "Foix",
+    "lon": 1.6065,
+    "lat": 42.965
   },
   {
     "iso3": "FR-10",
-    "label": "Préfecture · Aube",
-    "lon": 4.1081570059880255,
-    "lat": 48.28398994011974
+    "label": "Troyes",
+    "lon": 4.0749,
+    "lat": 48.2973
   },
   {
     "iso3": "FR-11",
-    "label": "Préfecture · Aude",
-    "lon": 2.317135744680852,
-    "lat": 43.14898212765958
+    "label": "Carcassonne",
+    "lon": 2.3518,
+    "lat": 43.2122
   },
   {
     "iso3": "FR-12",
-    "label": "Préfecture · Aveyron",
-    "lon": 2.6142542783505163,
-    "lat": 44.288328298969056
+    "label": "Rodez",
+    "lon": 2.5737,
+    "lat": 44.3506
   },
   {
     "iso3": "FR-13",
-    "label": "Préfecture · Bouches-du-Rhône",
-    "lon": 5.119420722222221,
-    "lat": 43.440981611111106
+    "label": "Marseille",
+    "lon": 5.3698,
+    "lat": 43.2965
   },
   {
     "iso3": "FR-14",
-    "label": "Préfecture · Calvados",
-    "lon": -0.38511684210526326,
-    "lat": 49.01483302631581
+    "label": "Caen",
+    "lon": -0.37,
+    "lat": 49.1829
   },
   {
     "iso3": "FR-15",
-    "label": "Préfecture · Cantal",
-    "lon": 2.7454844565217384,
-    "lat": 45.03088646739131
+    "label": "Aurillac",
+    "lon": 2.4436,
+    "lat": 44.9254
   },
   {
     "iso3": "FR-16",
-    "label": "Préfecture · Charente",
-    "lon": 0.20007884210526314,
-    "lat": 45.73801994736843
+    "label": "Angoulême",
+    "lon": 0.1572,
+    "lat": 45.6487
   },
   {
     "iso3": "FR-17",
-    "label": "Préfecture · Charente-Maritime",
-    "lon": -0.7267880392156861,
-    "lat": 45.82680741176471
+    "label": "La Rochelle",
+    "lon": -1.1522,
+    "lat": 46.1603
   },
   {
     "iso3": "FR-18",
-    "label": "Préfecture · Cher",
-    "lon": 2.3893162025316452,
-    "lat": 47.026078481012625
+    "label": "Bourges",
+    "lon": 2.3998,
+    "lat": 47.081
   },
   {
     "iso3": "FR-19",
-    "label": "Préfecture · Corrèze",
-    "lon": 1.8812994078947374,
-    "lat": 45.3957026973684
+    "label": "Tulle",
+    "lon": 1.769,
+    "lat": 45.2647
   },
   {
     "iso3": "FR-21",
-    "label": "Préfecture · Côte-d'Or",
-    "lon": 4.720792159624411,
-    "lat": 47.45240995305166
+    "label": "Dijon",
+    "lon": 5.0415,
+    "lat": 47.322
   },
   {
     "iso3": "FR-22",
-    "label": "Préfecture · Côtes-d'Armor",
-    "lon": -2.9086835612535595,
-    "lat": 48.58427000000002
+    "label": "Saint-Brieuc",
+    "lon": -2.7789,
+    "lat": 48.5136
   },
   {
     "iso3": "FR-23",
-    "label": "Préfecture · Creuse",
-    "lon": 1.9364985882352939,
-    "lat": 46.04089500000001
+    "label": "Guéret",
+    "lon": 1.8743,
+    "lat": 46.1719
   },
   {
     "iso3": "FR-24",
-    "label": "Préfecture · Dordogne",
-    "lon": 0.771075841584157,
-    "lat": 45.11909579207922
+    "label": "Périgueux",
+    "lon": 0.7167,
+    "lat": 45.1842
   },
   {
     "iso3": "FR-25",
-    "label": "Préfecture · Doubs",
-    "lon": 6.349752802547769,
-    "lat": 47.20478598726117
+    "label": "Besançon",
+    "lon": 6.0248,
+    "lat": 47.2378
   },
   {
     "iso3": "FR-26",
-    "label": "Préfecture · Drôme",
-    "lon": 5.233217349999997,
-    "lat": 44.65596755000001
+    "label": "Valence",
+    "lon": 4.932,
+    "lat": 44.9335
   },
   {
     "iso3": "FR-27",
-    "label": "Préfecture · Eure",
-    "lon": 1.0054556593406592,
-    "lat": 49.14216923076925
+    "label": "Évreux",
+    "lon": 1.1511,
+    "lat": 49.0241
   },
   {
     "iso3": "FR-28",
-    "label": "Préfecture · Eure-et-Loir",
-    "lon": 1.390240285714286,
-    "lat": 48.39686022857144
+    "label": "Chartres",
+    "lon": 1.4886,
+    "lat": 48.4469
   },
   {
     "iso3": "FR-29",
-    "label": "Préfecture · Finistère",
-    "lon": -4.229499016064254,
-    "lat": 48.25287841365459
+    "label": "Quimper",
+    "lon": -4.0919,
+    "lat": 47.996
   },
   {
     "iso3": "FR-2A",
-    "label": "Préfecture · Corse-du-Sud",
-    "lon": 8.966406971153845,
-    "lat": 41.8241741826923
+    "label": "Ajaccio",
+    "lon": 8.736,
+    "lat": 41.9189
   },
   {
     "iso3": "FR-2B",
-    "label": "Préfecture · Haute-Corse",
-    "lon": 9.110399672131148,
-    "lat": 42.476166393442604
+    "label": "Bastia",
+    "lon": 9.45,
+    "lat": 42.6976
   },
   {
     "iso3": "FR-30",
-    "label": "Préfecture · Gard",
-    "lon": 4.045696199999998,
-    "lat": 43.994446800000006
+    "label": "Nîmes",
+    "lon": 4.3601,
+    "lat": 43.8367
   },
   {
     "iso3": "FR-31",
-    "label": "Préfecture · Haute-Garonne",
-    "lon": 1.1851595817490488,
-    "lat": 43.33188669201521
+    "label": "Toulouse",
+    "lon": 1.4442,
+    "lat": 43.6047
   },
   {
     "iso3": "FR-32",
-    "label": "Préfecture · Gers",
-    "lon": 0.44424915662650616,
-    "lat": 43.70894951807229
+    "label": "Auch",
+    "lon": 0.585,
+    "lat": 43.647
   },
   {
     "iso3": "FR-33",
-    "label": "Préfecture · Gironde",
-    "lon": -0.4700026344086022,
-    "lat": 44.73435817204302
+    "label": "Bordeaux",
+    "lon": -0.5792,
+    "lat": 44.8378
   },
   {
     "iso3": "FR-34",
-    "label": "Préfecture · Hérault",
-    "lon": 3.273540153846154,
-    "lat": 43.61041999999998
+    "label": "Montpellier",
+    "lon": 3.8767,
+    "lat": 43.6108
   },
   {
     "iso3": "FR-35",
-    "label": "Préfecture · Ille-et-Vilaine",
-    "lon": -1.8243740579710135,
-    "lat": 48.24307444444442
+    "label": "Rennes",
+    "lon": -1.6743,
+    "lat": 48.1173
   },
   {
     "iso3": "FR-36",
-    "label": "Préfecture · Indre",
-    "lon": 1.5704196129032257,
-    "lat": 46.74709651612905
+    "label": "Châteauroux",
+    "lon": 1.6966,
+    "lat": 46.8105
   },
   {
     "iso3": "FR-37",
-    "label": "Préfecture · Indre-et-Loire",
-    "lon": 0.6925291612903226,
-    "lat": 47.249178967741955
+    "label": "Tours",
+    "lon": 0.6848,
+    "lat": 47.3941
   },
   {
     "iso3": "FR-38",
-    "label": "Préfecture · Isère",
-    "lon": 5.524413787878785,
-    "lat": 45.27967570707075
+    "label": "Grenoble",
+    "lon": 5.7245,
+    "lat": 45.1885
   },
   {
     "iso3": "FR-39",
-    "label": "Préfecture · Jura",
-    "lon": 5.629916000000002,
-    "lat": 46.79437470967744
+    "label": "Lons-le-Saunier",
+    "lon": 5.5494,
+    "lat": 46.6744
   },
   {
     "iso3": "FR-40",
-    "label": "Préfecture · Landes",
-    "lon": -0.5389476086956525,
-    "lat": 43.880100724637714
+    "label": "Mont-de-Marsan",
+    "lon": -0.4987,
+    "lat": 43.8902
   },
   {
     "iso3": "FR-41",
-    "label": "Préfecture · Loir-et-Cher",
-    "lon": 1.389549222797928,
-    "lat": 47.6724427979275
+    "label": "Blois",
+    "lon": 1.3323,
+    "lat": 47.5861
   },
   {
     "iso3": "FR-42",
-    "label": "Préfecture · Loire",
-    "lon": 4.198071627906974,
-    "lat": 45.75097267441861
+    "label": "Saint-Étienne",
+    "lon": 4.3872,
+    "lat": 45.4397
   },
   {
     "iso3": "FR-43",
-    "label": "Préfecture · Haute-Loire",
-    "lon": 3.792261024096385,
-    "lat": 45.130836566265025
+    "label": "Le Puy-en-Velay",
+    "lon": 3.8852,
+    "lat": 45.0428
   },
   {
     "iso3": "FR-44",
-    "label": "Préfecture · Loire-Atlantique",
-    "lon": -1.6918806832298132,
-    "lat": 47.31100484472047
+    "label": "Nantes",
+    "lon": -1.5541,
+    "lat": 47.2184
   },
   {
     "iso3": "FR-45",
-    "label": "Préfecture · Loiret",
-    "lon": 2.3294536170212767,
-    "lat": 47.94001308510641
+    "label": "Orléans",
+    "lon": 1.9039,
+    "lat": 47.9029
   },
   {
     "iso3": "FR-46",
-    "label": "Préfecture · Lot",
-    "lon": 1.5998807189542488,
-    "lat": 44.582165882352975
+    "label": "Cahors",
+    "lon": 1.4408,
+    "lat": 44.4474
   },
   {
     "iso3": "FR-47",
-    "label": "Préfecture · Lot-et-Garonne",
-    "lon": 0.4811116770186335,
-    "lat": 44.389123975155265
+    "label": "Agen",
+    "lon": 0.62,
+    "lat": 44.2039
   },
   {
     "iso3": "FR-48",
-    "label": "Préfecture · Lozère",
-    "lon": 3.508060322580645,
-    "lat": 44.539789032258064
+    "label": "Mende",
+    "lon": 3.5015,
+    "lat": 44.5219
   },
   {
     "iso3": "FR-49",
-    "label": "Préfecture · Maine-et-Loire",
-    "lon": -0.6085117647058822,
-    "lat": 47.40218748663102
+    "label": "Angers",
+    "lon": -0.5517,
+    "lat": 47.4736
   },
   {
     "iso3": "FR-50",
-    "label": "Préfecture · Manche",
-    "lon": -1.3582516582914577,
-    "lat": 49.07180743718591
+    "label": "Saint-Lô",
+    "lon": -1.0918,
+    "lat": 49.1162
   },
   {
     "iso3": "FR-51",
-    "label": "Préfecture · Marne",
-    "lon": 4.216238586387436,
-    "lat": 48.93175198952878
+    "label": "Châlons-en-Champagne",
+    "lon": 4.3647,
+    "lat": 48.9564
   },
   {
     "iso3": "FR-52",
-    "label": "Préfecture · Haute-Marne",
-    "lon": 5.207345464480875,
-    "lat": 48.08941398907104
+    "label": "Chaumont",
+    "lon": 5.3288,
+    "lat": 48.1113
   },
   {
     "iso3": "FR-53",
-    "label": "Préfecture · Mayenne",
-    "lon": -0.6177458860759493,
-    "lat": 48.12691822784809
+    "label": "Laval",
+    "lon": -0.7733,
+    "lat": 48.0727
   },
   {
     "iso3": "FR-54",
-    "label": "Préfecture · Meurthe-et-Moselle",
-    "lon": 6.080406061776055,
-    "lat": 48.90270463320465
+    "label": "Nancy",
+    "lon": 6.184,
+    "lat": 48.6921
   },
   {
     "iso3": "FR-55",
-    "label": "Préfecture · Meuse",
-    "lon": 5.413127696629214,
-    "lat": 49.057656910112385
+    "label": "Bar-le-Duc",
+    "lon": 5.1661,
+    "lat": 48.7745
   },
   {
     "iso3": "FR-56",
-    "label": "Préfecture · Morbihan",
-    "lon": -2.884663606237817,
-    "lat": 47.69732081871348
+    "label": "Vannes",
+    "lon": -2.7574,
+    "lat": 47.6586
   },
   {
     "iso3": "FR-57",
-    "label": "Préfecture · Moselle",
-    "lon": 6.7366081599999985,
-    "lat": 49.028170840000016
+    "label": "Metz",
+    "lon": 6.1757,
+    "lat": 49.1193
   },
   {
     "iso3": "FR-58",
-    "label": "Préfecture · Nièvre",
-    "lon": 3.6191611249999993,
-    "lat": 47.14559137499999
+    "label": "Nevers",
+    "lon": 3.159,
+    "lat": 46.9896
   },
   {
     "iso3": "FR-59",
-    "label": "Préfecture · Nord",
-    "lon": 3.1346414102564126,
-    "lat": 50.46203081196582
+    "label": "Lille",
+    "lon": 3.0573,
+    "lat": 50.6292
   },
   {
     "iso3": "FR-60",
-    "label": "Préfecture · Oise",
-    "lon": 2.503425450643777,
-    "lat": 49.39733815450642
+    "label": "Beauvais",
+    "lon": 2.0878,
+    "lat": 49.4295
   },
   {
     "iso3": "FR-61",
-    "label": "Préfecture · Orne",
-    "lon": 0.04896304347826076,
-    "lat": 48.62382494565221
+    "label": "Alençon",
+    "lon": 0.093,
+    "lat": 48.432
   },
   {
     "iso3": "FR-62",
-    "label": "Préfecture · Pas-de-Calais",
-    "lon": 2.5532371276595756,
-    "lat": 50.36112106382979
+    "label": "Arras",
+    "lon": 2.7808,
+    "lat": 50.2919
   },
   {
     "iso3": "FR-63",
-    "label": "Préfecture · Puy-de-Dôme",
-    "lon": 3.1363801754385974,
-    "lat": 45.72270801169589
+    "label": "Clermont-Ferrand",
+    "lon": 3.0863,
+    "lat": 45.7772
   },
   {
     "iso3": "FR-64",
-    "label": "Préfecture · Pyrénées-Atlantiques",
-    "lon": -0.734707409326425,
-    "lat": 43.27294704663212
+    "label": "Pau",
+    "lon": -0.3708,
+    "lat": 43.2951
   },
   {
     "iso3": "FR-65",
-    "label": "Préfecture · Hautes-Pyrénées",
-    "lon": 0.13979961538461533,
-    "lat": 43.15989794871796
+    "label": "Tarbes",
+    "lon": 0.0765,
+    "lat": 43.2338
   },
   {
     "iso3": "FR-66",
-    "label": "Préfecture · Pyrénées-Orientales",
-    "lon": 2.439876391752577,
-    "lat": 42.54608639175258
+    "label": "Perpignan",
+    "lon": 2.8947,
+    "lat": 42.6886
   },
   {
     "iso3": "FR-67",
-    "label": "Préfecture · Bas-Rhin",
-    "lon": 7.406399923076924,
-    "lat": 48.72251907692307
+    "label": "Strasbourg",
+    "lon": 7.7521,
+    "lat": 48.5734
   },
   {
     "iso3": "FR-68",
-    "label": "Préfecture · Haut-Rhin",
-    "lon": 7.2427575,
-    "lat": 47.82438034090908
+    "label": "Colmar",
+    "lon": 7.3584,
+    "lat": 48.0794
   },
   {
     "iso3": "FR-69",
-    "label": "Préfecture · Rhône",
-    "lon": 4.627957122302156,
-    "lat": 45.888218848920864
+    "label": "Lyon",
+    "lon": 4.8357,
+    "lat": 45.764
   },
   {
     "iso3": "FR-70",
-    "label": "Préfecture · Haute-Saône",
-    "lon": 6.0179115060240935,
-    "lat": 47.636704879518035
+    "label": "Vesoul",
+    "lon": 6.162,
+    "lat": 47.6196
   },
   {
     "iso3": "FR-71",
-    "label": "Préfecture · Saône-et-Loire",
-    "lon": 4.586453244444445,
-    "lat": 46.651308444444425
+    "label": "Mâcon",
+    "lon": 4.8317,
+    "lat": 46.3069
   },
   {
     "iso3": "FR-72",
-    "label": "Préfecture · Sarthe",
-    "lon": 0.21944733766233762,
-    "lat": 48.01549681818183
+    "label": "Le Mans",
+    "lon": 0.1992,
+    "lat": 48.0077
   },
   {
     "iso3": "FR-73",
-    "label": "Préfecture · Savoie",
-    "lon": 6.389788571428572,
-    "lat": 45.497873354037274
+    "label": "Chambéry",
+    "lon": 5.9212,
+    "lat": 45.5646
   },
   {
     "iso3": "FR-74",
-    "label": "Préfecture · Haute-Savoie",
-    "lon": 6.427879663865546,
-    "lat": 45.985044117647064
+    "label": "Annecy",
+    "lon": 6.1304,
+    "lat": 45.8992
   },
   {
     "iso3": "FR-75",
-    "label": "Préfecture · Paris",
-    "lon": 2.36324,
-    "lat": 48.85003333333333
+    "label": "Paris",
+    "lon": 2.3522,
+    "lat": 48.8566
   },
   {
     "iso3": "FR-76",
-    "label": "Préfecture · Seine-Maritime",
-    "lon": 1.1840901459854012,
-    "lat": 49.54643795620434
+    "label": "Rouen",
+    "lon": 1.0993,
+    "lat": 49.4431
   },
   {
     "iso3": "FR-77",
-    "label": "Préfecture · Seine-et-Marne",
-    "lon": 2.933465238095237,
-    "lat": 48.62133105820102
+    "label": "Melun",
+    "lon": 2.6557,
+    "lat": 48.5276
   },
   {
     "iso3": "FR-78",
-    "label": "Préfecture · Yvelines",
-    "lon": 1.8343166399999993,
-    "lat": 48.82358376000001
+    "label": "Versailles",
+    "lon": 2.1319,
+    "lat": 48.8049
   },
   {
     "iso3": "FR-79",
-    "label": "Préfecture · Deux-Sèvres",
-    "lon": -0.32619712328767114,
-    "lat": 46.553958219178064
+    "label": "Niort",
+    "lon": -0.4599,
+    "lat": 46.3237
   },
   {
     "iso3": "FR-80",
-    "label": "Préfecture · Somme",
-    "lon": 2.4150274074074076,
-    "lat": 49.95023682539683
+    "label": "Amiens",
+    "lon": 2.2958,
+    "lat": 49.8941
   },
   {
     "iso3": "FR-81",
-    "label": "Préfecture · Tarn",
-    "lon": 2.130904870129869,
-    "lat": 43.82980318181817
+    "label": "Albi",
+    "lon": 2.1487,
+    "lat": 43.9261
   },
   {
     "iso3": "FR-82",
-    "label": "Préfecture · Tarn-et-Garonne",
-    "lon": 1.3349748205128216,
-    "lat": 44.122643794871806
+    "label": "Montauban",
+    "lon": 1.3542,
+    "lat": 44.0173
   },
   {
     "iso3": "FR-83",
-    "label": "Préfecture · Var",
-    "lon": 6.2242581904761884,
-    "lat": 43.31957319047621
+    "label": "Toulon",
+    "lon": 5.928,
+    "lat": 43.1242
   },
   {
     "iso3": "FR-84",
-    "label": "Préfecture · Vaucluse",
-    "lon": 5.144075463917526,
-    "lat": 44.09717123711339
+    "label": "Avignon",
+    "lon": 4.8055,
+    "lat": 43.9483
   },
   {
     "iso3": "FR-85",
-    "label": "Préfecture · Vendée",
-    "lon": -1.3041960317460315,
-    "lat": 46.71607296296294
+    "label": "La Roche-sur-Yon",
+    "lon": -1.4269,
+    "lat": 46.6705
   },
   {
     "iso3": "FR-86",
-    "label": "Préfecture · Vienne",
-    "lon": 0.3974772549019609,
-    "lat": 46.59260049019608
+    "label": "Poitiers",
+    "lon": 0.3417,
+    "lat": 46.5802
   },
   {
     "iso3": "FR-87",
-    "label": "Préfecture · Haute-Vienne",
-    "lon": 1.2904806282722512,
-    "lat": 45.913774188481696
+    "label": "Limoges",
+    "lon": 1.2619,
+    "lat": 45.8354
   },
   {
     "iso3": "FR-88",
-    "label": "Préfecture · Vosges",
-    "lon": 6.250038648648652,
-    "lat": 48.24052048648649
+    "label": "Épinal",
+    "lon": 6.451,
+    "lat": 48.1732
   },
   {
     "iso3": "FR-89",
-    "label": "Préfecture · Yonne",
-    "lon": 3.626059086757992,
-    "lat": 47.83303789954339
+    "label": "Auxerre",
+    "lon": 3.5708,
+    "lat": 47.7974
   },
   {
     "iso3": "FR-90",
-    "label": "Préfecture · Territoire de Belfort",
-    "lon": 6.9436090196078455,
-    "lat": 47.606854705882355
+    "label": "Belfort",
+    "lon": 6.8638,
+    "lat": 47.6397
   },
   {
     "iso3": "FR-91",
-    "label": "Préfecture · Essonne",
-    "lon": 2.239953100000001,
-    "lat": 48.51365710000002
+    "label": "Évry-Courcouronnes",
+    "lon": 2.4293,
+    "lat": 48.6319
   },
   {
     "iso3": "FR-92",
-    "label": "Préfecture · Hauts-de-Seine",
-    "lon": 2.2480192592592596,
-    "lat": 48.83299333333331
+    "label": "Nanterre",
+    "lon": 2.2071,
+    "lat": 48.8924
   },
   {
     "iso3": "FR-93",
-    "label": "Préfecture · Seine-Saint-Denis",
-    "lon": 2.4739550000000006,
-    "lat": 48.92532166666668
+    "label": "Bobigny",
+    "lon": 2.45,
+    "lat": 48.9106
   },
   {
     "iso3": "FR-94",
-    "label": "Préfecture · Val-de-Marne",
-    "lon": 2.4651038709677424,
-    "lat": 48.77363935483871
+    "label": "Créteil",
+    "lon": 2.4551,
+    "lat": 48.7904
   },
   {
     "iso3": "FR-95",
-    "label": "Préfecture · Val-d'Oise",
-    "lon": 2.1399340963855424,
-    "lat": 49.087724578313235
+    "label": "Cergy",
+    "lon": 2.0793,
+    "lat": 49.0356
   }
 ];
 

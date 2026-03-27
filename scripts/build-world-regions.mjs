@@ -9,6 +9,7 @@ import * as turf from '@turf/turf';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { FR_DEPARTMENT_PREFECTURES } from './fr-department-prefectures.mjs';
 import { US_STATE_CAPITALS } from './us-state-capitals.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -258,13 +259,14 @@ async function buildFranceDepartments() {
   writeGeojson('fr-departments.geojson', features, adj);
 
   const deptCapitals = features.map((f) => {
-    const p = f.properties;
-    const [lon, lat] = p.centroid;
+    const id = f.properties.iso3;
+    const pref = FR_DEPARTMENT_PREFECTURES[id];
+    if (!pref) throw new Error(`Préfecture manquante pour ${id} — compléter fr-department-prefectures.mjs`);
     return {
-      iso3: p.iso3,
-      label: `Préfecture · ${p.name}`,
-      lon,
-      lat,
+      iso3: id,
+      label: pref.label,
+      lon: pref.lon,
+      lat: pref.lat,
     };
   });
   return { names, deptCapitals };
