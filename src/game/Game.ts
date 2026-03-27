@@ -46,6 +46,15 @@ interface DragState {
   origins: Map<string, { x: number; y: number }>;
 }
 
+/** Glisser depuis le vide : déplace la caméra (carte sous le curseur). */
+interface CameraPanState {
+  startSx: number;
+  startSy: number;
+  startCx: number;
+  startCy: number;
+  scale: number;
+}
+
 export class Game {
   private canvas: HTMLCanvasElement;
   private renderer: Renderer;
@@ -53,6 +62,7 @@ export class Game {
   private borderConnectors: BorderConnectorRel[] = [];
   private connectorByKey: Map<string, BorderConnectorRel> = new Map();
   private dragState: DragState | null = null;
+  private cameraPan: CameraPanState | null = null;
   private maxZIndex = 0;
   private animFrame: number | null = null;
   /** Puzzle entièrement connecté : affichage du panneau de fin. */
@@ -385,7 +395,18 @@ export class Game {
     if (e.button !== 0) return;
     const { x, y } = this.canvasPos(e);
     const tile = this.topTileAt(x, y);
-    if (!tile) return;
+    if (!tile) {
+      this.cameraPan = {
+        startSx: x,
+        startSy: y,
+        startCx: this.camera.cx,
+        startCy: this.camera.cy,
+        scale: this.camera.scale,
+      };
+      this.canvas.style.cursor = 'grabbing';
+      e.preventDefault();
+      return;
+    }
 
     const pairs = this.computeConnectedPairs();
     const group = this.getConnectedComponent(tile.id, pairs);
@@ -411,6 +432,12 @@ export class Game {
 
   private onMouseMove = (e: MouseEvent): void => {
     const { x, y } = this.canvasPos(e);
+    if (this.cameraPan) {
+      const p = this.cameraPan;
+      this.camera.cx = p.startCx + (p.startSx - x) / p.scale;
+      this.camera.cy = p.startCy + (p.startSy - y) / p.scale;
+      return;
+    }
     if (this.dragState) {
       const inv = 1 / this.camera.scale;
       const dx = (x - this.dragState.startMouseX) * inv;
@@ -430,7 +457,15 @@ export class Game {
     this.canvas.style.cursor = tile ? 'grab' : 'default';
   };
 
-  private onMouseUp = (): void => {
+  private onMouseUp = (e: MouseEvent): void => {
+    if (this.cameraPan) {
+      this.cameraPan = null;
+      const { x, y } = this.canvasPos(e);
+      const tile = this.topTileAt(x, y);
+      this.renderer.setHovered(tile?.id ?? null);
+      this.canvas.style.cursor = tile ? 'grab' : 'default';
+      return;
+    }
     if (this.dragState) {
       const { primaryTile, group } = this.dragState;
       this.renderer.setDraggedGroup(null);

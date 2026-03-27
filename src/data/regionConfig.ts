@@ -71,7 +71,10 @@ export const REGION_CATALOG: readonly RegionCatalogEntry[] = [
     id: 'europe',
     label: 'Europe',
     icon: '🇪🇺',
-    descriptionLines: ['Continent européen (Natural Earth)', `${EUROPE_COUNTRY_IDS.length} pays`],
+    descriptionLines: [
+      'Sans outre-mer (FR, UK, ES, NL, DK…) · Russie ouest des ~60°E + Kaliningrad',
+      `${EUROPE_COUNTRY_IDS.length} pays`,
+    ],
     available: true,
     geojsonUrl: '/data/europe.geojson',
     countries: [...EUROPE_COUNTRY_IDS],

@@ -10,6 +10,7 @@ import {
   computeGameScore,
   type GameHudState,
 } from './Game.ts';
+import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
 
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
@@ -77,6 +78,14 @@ export class CapitalsGame {
   private dragCanvasOffsetX = 0;
   private dragCanvasOffsetY = 0;
   private activeCanvasPointerId: number | null = null;
+  private canvasPan: {
+    startSx: number;
+    startSy: number;
+    startCx: number;
+    startCy: number;
+    scale: number;
+  } | null = null;
+  private panPointerId: number | null = null;
 
   constructor(canvas: HTMLCanvasElement, onHudUpdate?: (state: GameHudState) => void) {
     this.canvas = canvas;
@@ -397,6 +406,19 @@ export class CapitalsGame {
     this.dragCanvasMarker = null;
   }
 
+  private endCanvasPan(): void {
+    if (this.panPointerId !== null) {
+      try {
+        this.canvas.releasePointerCapture(this.panPointerId);
+      } catch {
+        /* ignore */
+      }
+      this.panPointerId = null;
+    }
+    this.canvasPan = null;
+    this.canvas.style.cursor = 'default';
+  }
+
   private pointerClientInDock(clientX: number, clientY: number): boolean {
     if (!this.dockEl || this.dockEl.classList.contains('hidden')) return false;
     const r = this.dockEl.getBoundingClientRect();
@@ -430,19 +452,39 @@ export class CapitalsGame {
     if (e.button !== 0 || this.dragDockMarker || this.ghostEl) return;
     const { x, y } = this.clientToCanvasPixels(e.clientX, e.clientY);
     const m = this.pickDraftCapitalAtCanvasPx(x, y);
-    if (!m) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const w = this.screenToWorld(x, y);
-    this.dragCanvasOffsetX = w.x - m.x;
-    this.dragCanvasOffsetY = w.y - m.y;
-    this.dragCanvasMarker = m;
-    this.activeCanvasPointerId = e.pointerId;
+    if (m) {
+      e.preventDefault();
+      e.stopPropagation();
+      const w = this.screenToWorld(x, y);
+      this.dragCanvasOffsetX = w.x - m.x;
+      this.dragCanvasOffsetY = w.y - m.y;
+      this.dragCanvasMarker = m;
+      this.activeCanvasPointerId = e.pointerId;
+      this.canvas.setPointerCapture(e.pointerId);
+      this.canvas.style.cursor = 'grabbing';
+      return;
+    }
+    this.canvasPan = {
+      startSx: x,
+      startSy: y,
+      startCx: this.camera.cx,
+      startCy: this.camera.cy,
+      scale: this.camera.scale,
+    };
+    this.panPointerId = e.pointerId;
     this.canvas.setPointerCapture(e.pointerId);
     this.canvas.style.cursor = 'grabbing';
+    e.preventDefault();
   };
 
   private onCanvasPointerMove = (e: PointerEvent): void => {
+    if (this.canvasPan !== null && e.pointerId === this.panPointerId) {
+      const { x, y } = this.clientToCanvasPixels(e.clientX, e.clientY);
+      const p = this.canvasPan;
+      this.camera.cx = p.startCx + (p.startSx - x) / p.scale;
+      this.camera.cy = p.startCy + (p.startSy - y) / p.scale;
+      return;
+    }
     if (!this.dragCanvasMarker || e.pointerId !== this.activeCanvasPointerId) return;
     const { x, y } = this.clientToCanvasPixels(e.clientX, e.clientY);
     const w = this.screenToWorld(x, y);
@@ -451,6 +493,10 @@ export class CapitalsGame {
   };
 
   private onCanvasPointerUp = (e: PointerEvent): void => {
+    if (this.canvasPan !== null && e.pointerId === this.panPointerId) {
+      this.endCanvasPan();
+      return;
+    }
     if (!this.dragCanvasMarker || e.pointerId !== this.activeCanvasPointerId) return;
     const m = this.dragCanvasMarker;
     this.endCanvasDrag();
@@ -607,7 +653,7 @@ export class CapitalsGame {
       marker.onMapDraft = true;
       return;
     }
-    if (!tile.containsPoint(marker.x, marker.y)) {
+    if (!tileContainsPointWithDropHalo(tile, marker.x, marker.y)) {
       marker.onMapDraft = true;
       return;
     }
@@ -707,6 +753,7 @@ export class CapitalsGame {
   }
 
   private unbindEvents(): void {
+    this.endCanvasPan();
     this.endCanvasDrag();
     this.canvas.removeEventListener('pointerdown', this.onCanvasPointerDown);
     this.canvas.removeEventListener('pointermove', this.onCanvasPointerMove);

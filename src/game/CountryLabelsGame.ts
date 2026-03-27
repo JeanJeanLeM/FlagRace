@@ -6,6 +6,7 @@ import { buildFlagDockIso3List } from '../data/flagDecoys.ts';
 import type { CountryLabelDifficulty } from '../countryLabelDifficulty.ts';
 import { countryNameFr, flagEmojiFromIso3 } from '../data/countryNamesFr.ts';
 import type { GameHudState } from './Game.ts';
+import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
 
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
@@ -64,6 +65,14 @@ export class CountryLabelsGame {
   private dockEl: HTMLElement | null = null;
   private ghostEl: HTMLElement | null = null;
   private dragMarker: LabelMarker | null = null;
+  private canvasPan: {
+    startSx: number;
+    startSy: number;
+    startCx: number;
+    startCy: number;
+    scale: number;
+  } | null = null;
+  private panPointerId: number | null = null;
 
   constructor(canvas: HTMLCanvasElement, onHudUpdate?: (state: GameHudState) => void) {
     this.canvas = canvas;
@@ -113,6 +122,7 @@ export class CountryLabelsGame {
     this.winPhase = 'none';
     this.gameStartMs = null;
     this.frozenElapsedMs = null;
+    this.endCanvasPan();
     this.endDockDrag();
     this.unbindEvents();
     this.eventsBound = false;
@@ -361,6 +371,64 @@ export class CountryLabelsGame {
     return null;
   }
 
+  private topTileAtCanvasPx(sx: number, sy: number): Tile | null {
+    const w = this.screenToWorld(sx, sy);
+    return this.topTileAtWorld(w.x, w.y);
+  }
+
+  private clientToCanvasPixels(clientX: number, clientY: number): { x: number; y: number } {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+    };
+  }
+
+  private endCanvasPan(): void {
+    if (this.panPointerId !== null) {
+      try {
+        this.canvas.releasePointerCapture(this.panPointerId);
+      } catch {
+        /* ignore */
+      }
+      this.panPointerId = null;
+    }
+    this.canvasPan = null;
+    this.canvas.style.cursor = 'default';
+  }
+
+  private onCanvasPointerDown = (e: PointerEvent): void => {
+    if (e.button !== 0 || this.dragMarker || this.ghostEl) return;
+    const { x, y } = this.clientToCanvasPixels(e.clientX, e.clientY);
+    if (this.topTileAtCanvasPx(x, y)) return;
+    this.canvasPan = {
+      startSx: x,
+      startSy: y,
+      startCx: this.camera.cx,
+      startCy: this.camera.cy,
+      scale: this.camera.scale,
+    };
+    this.panPointerId = e.pointerId;
+    this.canvas.setPointerCapture(e.pointerId);
+    this.canvas.style.cursor = 'grabbing';
+    e.preventDefault();
+  };
+
+  private onCanvasPointerMove = (e: PointerEvent): void => {
+    if (this.canvasPan === null || e.pointerId !== this.panPointerId) return;
+    const { x, y } = this.clientToCanvasPixels(e.clientX, e.clientY);
+    const p = this.canvasPan;
+    this.camera.cx = p.startCx + (p.startSx - x) / p.scale;
+    this.camera.cy = p.startCy + (p.startSy - y) / p.scale;
+  };
+
+  private onCanvasPointerUp = (e: PointerEvent): void => {
+    if (this.canvasPan === null || e.pointerId !== this.panPointerId) return;
+    this.endCanvasPan();
+  };
+
   private zoomAtScreen(mx: number, my: number, factor: number): void {
     const w = this.canvas.width;
     const h = this.canvas.height;
@@ -449,15 +517,15 @@ export class CountryLabelsGame {
       return;
     }
 
-    const hit = this.topTileAtWorld(marker.x, marker.y);
-    if (!hit || hit.id !== marker.iso3) {
+    const tile = this.tiles.find((t) => t.id === marker.iso3);
+    if (!tile || !tileContainsPointWithDropHalo(tile, marker.x, marker.y)) {
       marker.x = 0;
       marker.y = 0;
       return;
     }
 
-    marker.x = hit.targetX;
-    marker.y = hit.targetY;
+    marker.x = tile.targetX;
+    marker.y = tile.targetY;
     marker.placed = true;
     marker.zIndex = -1;
     this.updateOutcome();
@@ -525,11 +593,20 @@ export class CountryLabelsGame {
   };
 
   private bindEvents(): void {
+    this.canvas.addEventListener('pointerdown', this.onCanvasPointerDown);
+    this.canvas.addEventListener('pointermove', this.onCanvasPointerMove);
+    this.canvas.addEventListener('pointerup', this.onCanvasPointerUp);
+    this.canvas.addEventListener('pointercancel', this.onCanvasPointerUp);
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     this.canvas.addEventListener('keydown', this.onCanvasKeyDown);
   }
 
   private unbindEvents(): void {
+    this.endCanvasPan();
+    this.canvas.removeEventListener('pointerdown', this.onCanvasPointerDown);
+    this.canvas.removeEventListener('pointermove', this.onCanvasPointerMove);
+    this.canvas.removeEventListener('pointerup', this.onCanvasPointerUp);
+    this.canvas.removeEventListener('pointercancel', this.onCanvasPointerUp);
     this.canvas.removeEventListener('wheel', this.onWheel);
     this.canvas.removeEventListener('keydown', this.onCanvasKeyDown);
   }

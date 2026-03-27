@@ -191,6 +191,102 @@ function pickCountries(world, predicate) {
   return out;
 }
 
+/** Limite est de la Russie « européenne » (≈ Oural) ; Kaliningrad reste inclus (ouest du méridien). */
+const RUSSIA_EAST_BOUND_LON = 60;
+
+/**
+ * Polygones dont le centroïde est en Europe proche : exclut Canaries, Azores, Guyane, DOM, Groenland,
+ * Caraïbes néerlandaises, bases UK, etc. (France/UK/ES/PT/NL/DK… en version continentale).
+ */
+function europeanMainlandCentroidOk(lon, lat) {
+  if (lat < 34 || lat > 81) return false;
+  if (lon < -24 || lon > 42) return false;
+  /* Ceuta, Melilla, rives maghrébines proches */
+  if (lat < 36 && lon > -10 && lon < 10) return false;
+  return true;
+}
+
+/** Découpe la Russie à l’ouest d’un méridien (Sibérie / extrême-est exclus ; Kaliningrad conservé). */
+function clipRussiaWestOfMeridian(geometry) {
+  const clip = turf.polygon([
+    [
+      [-180, -90],
+      [RUSSIA_EAST_BOUND_LON, -90],
+      [RUSSIA_EAST_BOUND_LON, 90],
+      [-180, 90],
+      [-180, -90],
+    ],
+  ]);
+  try {
+    const inter = turf.intersect(turf.featureCollection([turf.feature(geometry), clip]));
+    if (!inter?.geometry) return null;
+    if (turf.area(inter) < 1) return null;
+    return inter.geometry;
+  } catch {
+    return null;
+  }
+}
+
+/** Ne garde que les îlots/polygones d’un pays dont le centroïde tombe en Europe proche. */
+function filterOutEuropeanOverseasPolygons(geometry) {
+  const polys =
+    geometry.type === 'Polygon'
+      ? [geometry.coordinates]
+      : geometry.type === 'MultiPolygon'
+        ? geometry.coordinates
+        : [];
+  const kept = [];
+  for (const rings of polys) {
+    if (!rings?.[0]?.length) continue;
+    try {
+      const polyF = turf.polygon(rings);
+      const [lon, lat] = turf.getCoord(turf.centroid(polyF));
+      if (europeanMainlandCentroidOk(lon, lat)) kept.push(rings);
+    } catch {
+      /* polygone invalide après simplification NE */
+    }
+  }
+  if (!kept.length) return null;
+  if (kept.length === 1) return { type: 'Polygon', coordinates: kept[0] };
+  return { type: 'MultiPolygon', coordinates: kept };
+}
+
+function buildEuropeFeaturesFromWorld(world) {
+  const out = [];
+  for (const f of world.features) {
+    const p = f.properties ?? {};
+    const adm = p.ADM0_A3;
+    if (!adm || adm === '-99' || EXCLUDED_ADM.has(adm)) continue;
+    if (p.CONTINENT !== 'Europe' || EU_EXCLUDE.has(adm)) continue;
+    const iso3 = iso3FromAdm(adm);
+
+    let raw = f.geometry;
+    let processed =
+      iso3 === 'RUS' ? clipRussiaWestOfMeridian(raw) : filterOutEuropeanOverseasPolygons(raw);
+    if (!processed) continue;
+
+    const geom = simplifyGeom(processed, 0.018);
+    let c;
+    try {
+      c = turf.getCoord(turf.centroid(turf.feature(geom)));
+    } catch {
+      continue;
+    }
+    const nameFr = p.NAME_FR || p.NAME || iso3;
+    out.push({
+      type: 'Feature',
+      properties: {
+        iso3,
+        name: nameFr,
+        centroid: [c[0], c[1]],
+      },
+      geometry: geom,
+    });
+  }
+  out.sort((a, b) => a.properties.iso3.localeCompare(b.properties.iso3));
+  return out;
+}
+
 async function fetchJson(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url} → ${res.status}`);
@@ -373,10 +469,7 @@ async function main() {
   console.log('Téléchargement Natural Earth 50m…');
   const world = await fetchJson(NE50);
 
-  const europeFeats = pickCountries(
-    world,
-    (p) => p.CONTINENT === 'Europe' && !EU_EXCLUDE.has(p.ADM0_A3),
-  );
+  const europeFeats = buildEuropeFeaturesFromWorld(world);
   const saFeats = pickCountries(world, (p) => p.CONTINENT === 'South America');
   const asiaFeats = pickCountries(world, (p) => p.CONTINENT === 'Asia');
 

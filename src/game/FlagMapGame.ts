@@ -7,6 +7,7 @@ import { countryNameFr } from '../data/countryNamesFr.ts';
 import { buildFlagDockIso3List } from '../data/flagDecoys.ts';
 import type { FlagDockDifficulty } from '../flagDifficulty.ts';
 import type { GameHudState } from './Game.ts';
+import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
 
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
@@ -68,6 +69,14 @@ export class FlagMapGame {
   private dockEl: HTMLElement | null = null;
   private dragIso3: string | null = null;
   private ghostEl: HTMLElement | null = null;
+  private canvasPan: {
+    startSx: number;
+    startSy: number;
+    startCx: number;
+    startCy: number;
+    scale: number;
+  } | null = null;
+  private panPointerId: number | null = null;
   constructor(canvas: HTMLCanvasElement, onHudUpdate?: (state: GameHudState) => void) {
     this.canvas = canvas;
     this.renderer = new Renderer(canvas);
@@ -150,6 +159,7 @@ export class FlagMapGame {
     this.frozenElapsedMs = null;
     this.unbindEvents();
     this.eventsBound = false;
+    this.endCanvasPan();
     this.endDrag();
     this.dockEl?.replaceChildren();
     this.dockEl?.classList.add('hidden');
@@ -300,8 +310,9 @@ export class FlagMapGame {
     const scaleY = this.canvas.height / rect.height;
     const sx = (e.clientX - rect.left) * scaleX;
     const sy = (e.clientY - rect.top) * scaleY;
-    const hit = this.topTileAt(sx, sy);
-    if (!hit || hit.id !== iso3) return;
+    const w = this.screenToWorld(sx, sy);
+    const tile = this.tiles.find((t) => t.id === iso3);
+    if (!tile || !tileContainsPointWithDropHalo(tile, w.x, w.y)) return;
 
     const img = this.flagImages.get(iso3);
     if (!img) return;
@@ -323,6 +334,59 @@ export class FlagMapGame {
       this.ghostEl = null;
     }
   }
+
+  private endCanvasPan(): void {
+    if (this.panPointerId !== null) {
+      try {
+        this.canvas.releasePointerCapture(this.panPointerId);
+      } catch {
+        /* ignore */
+      }
+      this.panPointerId = null;
+    }
+    this.canvasPan = null;
+    this.canvas.style.cursor = 'default';
+  }
+
+  private clientToCanvasPixels(clientX: number, clientY: number): { x: number; y: number } {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+    };
+  }
+
+  private onCanvasPointerDown = (e: PointerEvent): void => {
+    if (e.button !== 0 || this.dragIso3 || this.ghostEl) return;
+    const { x, y } = this.clientToCanvasPixels(e.clientX, e.clientY);
+    if (this.topTileAt(x, y)) return;
+    this.canvasPan = {
+      startSx: x,
+      startSy: y,
+      startCx: this.camera.cx,
+      startCy: this.camera.cy,
+      scale: this.camera.scale,
+    };
+    this.panPointerId = e.pointerId;
+    this.canvas.setPointerCapture(e.pointerId);
+    this.canvas.style.cursor = 'grabbing';
+    e.preventDefault();
+  };
+
+  private onCanvasPointerMove = (e: PointerEvent): void => {
+    if (this.canvasPan === null || e.pointerId !== this.panPointerId) return;
+    const { x, y } = this.clientToCanvasPixels(e.clientX, e.clientY);
+    const p = this.canvasPan;
+    this.camera.cx = p.startCx + (p.startSx - x) / p.scale;
+    this.camera.cy = p.startCy + (p.startSy - y) / p.scale;
+  };
+
+  private onCanvasPointerUp = (e: PointerEvent): void => {
+    if (this.canvasPan === null || e.pointerId !== this.panPointerId) return;
+    this.endCanvasPan();
+  };
 
   private moveGhost(clientX: number, clientY: number): void {
     if (!this.ghostEl) return;
@@ -492,11 +556,20 @@ export class FlagMapGame {
   };
 
   private bindEvents(): void {
+    this.canvas.addEventListener('pointerdown', this.onCanvasPointerDown);
+    this.canvas.addEventListener('pointermove', this.onCanvasPointerMove);
+    this.canvas.addEventListener('pointerup', this.onCanvasPointerUp);
+    this.canvas.addEventListener('pointercancel', this.onCanvasPointerUp);
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     this.canvas.addEventListener('keydown', this.onCanvasKeyDown);
   }
 
   private unbindEvents(): void {
+    this.endCanvasPan();
+    this.canvas.removeEventListener('pointerdown', this.onCanvasPointerDown);
+    this.canvas.removeEventListener('pointermove', this.onCanvasPointerMove);
+    this.canvas.removeEventListener('pointerup', this.onCanvasPointerUp);
+    this.canvas.removeEventListener('pointercancel', this.onCanvasPointerUp);
     this.canvas.removeEventListener('wheel', this.onWheel);
     this.canvas.removeEventListener('keydown', this.onCanvasKeyDown);
   }
