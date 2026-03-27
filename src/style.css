@@ -499,7 +499,8 @@ html, body {
   transition: fill 0.16s ease, stroke 0.16s ease, opacity 0.16s ease;
 }
 
-/* Une couleur par zone menu ; pas de contour interne (stroke none sauf focus / actif). */
+/* Une couleur par zone menu. Pas de stroke sur actif/focus : un seul <path> = MultiPolygon,
+   un stroke tracerait aussi toutes les frontières internes entre pays. */
 .world-menu-svg .world-menu-region[data-region='africa'] {
   fill: rgba(210, 140, 95, 0.44);
 }
@@ -551,13 +552,13 @@ html, body {
 }
 
 .world-menu-svg .world-menu-region[data-region='usa'] {
-  fill: rgba(255, 200, 105, 0.48);
+  fill: rgba(85, 155, 220, 0.44);
 }
 .world-menu-svg .world-menu-region[data-region='usa']:hover:not(.disabled):not(.active) {
-  fill: rgba(255, 220, 140, 0.62);
+  fill: rgba(115, 185, 245, 0.58);
 }
 .world-menu-svg .world-menu-region[data-region='usa'].active {
-  fill: rgba(255, 235, 170, 0.78);
+  fill: rgba(150, 210, 255, 0.72);
 }
 
 .world-menu-svg .world-menu-region[data-region='france'] {
@@ -571,13 +572,12 @@ html, body {
 }
 
 .world-menu-svg .world-menu-region:focus-visible {
-  stroke: var(--accent);
-  stroke-width: 2px;
+  stroke: none;
+  filter: brightness(1.18) saturate(1.08);
 }
 
 .world-menu-svg .world-menu-region.active {
-  stroke: var(--accent);
-  stroke-width: 1.6px;
+  stroke: none;
 }
 
 .world-menu-svg .world-menu-region.disabled {
