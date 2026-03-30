@@ -48,41 +48,67 @@ html, body {
 #screen-menu {
   flex: 1;
   min-height: 0;
-  align-items: center;
+  align-items: stretch;
   justify-content: flex-start;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 255, 136, 0.45) rgba(0, 0, 0, 0.2);
+  overflow: hidden;
   background:
     radial-gradient(ellipse at 30% 20%, rgba(0, 100, 80, 0.12) 0%, transparent 60%),
     radial-gradient(ellipse at 70% 80%, rgba(0, 60, 120, 0.15) 0%, transparent 60%),
     var(--bg-dark);
 }
 
-#screen-menu::-webkit-scrollbar {
+.menu-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 136, 0.45) rgba(0, 0, 0, 0.2);
+}
+
+.menu-scroll::-webkit-scrollbar {
   width: 10px;
 }
 
-#screen-menu::-webkit-scrollbar-track {
+.menu-scroll::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.2);
 }
 
-#screen-menu::-webkit-scrollbar-thumb {
+.menu-scroll::-webkit-scrollbar-thumb {
   background: rgba(0, 255, 136, 0.35);
   border-radius: 5px;
 }
 
-#screen-menu::-webkit-scrollbar-thumb:hover {
+.menu-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 255, 136, 0.5);
+}
+
+.menu-start-dock {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, transparent 0%, rgba(13, 27, 42, 0.88) 35%, var(--bg-dark) 100%);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.menu-start-dock__inner {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 0 0.5rem;
 }
 
 .menu-content {
   width: 100%;
   max-width: 920px;
+  margin: 0 auto;
   padding: 2.5rem 1.5rem;
-  padding-bottom: max(3rem, calc(2.5rem + env(safe-area-inset-bottom)));
+  padding-bottom: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -99,17 +125,6 @@ html, body {
 
 .menu-panel--hidden {
   display: none !important;
-}
-
-.menu-actions {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding-top: 0.25rem;
-}
-
-.menu-actions--start {
-  padding-top: 0.5rem;
 }
 
 .btn-menu-cta {

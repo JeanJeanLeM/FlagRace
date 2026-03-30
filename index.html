@@ -4,8 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Jeu de cartes : puzzle pays, capitales, drapeaux et noms sur la carte." />
-    <!-- Vérification propriété AdSense (lisible par le robot sans exécuter le JS du bandeau cookies) -->
+    <!-- AdSense : meta + script (recommandation Google) ; ads.txt à la racine /ads.txt -->
     <meta name="google-adsense-account" content="ca-pub-8944795420097131" />
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8944795420097131"
+      crossorigin="anonymous"
+    ></script>
     <title>World Puzzle</title>
   </head>
   <body>
@@ -13,6 +18,7 @@
 
       <!-- ── Menu Screen ───────────────────────────── -->
       <div id="screen-menu" class="screen">
+        <div class="menu-scroll">
         <div class="menu-content">
           <h1 class="game-title">World <span>Puzzle</span></h1>
 
@@ -106,11 +112,14 @@
             <div id="ad-menu-bottom" class="ad-slot"></div>
           </div>
 
-          <div class="menu-actions menu-actions--start">
+          </div>
+        </div>
+        </div>
+        <div class="menu-start-dock" role="region" aria-label="Lancer une partie">
+          <div class="menu-start-dock__inner">
             <button type="button" id="btn-menu-start" class="btn-menu-cta btn-menu-cta--primary">
               Lancer la partie
             </button>
-          </div>
           </div>
         </div>
       </div>
