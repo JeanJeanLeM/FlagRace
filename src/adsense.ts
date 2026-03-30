@@ -2,7 +2,8 @@
  * AdSense : après consentement, charge le même script que la balise officielle
  * (pagead2.googlesyndication.com/.../adsbygoogle.js?client=…).
  * ID éditeur par défaut World Puzzle ; surcharger avec VITE_ADSENSE_CLIENT ou désactiver avec `off`.
- * Blocs manuels : VITE_ADSENSE_SLOT_MENU / VITE_ADSENSE_SLOT_MENU_BOTTOM.
+ * Menu : VITE_ADSENSE_SLOT_MENU + VITE_ADSENSE_SLOT_MENU_SECOND (ou SLOT_MENU_BOTTOM pour le 2e).
+ * Jeu : VITE_ADSENSE_SLOT_GAME_SIDEBAR (colonne droite).
  */
 
 const DEFAULT_ADSENSE_CLIENT = 'ca-pub-8944795420097131';
@@ -26,8 +27,16 @@ function slotMenu(): string | undefined {
   return v && /^\d+$/.test(v) ? v : undefined;
 }
 
-function slotMenuBottom(): string | undefined {
-  const v = import.meta.env.VITE_ADSENSE_SLOT_MENU_BOTTOM?.trim();
+/** 2e bloc menu : préférer MENU_SECOND ; MENU_BOTTOM reste accepté (rétrocompat). */
+function slotMenuSecond(): string | undefined {
+  const a = import.meta.env.VITE_ADSENSE_SLOT_MENU_SECOND?.trim();
+  const b = import.meta.env.VITE_ADSENSE_SLOT_MENU_BOTTOM?.trim();
+  const v = a || b;
+  return v && /^\d+$/.test(v) ? v : undefined;
+}
+
+function slotGameSidebar(): string | undefined {
+  const v = import.meta.env.VITE_ADSENSE_SLOT_GAME_SIDEBAR?.trim();
   return v && /^\d+$/.test(v) ? v : undefined;
 }
 
@@ -54,15 +63,25 @@ function loadAdsenseScript(client: string): Promise<void> {
   return scriptPromise;
 }
 
-function fillSlot(container: HTMLElement, client: string, slot: string): void {
+function fillSlot(
+  container: HTMLElement,
+  client: string,
+  slot: string,
+  opts?: { vertical?: boolean },
+): void {
   container.replaceChildren();
   const ins = document.createElement('ins');
   ins.className = 'adsbygoogle';
   ins.style.display = 'block';
   ins.setAttribute('data-ad-client', client);
   ins.setAttribute('data-ad-slot', slot);
-  ins.setAttribute('data-ad-format', 'auto');
-  ins.setAttribute('data-full-width-responsive', 'true');
+  if (opts?.vertical) {
+    ins.setAttribute('data-ad-format', 'vertical');
+    ins.setAttribute('data-full-width-responsive', 'false');
+  } else {
+    ins.setAttribute('data-ad-format', 'auto');
+    ins.setAttribute('data-full-width-responsive', 'true');
+  }
   container.appendChild(ins);
   window.adsbygoogle = window.adsbygoogle || [];
   window.adsbygoogle.push({});
@@ -71,20 +90,38 @@ function fillSlot(container: HTMLElement, client: string, slot: string): void {
 async function runAdsense(client: string): Promise<void> {
   await loadAdsenseScript(client);
   const sm = slotMenu();
-  const wrap = document.getElementById('ad-menu-wrap');
+  const s2 = slotMenuSecond();
+  const dual = document.getElementById('menu-ads-dual');
+  const colA = document.getElementById('menu-ad-col-a');
+  const colB = document.getElementById('menu-ad-col-b');
   const menuHost = document.getElementById('ad-menu');
-  if (sm && wrap && menuHost) {
-    wrap.classList.remove('hidden');
-    wrap.setAttribute('aria-hidden', 'false');
-    fillSlot(menuHost, client, sm);
+  const menuHost2 = document.getElementById('ad-menu-secondary');
+  if (dual && colA && colB && menuHost && menuHost2) {
+    let anyMenu = false;
+    if (sm) {
+      colA.classList.remove('hidden');
+      colA.setAttribute('aria-hidden', 'false');
+      fillSlot(menuHost, client, sm);
+      anyMenu = true;
+    }
+    if (s2) {
+      colB.classList.remove('hidden');
+      colB.setAttribute('aria-hidden', 'false');
+      fillSlot(menuHost2, client, s2);
+      anyMenu = true;
+    }
+    if (anyMenu) {
+      dual.classList.remove('hidden');
+      dual.setAttribute('aria-hidden', 'false');
+    }
   }
-  const sb = slotMenuBottom();
-  const bWrap = document.getElementById('ad-menu-bottom-wrap');
-  const bottomHost = document.getElementById('ad-menu-bottom');
-  if (sb && bWrap && bottomHost) {
-    bWrap.classList.remove('hidden');
-    bWrap.setAttribute('aria-hidden', 'false');
-    fillSlot(bottomHost, client, sb);
+  const sg = slotGameSidebar();
+  const rail = document.getElementById('game-ad-rail');
+  const gameHost = document.getElementById('ad-game-sidebar');
+  if (sg && rail && gameHost) {
+    rail.classList.remove('hidden');
+    rail.setAttribute('aria-hidden', 'false');
+    fillSlot(gameHost, client, sg, { vertical: true });
   }
 }
 

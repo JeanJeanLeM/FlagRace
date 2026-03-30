@@ -73,9 +73,15 @@
             </div>
           </section>
 
-          <div id="ad-menu-wrap" class="ad-wrap hidden" aria-hidden="true">
-            <p class="ad-wrap-label">Publicité</p>
-            <div id="ad-menu" class="ad-slot"></div>
+          <div id="menu-ads-dual" class="menu-ads-dual hidden" aria-hidden="true">
+            <div id="menu-ad-col-a" class="menu-ads-dual__col hidden" aria-hidden="true">
+              <p class="ad-wrap-label">Publicité</p>
+              <div id="ad-menu" class="ad-slot"></div>
+            </div>
+            <div id="menu-ad-col-b" class="menu-ads-dual__col hidden" aria-hidden="true">
+              <p class="ad-wrap-label">Publicité</p>
+              <div id="ad-menu-secondary" class="ad-slot"></div>
+            </div>
           </div>
 
           <h2 class="section-heading section-heading--inline">Carte du monde</h2>
@@ -105,11 +111,6 @@
             <span>Ctrl + molette : zoom</span>
             <span>Double-clic : nord (Facile / Moyen)</span>
             <span>Relâcher : aimant</span>
-          </div>
-
-          <div id="ad-menu-bottom-wrap" class="ad-wrap hidden" aria-hidden="true">
-            <p class="ad-wrap-label">Publicité</p>
-            <div id="ad-menu-bottom" class="ad-slot"></div>
           </div>
 
           </div>
@@ -387,6 +388,15 @@
           <div id="game-canvas-wrap" class="game-canvas-wrap">
             <canvas id="game-canvas" tabindex="0"></canvas>
           </div>
+          <aside
+            id="game-ad-rail"
+            class="game-ad-rail hidden"
+            aria-label="Publicité"
+            aria-hidden="true"
+          >
+            <p class="ad-wrap-label">Publicité</p>
+            <div id="ad-game-sidebar" class="ad-slot ad-slot--game-rail"></div>
+          </aside>
           <aside id="victory-panel" class="victory-panel hidden" aria-hidden="true">
             <div class="victory-panel-inner">
               <p class="victory-eyebrow" id="victory-eyebrow">Puzzle résolu</p>
