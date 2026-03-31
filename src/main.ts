@@ -148,12 +148,23 @@ function measuredGameHeaderHeight(): number {
   return h > 0 ? h : 52;
 }
 
+/** Bottom dock bar height in compact layout (≤900px), for canvas fallback sizing. */
+function measuredVisibleDockShellHeight(): number {
+  let h = 0;
+  const cap = document.getElementById('capitals-dock-shell');
+  const fl = document.getElementById('flag-dock-shell');
+  if (cap && !cap.classList.contains('hidden')) h += cap.offsetHeight;
+  if (fl && !fl.classList.contains('hidden')) h += fl.offsetHeight;
+  return h;
+}
+
 function sizeCanvas(canvas: HTMLCanvasElement): void {
   const wrap = document.getElementById('game-canvas-wrap');
   const hint = document.getElementById('game-hint');
   const headerH = measuredGameHeaderHeight();
   const hintH = hint?.offsetHeight ?? 32;
-  const fallbackH = Math.max(window.innerHeight - headerH - hintH - 4, 400);
+  const dockH = isCompactGameLayout() ? measuredVisibleDockShellHeight() : 0;
+  const fallbackH = Math.max(window.innerHeight - headerH - hintH - dockH - 4, 400);
   let w = window.innerWidth;
   let h = fallbackH;
   if (wrap) {

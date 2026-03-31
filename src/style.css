@@ -1405,6 +1405,13 @@ html, body {
   overflow: hidden;
 }
 
+/* Must follow the rule above: earlier @media (max-width: 900px) was overridden by flex-direction: row. */
+@media (max-width: 900px) {
+  .game-body {
+    flex-direction: column;
+  }
+}
+
 /* Bandeau drapeaux : grille max 3 col., pas de chevauchement, scroll vertical */
 .flag-dock {
   flex: 0 0 auto;

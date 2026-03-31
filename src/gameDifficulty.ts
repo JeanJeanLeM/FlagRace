@@ -21,7 +21,7 @@ export const GAME_DIFFICULTY_PRESETS: Record<GameDifficulty, GameDisplayOptions>
     showConnectorDots: false,
     showOrientationBorder: false,
     doubleClickSnapNorth: true,
-    startTilesNorthUp: false,
+    startTilesNorthUp: true,
   },
   expert: {
     showCountryLabels: false,

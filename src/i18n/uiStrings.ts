@@ -50,7 +50,7 @@ export const UI_STRINGS: Record<string, Row> = {
   },
 
   'menu.hint.drag': { fr: 'Glisser : déplacer', en: 'Drag: move' },
-  'menu.hint.wheelRotate': { fr: 'Molette : rotation', en: 'Wheel: rotate' },
+  'menu.hint.wheelRotate': { fr: 'Molette : rotation (Expert)', en: 'Wheel: rotate (Expert)' },
   'menu.hint.ctrlWheel': { fr: 'Ctrl + molette : zoom', en: 'Ctrl + wheel: zoom' },
   'menu.hint.dblClick': { fr: 'Double-clic : nord (Facile / Moyen)', en: 'Double-click: north up (Easy / Medium)' },
   'menu.hint.release': { fr: 'Relâcher : aimant', en: 'Release: snap' },
@@ -90,7 +90,7 @@ export const UI_STRINGS: Record<string, Row> = {
   'modal.puzzle.easy.p2': { fr: 'Max d’indices à l’écran', en: 'Maximum on-screen hints' },
   'modal.puzzle.easy.p3': { fr: 'Double-clic = nord en haut', en: 'Double-click = north up' },
   'modal.puzzle.medium.name': { fr: 'Moyen', en: 'Medium' },
-  'modal.puzzle.medium.p1': { fr: 'Rotations aléatoires au départ', en: 'Random rotations at start' },
+  'modal.puzzle.medium.p1': { fr: 'Pays toujours nord en haut (noms visibles)', en: 'Countries always north-up (names on)' },
   'modal.puzzle.medium.p2': { fr: 'Noms + couleurs', en: 'Names + colors' },
   'modal.puzzle.medium.p3': { fr: 'Double-clic nord seulement', en: 'North-up double-click only' },
   'modal.puzzle.expert.name': { fr: 'Expert', en: 'Expert' },
@@ -190,8 +190,8 @@ export const UI_STRINGS: Record<string, Row> = {
   'victory.menu': { fr: 'Menu principal', en: 'Main menu' },
 
   'game.hint.puzzle': {
-    fr: 'Chrono · score · Molette : rotation · Double-clic : nord (selon diff.) · Ctrl+molette : zoom · Relâcher : aimant',
-    en: 'Timer · score · Wheel: rotate · Double-click: north (by difficulty) · Ctrl+wheel: zoom · Release: snap',
+    fr: 'Chrono · score · Rotation : mode Expert seulement · Double-clic : nord (selon diff.) · Ctrl+molette : zoom · Relâcher : aimant',
+    en: 'Timer · score · Rotation: Expert only · Double-click: north (by difficulty) · Ctrl+wheel: zoom · Release: snap',
   },
   'game.hint.flag': {
     fr: 'Dock gauche → bon pays · Ctrl+molette ou +/−/0 : zoom',

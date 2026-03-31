@@ -7,15 +7,16 @@ import { ADJACENCY as DEFAULT_ADJACENCY } from '../data/adjacency.ts';
 import { adjacencyPairKey, buildMapTiles, type GeoFeatureCollection } from './geoBuild.ts';
 import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
 
-const CONNECT_THRESHOLD = 95;
+/** Écart max entre points frontière pour compter une connexion (px monde). Plus strict = moins de faux positifs. */
+const CONNECT_GAP_PX = 52;
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
 const ZOOM_STEP = 1.12;
 /** Vue de départ : deux crans de dézoom par rapport à l’échelle de référence 1. */
 const DEFAULT_VIEW_ZOOM_OUT_STEPS = 2;
 const DEFAULT_VIEW_SCALE = 1 / ZOOM_STEP ** DEFAULT_VIEW_ZOOM_OUT_STEPS;
-/** Au relâchement : si la tuile est à moins de ce rayon (px) d’une pose « collante », on l’aligne au pixel près. */
-const SNAP_RADIUS = CONNECT_THRESHOLD + 32;
+/** Zone magnétique au relâchement : légèrement plus large que CONNECT_GAP pour attirer la tuile. */
+const SNAP_RADIUS_PX = CONNECT_GAP_PX + 42;
 /** Score : base + points par frontière connectée − pénalité temps (secondes). */
 const SCORE_BASE = 2500;
 const SCORE_PER_TOTAL_EDGE = 100;
@@ -164,6 +165,10 @@ export class Game {
     this.tiles = tiles;
     this.borderConnectors = borderConnectors;
     this.connectorByKey = new Map(this.borderConnectors.map((c) => [c.key, c]));
+
+    if (this.displayOptions.showCountryLabels) {
+      for (const t of this.tiles) t.snapNorth();
+    }
 
     this.maxZIndex = this.tiles.length;
     this.distanceScale = 1;
@@ -329,20 +334,23 @@ export class Game {
   private computeConnectedPairs(): Set<string> {
     const tileMap = new Map(this.tiles.map((t) => [t.id, t]));
     const result = new Set<string>();
-    const thr = CONNECT_THRESHOLD * this.distanceScale;
+    const thr = CONNECT_GAP_PX * this.distanceScale;
     for (const [a, b] of this.borderAdjacency) {
       const ta = tileMap.get(a);
       const tb = tileMap.get(b);
       if (!ta || !tb) continue;
       const key = adjacencyPairKey(a, b);
       const rel = this.connectorByKey.get(key);
-      if (rel) {
-        const [wax, way] = worldPointFromLocal(ta, rel.la[0], rel.la[1]);
-        const [wbx, wby] = worldPointFromLocal(tb, rel.lb[0], rel.lb[1]);
-        if (Math.hypot(wax - wbx, way - wby) < thr) {
-          result.add(key);
-        }
-      } else if (ta.isCorrectRelativeTo(tb, thr)) {
+      if (!rel) continue;
+      const [wax, way] =
+        ta.id === rel.a
+          ? worldPointFromLocal(ta, rel.la[0], rel.la[1])
+          : worldPointFromLocal(ta, rel.lb[0], rel.lb[1]);
+      const [wbx, wby] =
+        tb.id === rel.a
+          ? worldPointFromLocal(tb, rel.la[0], rel.la[1])
+          : worldPointFromLocal(tb, rel.lb[0], rel.lb[1]);
+      if (Math.hypot(wax - wbx, way - wby) < thr) {
         result.add(key);
       }
     }
@@ -389,7 +397,7 @@ export class Game {
   private isSingleTileAssemblyWin(): boolean {
     if (this.tiles.length !== 1) return false;
     const t = this.tiles[0]!;
-    const thr = CONNECT_THRESHOLD * this.distanceScale;
+    const thr = CONNECT_GAP_PX * this.distanceScale;
     const posOk = Math.hypot(t.x - t.targetX, t.y - t.targetY) < thr;
     return posOk && t.isCorrectAngle;
   }
@@ -544,7 +552,7 @@ export class Game {
    * Les tuiles du même groupe ne servent pas de repère (elles bougent ensemble).
    */
   private computeSnapDelta(tile: Tile, groupIds: Set<string>): { dx: number; dy: number } | null {
-    const snapR = SNAP_RADIUS * this.distanceScale;
+    const snapR = SNAP_RADIUS_PX * this.distanceScale;
     const byId = new Map(this.tiles.map((t) => [t.id, t]));
 
     type Cand = { dx: number; dy: number; metric: number; kind: 'connector' | 'centroid' };
@@ -613,6 +621,7 @@ export class Game {
       return;
     }
     e.preventDefault();
+    if (this.displayOptions.showCountryLabels) return;
     if (this.dragState) {
       if (this.dragState.group.length > 1) return;
       this.dragState.primaryTile.rotate(e.deltaY > 0 ? 90 : -90);
