@@ -12,6 +12,9 @@ import {
 import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
 import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
 import type { MapViewBBoxClamp } from '../data/regionConfig.ts';
+import { getLocale } from '../i18n/locale.ts';
+import { pickUiString } from '../i18n/uiStrings.ts';
+import { clampDockIndex, isCompactGameLayout, updateDockNavButtons } from './compactDock.ts';
 
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
@@ -74,6 +77,10 @@ export class CapitalsGame {
   private toleranceWorld: number;
 
   private dockEl: HTMLElement | null = null;
+  /** Zone « retour dock » (souvent le shell mobile incluant les flèches). */
+  private dockHitEl: HTMLElement | null = null;
+  private dockActiveIndex = 0;
+  private dockWheelHandler: ((e: WheelEvent) => void) | null = null;
   private ghostEl: HTMLElement | null = null;
   private dragDockMarker: MapMarker | null = null;
   private dragCanvasMarker: MapMarker | null = null;
@@ -112,6 +119,23 @@ export class CapitalsGame {
     this.dockEl = el;
   }
 
+  setDockHitElement(el: HTMLElement | null): void {
+    this.dockHitEl = el;
+  }
+
+  onDockLayoutChange(): void {
+    this.clampCapitalsDockIndex();
+    this.fillDock();
+  }
+
+  dockNavigateStep(delta: number): void {
+    if (!isCompactGameLayout()) return;
+    const q = this.unplacedDockMarkers();
+    if (q.length <= 1) return;
+    this.dockActiveIndex = clampDockIndex(this.dockActiveIndex + delta, q.length);
+    this.fillDock();
+  }
+
   async load(
     geojsonUrl: string,
     countries: string[],
@@ -132,6 +156,7 @@ export class CapitalsGame {
     this.gaveUp = false;
     this.frozenElapsedMs = null;
     this.dockEl?.classList.remove('hidden');
+    this.bindDockWheel();
     if (!this.eventsBound) {
       this.bindEvents();
       this.eventsBound = true;
@@ -154,8 +179,10 @@ export class CapitalsGame {
     this.gameStartMs = null;
     this.frozenElapsedMs = null;
     this.endDockDrag();
+    this.unbindDockWheel();
     this.unbindEvents();
     this.eventsBound = false;
+    this.dockActiveIndex = 0;
     this.dockEl?.replaceChildren();
     this.dockEl?.classList.add('hidden');
   }
@@ -329,35 +356,90 @@ export class CapitalsGame {
     this.resetCameraToMap();
     this.winPhase = 'none';
     this.gaveUp = false;
+    this.dockActiveIndex = 0;
     this.endDockDrag();
     this.updateOutcome();
     this.fillDock();
   }
 
+  private unplacedDockMarkers(): MapMarker[] {
+    return this.markers.filter((m) => !m.placed && !(m.kind === 'capital' && m.onMapDraft));
+  }
+
+  private clampCapitalsDockIndex(): void {
+    const q = this.unplacedDockMarkers();
+    this.dockActiveIndex = clampDockIndex(this.dockActiveIndex, q.length);
+  }
+
+  private syncCapitalsDockNav(): void {
+    const q = this.unplacedDockMarkers();
+    updateDockNavButtons('capitals', isCompactGameLayout(), q.length, this.dockActiveIndex);
+  }
+
+  private appendCapitalsDockButton(m: MapMarker): void {
+    if (!this.dockEl) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'capitals-dock-item';
+    btn.dataset['markerId'] = m.id;
+    btn.title = pickUiString('game.dock.dragMap', getLocale());
+    const pin = document.createElement('span');
+    pin.className = 'capitals-dock-item-pin';
+    pin.setAttribute('aria-hidden', 'true');
+    pin.textContent = '📍';
+    const lab = document.createElement('span');
+    lab.className = 'capitals-dock-item-label';
+    lab.textContent = m.label;
+    btn.appendChild(pin);
+    btn.appendChild(lab);
+    btn.addEventListener('pointerdown', this.onDockPointerDown);
+    this.dockEl.appendChild(btn);
+  }
+
+  private bindDockWheel(): void {
+    this.unbindDockWheel();
+    if (!this.dockEl) return;
+    this.dockWheelHandler = (e: WheelEvent): void => {
+      if (!isCompactGameLayout() || this.dockEl?.classList.contains('hidden')) return;
+      const dx = e.deltaX;
+      const dy = e.deltaY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
+        e.preventDefault();
+        this.dockNavigateStep(dx > 0 ? 1 : -1);
+      } else if ((e.shiftKey || e.altKey) && Math.abs(dy) > 8) {
+        e.preventDefault();
+        this.dockNavigateStep(dy > 0 ? 1 : -1);
+      }
+    };
+    this.dockEl.addEventListener('wheel', this.dockWheelHandler, { passive: false });
+  }
+
+  private unbindDockWheel(): void {
+    if (this.dockWheelHandler && this.dockEl) {
+      this.dockEl.removeEventListener('wheel', this.dockWheelHandler);
+    }
+    this.dockWheelHandler = null;
+  }
+
   private fillDock(): void {
     if (!this.dockEl) return;
-    const unplaced = this.markers.filter(
-      (m) => !m.placed && !(m.kind === 'capital' && m.onMapDraft),
-    );
+    const unplaced = this.unplacedDockMarkers();
     this.dockEl.replaceChildren();
-    for (const m of unplaced) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'capitals-dock-item';
-      btn.dataset['markerId'] = m.id;
-      btn.title = 'Glisser sur la carte';
-      const pin = document.createElement('span');
-      pin.className = 'capitals-dock-item-pin';
-      pin.setAttribute('aria-hidden', 'true');
-      pin.textContent = '📍';
-      const lab = document.createElement('span');
-      lab.className = 'capitals-dock-item-label';
-      lab.textContent = m.label;
-      btn.appendChild(pin);
-      btn.appendChild(lab);
-      btn.addEventListener('pointerdown', this.onDockPointerDown);
-      this.dockEl.appendChild(btn);
+    this.clampCapitalsDockIndex();
+    const compact = isCompactGameLayout();
+
+    if (compact) {
+      if (unplaced.length === 0) {
+        this.syncCapitalsDockNav();
+        return;
+      }
+      this.appendCapitalsDockButton(unplaced[this.dockActiveIndex]!);
+    } else {
+      for (const m of unplaced) {
+        this.appendCapitalsDockButton(m);
+      }
     }
+    this.syncCapitalsDockNav();
   }
 
   private onDockPointerDown = (e: PointerEvent): void => {
@@ -465,8 +547,9 @@ export class CapitalsGame {
   }
 
   private pointerClientInDock(clientX: number, clientY: number): boolean {
-    if (!this.dockEl || this.dockEl.classList.contains('hidden')) return false;
-    const r = this.dockEl.getBoundingClientRect();
+    const hit = this.dockHitEl ?? this.dockEl;
+    if (!hit || hit.classList.contains('hidden')) return false;
+    const r = hit.getBoundingClientRect();
     return clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
   }
 

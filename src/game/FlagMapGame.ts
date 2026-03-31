@@ -3,7 +3,10 @@ import type { BorderConnectorRel, ViewCamera } from './Renderer.ts';
 import { Renderer } from './Renderer.ts';
 import { buildMapTiles, type GeoFeatureCollection } from './geoBuild.ts';
 import { flagImageUrl } from '../data/flagAlpha2ByIso3.ts';
-import { countryNameFr } from '../data/countryNamesFr.ts';
+import { countryDisplayCollatorLocale, countryDisplayName } from '../data/countryDisplayName.ts';
+import { getLocale } from '../i18n/locale.ts';
+import { pickUiString } from '../i18n/uiStrings.ts';
+import { clampDockIndex, isCompactGameLayout, updateDockNavButtons } from './compactDock.ts';
 import { buildFlagDockIso3List } from '../data/flagDecoys.ts';
 import type { FlagDockDifficulty } from '../flagDifficulty.ts';
 import type { GameHudState } from './Game.ts';
@@ -81,6 +84,10 @@ export class FlagMapGame {
   } | null = null;
   private panPointerId: number | null = null;
   private gaveUp = false;
+  /** Index dans la file des drapeaux non placés (mode compact uniquement). */
+  private dockActiveIndex = 0;
+  private dockWheelHandler: ((e: WheelEvent) => void) | null = null;
+
   constructor(canvas: HTMLCanvasElement, onHudUpdate?: (state: GameHudState) => void) {
     this.canvas = canvas;
     this.renderer = new Renderer(canvas);
@@ -109,8 +116,13 @@ export class FlagMapGame {
     this.mapViewBBoxClamp = mapViewBBoxClamp;
     this.flagDifficulty = difficulty;
     this.dockIso3List = buildFlagDockIso3List(countries, difficulty);
+    const loc = getLocale();
+    const coll = countryDisplayCollatorLocale(loc);
     this.dockIso3List.sort((a, b) =>
-      countryNameFr(a).localeCompare(countryNameFr(b), 'fr', { sensitivity: 'base', numeric: true }),
+      countryDisplayName(a, loc).localeCompare(countryDisplayName(b, loc), coll, {
+        sensitivity: 'base',
+        numeric: true,
+      }),
     );
     this.placed.clear();
     this.renderer.clearTileFlags();
@@ -128,7 +140,9 @@ export class FlagMapGame {
     });
 
     this.rebuildTiles();
+    this.dockActiveIndex = 0;
     this.fillDock();
+    this.bindDockWheel();
     this.dockEl?.classList.remove('hidden');
 
     if (!this.eventsBound) {
@@ -171,6 +185,8 @@ export class FlagMapGame {
     this.eventsBound = false;
     this.endCanvasPan();
     this.endDrag();
+    this.unbindDockWheel();
+    this.dockActiveIndex = 0;
     this.dockEl?.replaceChildren();
     this.dockEl?.classList.add('hidden');
     this.renderer.clearTileFlags();
@@ -179,6 +195,60 @@ export class FlagMapGame {
 
   setDockElement(el: HTMLElement | null): void {
     this.dockEl = el;
+  }
+
+  /** Appelé au redimensionnement / changement breakpoint pour rafraîchir le dock. */
+  onDockLayoutChange(): void {
+    this.clampFlagDockIndex();
+    this.fillDock();
+  }
+
+  /** Flèches / molette : déplace l’élément actif (mode compact). */
+  dockNavigateStep(delta: number): void {
+    if (!isCompactGameLayout()) return;
+    const q = this.unplacedIsoQueue();
+    if (q.length <= 1) return;
+    this.dockActiveIndex = clampDockIndex(this.dockActiveIndex + delta, q.length);
+    this.fillDock();
+  }
+
+  private unplacedIsoQueue(): string[] {
+    return this.dockIso3List.filter((iso) => !this.placed.has(iso));
+  }
+
+  private clampFlagDockIndex(): void {
+    const q = this.unplacedIsoQueue();
+    this.dockActiveIndex = clampDockIndex(this.dockActiveIndex, q.length);
+  }
+
+  private syncFlagDockNav(): void {
+    const q = this.unplacedIsoQueue();
+    updateDockNavButtons('flag', isCompactGameLayout(), q.length, this.dockActiveIndex);
+  }
+
+  private bindDockWheel(): void {
+    this.unbindDockWheel();
+    if (!this.dockEl) return;
+    this.dockWheelHandler = (e: WheelEvent): void => {
+      if (!isCompactGameLayout() || this.dockEl?.classList.contains('hidden')) return;
+      const dx = e.deltaX;
+      const dy = e.deltaY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
+        e.preventDefault();
+        this.dockNavigateStep(dx > 0 ? 1 : -1);
+      } else if ((e.shiftKey || e.altKey) && Math.abs(dy) > 8) {
+        e.preventDefault();
+        this.dockNavigateStep(dy > 0 ? 1 : -1);
+      }
+    };
+    this.dockEl.addEventListener('wheel', this.dockWheelHandler, { passive: false });
+  }
+
+  private unbindDockWheel(): void {
+    if (this.dockWheelHandler && this.dockEl) {
+      this.dockEl.removeEventListener('wheel', this.dockWheelHandler);
+    }
+    this.dockWheelHandler = null;
   }
 
   zoomIn(): void {
@@ -254,29 +324,46 @@ export class FlagMapGame {
     this.resetCameraToMap();
   }
 
+  private appendFlagDockButton(iso3: string): void {
+    if (!this.dockEl) return;
+    const img = this.flagImages.get(iso3);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = img ? 'flag-dock-item' : 'flag-dock-item flag-dock-item--text';
+    btn.dataset['iso3'] = iso3;
+    btn.title = pickUiString('game.dock.dragFlag', getLocale());
+    if (img) {
+      const thumb = document.createElement('img');
+      thumb.src = img.src;
+      thumb.alt = '';
+      thumb.draggable = false;
+      btn.appendChild(thumb);
+    } else {
+      btn.textContent = iso3;
+    }
+    btn.addEventListener('pointerdown', this.onDockPointerDown);
+    this.dockEl.appendChild(btn);
+  }
+
   private fillDock(): void {
     if (!this.dockEl) return;
     this.dockEl.replaceChildren();
-    for (const iso3 of this.dockIso3List) {
-      if (this.placed.has(iso3)) continue;
-      const img = this.flagImages.get(iso3);
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = img ? 'flag-dock-item' : 'flag-dock-item flag-dock-item--text';
-      btn.dataset['iso3'] = iso3;
-      btn.title = 'Glisser sur le pays';
-      if (img) {
-        const thumb = document.createElement('img');
-        thumb.src = img.src;
-        thumb.alt = '';
-        thumb.draggable = false;
-        btn.appendChild(thumb);
-      } else {
-        btn.textContent = iso3;
+    const queue = this.unplacedIsoQueue();
+    this.clampFlagDockIndex();
+    const compact = isCompactGameLayout();
+
+    if (compact) {
+      if (queue.length === 0) {
+        this.syncFlagDockNav();
+        return;
       }
-      btn.addEventListener('pointerdown', this.onDockPointerDown);
-      this.dockEl.appendChild(btn);
+      this.appendFlagDockButton(queue[this.dockActiveIndex]!);
+    } else {
+      for (const iso3 of queue) {
+        this.appendFlagDockButton(iso3);
+      }
     }
+    this.syncFlagDockNav();
   }
 
   private refreshDock(): void {

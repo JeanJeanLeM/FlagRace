@@ -5,7 +5,14 @@ import {
   getDefaultRegionId,
   regionSupportsFlags,
 } from './data/regionConfig.ts';
-import { DEFAULT_GAME_TYPE, GAME_TYPE_LABELS, type GameTypeId } from './gameModes.ts';
+import { DEFAULT_GAME_TYPE, type GameTypeId } from './gameModes.ts';
+import {
+  catalogEntryDescriptionLines,
+  catalogEntryLabel,
+  gameTypeMenuLabel,
+  getLocale,
+  pickUiString,
+} from './i18n/index.ts';
 
 function renderRegionExtraChips(container: HTMLElement | null): void {
   if (!container) return;
@@ -17,8 +24,11 @@ function renderRegionExtraChips(container: HTMLElement | null): void {
     btn.type = 'button';
     btn.className = 'region-extra-chip';
     btn.dataset['region'] = region.id;
-    btn.textContent = region.label;
-    btn.setAttribute('aria-label', `${region.label}. ${region.descriptionLines.join(', ')}`);
+    btn.textContent = catalogEntryLabel(region, getLocale());
+    btn.setAttribute(
+      'aria-label',
+      `${catalogEntryLabel(region, getLocale())}. ${catalogEntryDescriptionLines(region, getLocale()).join(', ')}`,
+    );
     container.appendChild(btn);
   }
 }
@@ -84,12 +94,14 @@ async function injectWorldMapSvg(host: HTMLElement | null): Promise<void> {
       const id = path.getAttribute('data-region');
       const meta = id ? catalogEntryForRegionId(id) : undefined;
       if (meta && 'descriptionLines' in meta) {
-        path.setAttribute('aria-label', `${meta.label}. ${meta.descriptionLines.join(', ')}`);
+        path.setAttribute(
+          'aria-label',
+          `${catalogEntryLabel(meta, getLocale())}. ${catalogEntryDescriptionLines(meta, getLocale()).join(', ')}`,
+        );
       }
     });
   } catch {
-    host.innerHTML =
-      '<p class="world-map-fallback">Carte menu indisponible. Lance <code>npm run build:menu-map</code> à la racine du projet.</p>';
+    host.innerHTML = `<p class="world-map-fallback">${pickUiString('worldMap.fallback', getLocale())}</p>`;
   }
 }
 
@@ -117,9 +129,6 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   const btnDifficultyCancel = document.getElementById('btn-difficulty-cancel');
   const btnDifficultyConfirm = document.getElementById('btn-difficulty-confirm');
 
-  const FLAG_BLOCKED_REGION_TITLE =
-    'Pas de drapeaux ISO pour cette carte (départements, États US).';
-
   function ensureRegionCompatibleWithGameType(): void {
     if (selectedGameType !== 'flag-match') return;
     if (regionSupportsFlags(selectedRegionId)) return;
@@ -145,7 +154,7 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
     if (!nameEl) return;
     const entry = catalogEntryForRegionId(selectedRegionId);
     const label =
-      entry && 'label' in entry ? entry.label : selectedRegionId;
+      entry && 'label' in entry ? catalogEntryLabel(entry, getLocale()) : selectedRegionId;
     nameEl.textContent = label;
   }
 
@@ -162,18 +171,22 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
       const off = !canPickRegion || blockForFlags;
       setRegionInteractive(el, off);
       const base = catalogEntryForRegionId(id);
+      const blockedTitle = pickUiString('region.flagBlockedTitle', getLocale());
       if (blockForFlags) {
-        if (el instanceof HTMLElement) el.title = FLAG_BLOCKED_REGION_TITLE;
+        if (el instanceof HTMLElement) el.title = blockedTitle;
         if (base && 'descriptionLines' in base) {
           el.setAttribute(
             'aria-label',
-            `${base.label}. ${FLAG_BLOCKED_REGION_TITLE} ${base.descriptionLines.join(', ')}`,
+            `${catalogEntryLabel(base, getLocale())}. ${blockedTitle} ${catalogEntryDescriptionLines(base, getLocale()).join(', ')}`,
           );
         }
       } else {
         if (el instanceof HTMLElement) el.title = '';
         if (base && 'descriptionLines' in base) {
-          el.setAttribute('aria-label', `${base.label}. ${base.descriptionLines.join(', ')}`);
+          el.setAttribute(
+            'aria-label',
+            `${catalogEntryLabel(base, getLocale())}. ${catalogEntryDescriptionLines(base, getLocale()).join(', ')}`,
+          );
         }
       }
     });
@@ -208,7 +221,7 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
       selectedGameType,
     );
     if (difficultyModalSub) {
-      difficultyModalSub.textContent = GAME_TYPE_LABELS[selectedGameType];
+      difficultyModalSub.textContent = gameTypeMenuLabel(selectedGameType, getLocale());
     }
     difficultyModal?.classList.remove('hidden');
     difficultyModal?.setAttribute('aria-hidden', 'false');
@@ -286,6 +299,17 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   });
 
   void injectWorldMapSvg(screenMenu.querySelector('#world-menu-svg-host'));
+
+  function onLocaleChange(): void {
+    renderRegionExtraChips(extraEl);
+    syncRegionPickersForGameType();
+    refreshRegionPickersActiveState();
+    updateSelectedRegionLabel();
+    if (difficultyModal && !difficultyModal.classList.contains('hidden') && difficultyModalSub) {
+      difficultyModalSub.textContent = gameTypeMenuLabel(selectedGameType, getLocale());
+    }
+  }
+  document.addEventListener('worldpuzzle-locale', onLocaleChange);
 
   syncPuzzleBlock(
     puzzleDifficulty,

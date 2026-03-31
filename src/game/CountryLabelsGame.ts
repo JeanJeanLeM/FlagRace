@@ -4,7 +4,11 @@ import { Renderer, type CapitalMarkerDraw } from './Renderer.ts';
 import { buildMapTiles, type GeoFeatureCollection } from './geoBuild.ts';
 import { buildFlagDockIso3List } from '../data/flagDecoys.ts';
 import type { CountryLabelDifficulty } from '../countryLabelDifficulty.ts';
-import { countryNameFr, flagEmojiFromIso3 } from '../data/countryNamesFr.ts';
+import { countryDisplayCollatorLocale, countryDisplayName } from '../data/countryDisplayName.ts';
+import { flagEmojiFromIso3 } from '../data/countryNamesFr.ts';
+import { getLocale } from '../i18n/locale.ts';
+import { pickUiString } from '../i18n/uiStrings.ts';
+import { clampDockIndex, isCompactGameLayout, updateDockNavButtons } from './compactDock.ts';
 import type { GameHudState } from './Game.ts';
 import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
 import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
@@ -66,6 +70,8 @@ export class CountryLabelsGame {
   private camera: ViewCamera = { cx: 0, cy: 0, scale: DEFAULT_VIEW_SCALE };
 
   private dockEl: HTMLElement | null = null;
+  private dockActiveIndex = 0;
+  private dockWheelHandler: ((e: WheelEvent) => void) | null = null;
   private ghostEl: HTMLElement | null = null;
   private dragMarker: LabelMarker | null = null;
   private canvasPan: {
@@ -98,6 +104,19 @@ export class CountryLabelsGame {
     this.dockEl = el;
   }
 
+  onDockLayoutChange(): void {
+    this.clampLabelsDockIndex();
+    this.fillDock();
+  }
+
+  dockNavigateStep(delta: number): void {
+    if (!isCompactGameLayout()) return;
+    const q = this.unplacedLabelMarkers();
+    if (q.length <= 1) return;
+    this.dockActiveIndex = clampDockIndex(this.dockActiveIndex + delta, q.length);
+    this.fillDock();
+  }
+
   async load(
     geojsonUrl: string,
     countries: string[],
@@ -115,6 +134,7 @@ export class CountryLabelsGame {
     this.gaveUp = false;
     this.frozenElapsedMs = null;
     this.dockEl?.classList.remove('hidden');
+    this.bindDockWheel();
     if (!this.eventsBound) {
       this.bindEvents();
       this.eventsBound = true;
@@ -138,8 +158,10 @@ export class CountryLabelsGame {
     this.frozenElapsedMs = null;
     this.endCanvasPan();
     this.endDockDrag();
+    this.unbindDockWheel();
     this.unbindEvents();
     this.eventsBound = false;
+    this.dockActiveIndex = 0;
     this.dockEl?.replaceChildren();
     this.dockEl?.classList.add('hidden');
   }
@@ -233,8 +255,10 @@ export class CountryLabelsGame {
     const onMap = new Set(countries);
     const dockIso3 = buildFlagDockIso3List(countries, this.difficulty);
 
+    const loc = getLocale();
+    const coll = countryDisplayCollatorLocale(loc);
     const items: LabelMarker[] = dockIso3.map((iso3) => {
-      const name = countryNameFr(iso3);
+      const name = countryDisplayName(iso3, loc);
       const emoji = this.difficulty === 1 ? flagEmojiFromIso3(iso3) : '';
       const displayLabel =
         this.difficulty === 1 && emoji ? `${emoji}\u00A0${name}` : name;
@@ -250,7 +274,10 @@ export class CountryLabelsGame {
       };
     });
     items.sort((a, b) =>
-      countryNameFr(a.iso3).localeCompare(countryNameFr(b.iso3), 'fr', { sensitivity: 'base', numeric: true }),
+      countryDisplayName(a.iso3, loc).localeCompare(countryDisplayName(b.iso3, loc), coll, {
+        sensitivity: 'base',
+        numeric: true,
+      }),
     );
     items.forEach((m, i) => {
       m.zIndex = i;
@@ -261,33 +288,90 @@ export class CountryLabelsGame {
     this.resetCameraToMap();
     this.winPhase = 'none';
     this.gaveUp = false;
+    this.dockActiveIndex = 0;
     this.endDockDrag();
     this.updateOutcome();
     this.fillDock();
   }
 
+  private unplacedLabelMarkers(): LabelMarker[] {
+    return this.markers.filter((m) => !m.placed);
+  }
+
+  private clampLabelsDockIndex(): void {
+    const q = this.unplacedLabelMarkers();
+    this.dockActiveIndex = clampDockIndex(this.dockActiveIndex, q.length);
+  }
+
+  private syncLabelsDockNav(): void {
+    const q = this.unplacedLabelMarkers();
+    updateDockNavButtons('capitals', isCompactGameLayout(), q.length, this.dockActiveIndex);
+  }
+
+  private appendLabelDockButton(m: LabelMarker): void {
+    if (!this.dockEl) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'capitals-dock-item country-label-dock-item';
+    btn.dataset['markerId'] = m.id;
+    btn.title = pickUiString('game.dock.dragCountry', getLocale());
+    const pin = document.createElement('span');
+    pin.className = 'capitals-dock-item-pin';
+    pin.setAttribute('aria-hidden', 'true');
+    pin.textContent = '🏷️';
+    const lab = document.createElement('span');
+    lab.className = 'capitals-dock-item-label';
+    lab.textContent = m.displayLabel;
+    btn.appendChild(pin);
+    btn.appendChild(lab);
+    btn.addEventListener('pointerdown', this.onDockPointerDown);
+    this.dockEl.appendChild(btn);
+  }
+
+  private bindDockWheel(): void {
+    this.unbindDockWheel();
+    if (!this.dockEl) return;
+    this.dockWheelHandler = (e: WheelEvent): void => {
+      if (!isCompactGameLayout() || this.dockEl?.classList.contains('hidden')) return;
+      const dx = e.deltaX;
+      const dy = e.deltaY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
+        e.preventDefault();
+        this.dockNavigateStep(dx > 0 ? 1 : -1);
+      } else if ((e.shiftKey || e.altKey) && Math.abs(dy) > 8) {
+        e.preventDefault();
+        this.dockNavigateStep(dy > 0 ? 1 : -1);
+      }
+    };
+    this.dockEl.addEventListener('wheel', this.dockWheelHandler, { passive: false });
+  }
+
+  private unbindDockWheel(): void {
+    if (this.dockWheelHandler && this.dockEl) {
+      this.dockEl.removeEventListener('wheel', this.dockWheelHandler);
+    }
+    this.dockWheelHandler = null;
+  }
+
   private fillDock(): void {
     if (!this.dockEl) return;
-    const unplaced = this.markers.filter((m) => !m.placed);
+    const unplaced = this.unplacedLabelMarkers();
     this.dockEl.replaceChildren();
-    for (const m of unplaced) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'capitals-dock-item country-label-dock-item';
-      btn.dataset['markerId'] = m.id;
-      btn.title = 'Glisser sur le pays sur la carte';
-      const pin = document.createElement('span');
-      pin.className = 'capitals-dock-item-pin';
-      pin.setAttribute('aria-hidden', 'true');
-      pin.textContent = '🏷️';
-      const lab = document.createElement('span');
-      lab.className = 'capitals-dock-item-label';
-      lab.textContent = m.displayLabel;
-      btn.appendChild(pin);
-      btn.appendChild(lab);
-      btn.addEventListener('pointerdown', this.onDockPointerDown);
-      this.dockEl.appendChild(btn);
+    this.clampLabelsDockIndex();
+    const compact = isCompactGameLayout();
+
+    if (compact) {
+      if (unplaced.length === 0) {
+        this.syncLabelsDockNav();
+        return;
+      }
+      this.appendLabelDockButton(unplaced[this.dockActiveIndex]!);
+    } else {
+      for (const m of unplaced) {
+        this.appendLabelDockButton(m);
+      }
     }
+    this.syncLabelsDockNav();
   }
 
   private onDockPointerDown = (e: PointerEvent): void => {

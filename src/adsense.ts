@@ -6,6 +6,8 @@
  * Jeu : VITE_ADSENSE_SLOT_GAME_SIDEBAR (colonne droite).
  */
 
+import { getLocale, pickUiString, subscribeLocale, t } from './i18n/index.ts';
+
 const DEFAULT_ADSENSE_CLIENT = 'ca-pub-8944795420097131';
 const CONSENT_KEY = 'worldpuzzle-ads-consent';
 
@@ -57,7 +59,7 @@ function loadAdsenseScript(client: string): Promise<void> {
     s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(client)}`;
     s.crossOrigin = 'anonymous';
     s.onload = () => resolve();
-    s.onerror = () => reject(new Error('Échec du chargement AdSense'));
+    s.onerror = () => reject(new Error(pickUiString('ads.loadError', getLocale())));
     document.head.appendChild(s);
   });
   return scriptPromise;
@@ -134,12 +136,11 @@ function showConsentBanner(client: string): void {
   const bar = document.createElement('div');
   bar.id = 'ads-consent-banner';
   bar.setAttribute('role', 'dialog');
-  bar.setAttribute('aria-label', 'Cookies et publicité');
+  bar.setAttribute('aria-label', t('ads.consent.aria'));
 
   const text = document.createElement('p');
   text.className = 'ads-consent-banner__text';
-  text.textContent =
-    'Nous pouvons afficher des publicités Google (AdSense). Elles peuvent utiliser des cookies ou données équivalentes. Consultez la page Confidentialité pour plus de détails.';
+  text.textContent = t('ads.consent.text');
 
   const actions = document.createElement('div');
   actions.className = 'ads-consent-banner__actions';
@@ -147,13 +148,13 @@ function showConsentBanner(client: string): void {
   const link = document.createElement('a');
   link.href = '/confidentialite.html';
   link.className = 'ads-consent-banner__link';
-  link.textContent = 'Confidentialité';
+  link.textContent = t('ads.consent.privacy');
   link.rel = 'noopener noreferrer';
 
   const deny = document.createElement('button');
   deny.type = 'button';
   deny.className = 'ads-consent-banner__btn ads-consent-banner__btn--secondary';
-  deny.textContent = 'Refuser';
+  deny.textContent = t('ads.consent.deny');
   deny.addEventListener('click', () => {
     localStorage.setItem(CONSENT_KEY, 'deny');
     removeConsentBanner();
@@ -162,7 +163,7 @@ function showConsentBanner(client: string): void {
   const accept = document.createElement('button');
   accept.type = 'button';
   accept.className = 'ads-consent-banner__btn ads-consent-banner__btn--primary';
-  accept.textContent = 'Accepter';
+  accept.textContent = t('ads.consent.allow');
   accept.addEventListener('click', () => {
     localStorage.setItem(CONSENT_KEY, 'allow');
     removeConsentBanner();
@@ -174,7 +175,22 @@ function showConsentBanner(client: string): void {
   document.body.appendChild(bar);
 }
 
+function refreshConsentBannerI18n(): void {
+  const bar = document.getElementById('ads-consent-banner');
+  if (!bar) return;
+  bar.setAttribute('aria-label', t('ads.consent.aria'));
+  const bannerText = bar.querySelector('.ads-consent-banner__text');
+  if (bannerText) bannerText.textContent = t('ads.consent.text');
+  const link = bar.querySelector<HTMLAnchorElement>('.ads-consent-banner__link');
+  if (link) link.textContent = t('ads.consent.privacy');
+  const buttons = bar.querySelectorAll('button');
+  if (buttons[0]) buttons[0].textContent = t('ads.consent.deny');
+  if (buttons[1]) buttons[1].textContent = t('ads.consent.allow');
+}
+
 export function initAdsense(): void {
+  subscribeLocale(refreshConsentBannerI18n);
+
   const client = publisherId();
   if (!client) return;
 
