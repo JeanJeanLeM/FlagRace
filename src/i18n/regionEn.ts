@@ -33,14 +33,12 @@ export const REGION_CATALOG_EN: Record<
   },
   usa: {
     label: 'United States',
-    descriptionLines: ['Single country · full outline'],
+    descriptionLines: [
+      '48 contiguous states — one tile per state (puzzle, capital, name or flag)',
+    ],
   },
   'fr-departments': {
     label: 'France · departments',
     descriptionLines: ['Mainland only (excluding DROM-COM)'],
-  },
-  'usa-states': {
-    label: 'United States · states',
-    descriptionLines: ['48 contiguous states (excluding AK, HI, D.C.)'],
   },
 };

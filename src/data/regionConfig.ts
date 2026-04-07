@@ -15,6 +15,15 @@ import {
   USA_STATE_IDS,
 } from './worldRegions.generated.ts';
 
+/** Ancien id menu « usa-states » → « usa » (même carte par États). */
+const LEGACY_REGION_ID_ALIASES: Record<string, string> = {
+  'usa-states': 'usa',
+};
+
+export function resolveRegionId(regionId: string): string {
+  return LEGACY_REGION_ID_ALIASES[regionId] ?? regionId;
+}
+
 export const COUNTRY_COLORS: Record<string, string> = {
   MAR: '#E8C87A',
   ESH: '#D8B868',
@@ -142,10 +151,14 @@ export const REGION_CATALOG: readonly RegionCatalogEntry[] = [
     id: 'usa',
     label: 'États-Unis',
     icon: '🇺🇸',
-    descriptionLines: ['Pays unique · silhouette complète', '1 pays'],
+    descriptionLines: [
+      '48 États contigus · une tuile par État (puzzle, capitale, nom ou drapeau)',
+      `${USA_STATE_IDS.length} États`,
+    ],
     available: true,
-    geojsonUrl: '/data/usa-country.geojson',
-    countries: ['USA'],
+    geojsonUrl: '/data/usa-states.geojson',
+    countries: [...USA_STATE_IDS],
+    showOnWorldMap: true,
   },
   {
     id: 'fr-departments',
@@ -155,17 +168,6 @@ export const REGION_CATALOG: readonly RegionCatalogEntry[] = [
     available: true,
     geojsonUrl: '/data/fr-departments.geojson',
     countries: [...FR_DEPARTMENT_IDS],
-    supportsFlags: false,
-    showOnWorldMap: false,
-  },
-  {
-    id: 'usa-states',
-    label: 'États-Unis · États',
-    icon: '🇺🇸',
-    descriptionLines: ['48 États contigus (hors AK, HI, D.C.)', `${USA_STATE_IDS.length} États`],
-    available: true,
-    geojsonUrl: '/data/usa-states.geojson',
-    countries: [...USA_STATE_IDS],
     supportsFlags: false,
     showOnWorldMap: false,
   },
@@ -191,10 +193,11 @@ export function getDefaultRegionId(): string {
 }
 
 export function regionSupportsFlags(regionId: string): boolean {
-  const r = REGIONS.find((x) => x.id === regionId);
+  const r = REGIONS.find((x) => x.id === resolveRegionId(regionId));
   return r?.supportsFlags ?? true;
 }
 
 export function catalogEntryForRegionId(regionId: string): RegionCatalogEntry | undefined {
-  return REGION_CATALOG.find((e) => e.id === regionId);
+  const id = resolveRegionId(regionId);
+  return REGION_CATALOG.find((e) => e.id === id);
 }

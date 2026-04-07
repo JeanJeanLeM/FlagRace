@@ -6,15 +6,14 @@ import type { MapViewBBoxClamp } from '../data/regionConfig.ts';
 import { ADJACENCY as DEFAULT_ADJACENCY } from '../data/adjacency.ts';
 import { adjacencyPairKey, buildMapTiles, type GeoFeatureCollection } from './geoBuild.ts';
 import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
+import { bindCanvasPinchZoom } from './canvasPinchZoom.ts';
+import { defaultViewScale } from './compactDock.ts';
 
 /** Écart max entre points frontière pour compter une connexion (px monde). Plus strict = moins de faux positifs. */
 const CONNECT_GAP_PX = 52;
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
 const ZOOM_STEP = 1.12;
-/** Vue de départ : deux crans de dézoom par rapport à l’échelle de référence 1. */
-const DEFAULT_VIEW_ZOOM_OUT_STEPS = 2;
-const DEFAULT_VIEW_SCALE = 1 / ZOOM_STEP ** DEFAULT_VIEW_ZOOM_OUT_STEPS;
 /** Zone magnétique au relâchement : légèrement plus large que CONNECT_GAP pour attirer la tuile. */
 const SNAP_RADIUS_PX = CONNECT_GAP_PX + 42;
 /** Score : base + points par frontière connectée − pénalité temps (secondes). */
@@ -83,7 +82,8 @@ export class Game {
   private borderAdjacency: [string, string][] = DEFAULT_ADJACENCY;
   private mapViewBBoxClamp: MapViewBBoxClamp | undefined;
   private eventsBound = false;
-  private camera: ViewCamera = { cx: 0, cy: 0, scale: DEFAULT_VIEW_SCALE };
+  private unbindPinch: (() => void) | null = null;
+  private camera: ViewCamera = { cx: 0, cy: 0, scale: defaultViewScale() };
   private displayOptions: GameDisplayOptions;
 
   constructor(
@@ -233,7 +233,7 @@ export class Game {
       this.camera = {
         cx: this.canvas.width / 2,
         cy: this.canvas.height / 2,
-        scale: DEFAULT_VIEW_SCALE,
+        scale: defaultViewScale(),
       };
       return;
     }
@@ -244,7 +244,7 @@ export class Game {
       sy += t.targetY;
     }
     const n = tiles.length;
-    this.camera = { cx: sx / n, cy: sy / n, scale: DEFAULT_VIEW_SCALE };
+    this.camera = { cx: sx / n, cy: sy / n, scale: defaultViewScale() };
   }
 
   private screenToWorld(sx: number, sy: number): { x: number; y: number } {
@@ -680,9 +680,14 @@ export class Game {
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     this.canvas.addEventListener('dblclick', this.onDblClick);
     this.canvas.addEventListener('keydown', this.onCanvasKeyDown);
+    this.unbindPinch = bindCanvasPinchZoom(this.canvas, (x, y, factor) =>
+      this.zoomAtScreen(x, y, factor),
+    );
   }
 
   private unbindEvents(): void {
+    this.unbindPinch?.();
+    this.unbindPinch = null;
     this.canvas.removeEventListener('mousedown', this.onMouseDown);
     this.canvas.removeEventListener('mousemove', this.onMouseMove);
     window.removeEventListener('mouseup', this.onMouseUp);

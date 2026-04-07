@@ -6,7 +6,7 @@ function countSuffix(entry: RegionCatalogEntry, n: number): string {
   if (entry.id === 'fr-departments') {
     return n === 1 ? '1 department' : `${n} departments`;
   }
-  if (entry.id === 'usa-states') {
+  if (entry.id === 'usa') {
     return n === 1 ? '1 state' : `${n} states`;
   }
   return n === 1 ? '1 country' : `${n} countries`;

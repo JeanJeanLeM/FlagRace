@@ -14,7 +14,7 @@ import { ABANDON_FLAT_SCORE_PENALTY } from './game/abandon.ts';
 import { FlagMapGame } from './game/FlagMapGame.ts';
 import { CapitalsGame } from './game/CapitalsGame.ts';
 import { CountryLabelsGame } from './game/CountryLabelsGame.ts';
-import { REGIONS } from './data/regionConfig.ts';
+import { REGIONS, resolveRegionId } from './data/regionConfig.ts';
 import {
   FR_DEPARTMENT_CAPITALS,
   US_STATE_CAPITAL_ENTRIES,
@@ -53,6 +53,39 @@ let lastVictoryGaveUp = false;
 
 initDocumentLang();
 
+function gameHelpBodyText(
+  kind: 'puzzle' | 'flag' | 'capitals' | 'country-labels',
+  capitalsDiff?: CapitalsDifficultyId,
+): string {
+  let hintText = t('game.hint.puzzle');
+  if (kind === 'flag') {
+    hintText = t('game.hint.flag');
+  } else if (kind === 'country-labels') {
+    hintText = t('game.hint.labels');
+  } else if (kind === 'capitals') {
+    const d = capitalsDiff ?? 'near-capital';
+    if (d === 'in-country') {
+      hintText = t('game.hint.capitals.inCountry');
+    } else if (d === 'expert-decoys') {
+      hintText = t('game.hint.capitals.decoys');
+    } else {
+      hintText = t('game.hint.capitals.near');
+    }
+  }
+  if (kind !== 'puzzle' && isCompactGameLayout()) {
+    hintText += ' ' + t('game.hint.mobileDockSuffix');
+  }
+  return hintText;
+}
+
+function syncGameHelpModalBody(
+  kind: 'puzzle' | 'flag' | 'capitals' | 'country-labels',
+  capitalsDiff?: CapitalsDifficultyId,
+): void {
+  const el = document.getElementById('game-help-modal-text');
+  if (el) el.textContent = gameHelpBodyText(kind, capitalsDiff);
+}
+
 function showScreen(id: string): void {
   document.querySelectorAll<HTMLElement>('.screen').forEach((s) => {
     s.classList.add('hidden');
@@ -72,7 +105,6 @@ function setGameScreenKind(
   if (capShell) capShell.classList.toggle('hidden', kind !== 'capitals' && kind !== 'country-labels');
 
   const label = document.getElementById('progress-label');
-  const hint = document.getElementById('game-hint');
   const desc = document.getElementById('victory-desc');
   const eyebrow = document.getElementById('victory-eyebrow');
   const title = document.getElementById('victory-title');
@@ -87,27 +119,7 @@ function setGameScreenKind(
             ? t('game.progress.names')
             : t('game.progress.connections');
   }
-  if (hint) {
-    let hintText = t('game.hint.puzzle');
-    if (kind === 'flag') {
-      hintText = t('game.hint.flag');
-    } else if (kind === 'country-labels') {
-      hintText = t('game.hint.labels');
-    } else if (kind === 'capitals') {
-      const d = capitalsDiff ?? 'near-capital';
-      if (d === 'in-country') {
-        hintText = t('game.hint.capitals.inCountry');
-      } else if (d === 'expert-decoys') {
-        hintText = t('game.hint.capitals.decoys');
-      } else {
-        hintText = t('game.hint.capitals.near');
-      }
-    }
-    if (kind !== 'puzzle' && isCompactGameLayout()) {
-      hintText += ' ' + t('game.hint.mobileDockSuffix');
-    }
-    hint.textContent = hintText;
-  }
+  syncGameHelpModalBody(kind, capitalsDiff);
   if (desc) {
     if (kind === 'flag') {
       desc.textContent = t('victory.desc.flags');
@@ -160,11 +172,9 @@ function measuredVisibleDockShellHeight(): number {
 
 function sizeCanvas(canvas: HTMLCanvasElement): void {
   const wrap = document.getElementById('game-canvas-wrap');
-  const hint = document.getElementById('game-hint');
   const headerH = measuredGameHeaderHeight();
-  const hintH = hint?.offsetHeight ?? 32;
   const dockH = isCompactGameLayout() ? measuredVisibleDockShellHeight() : 0;
-  const fallbackH = Math.max(window.innerHeight - headerH - hintH - dockH - 4, 400);
+  const fallbackH = Math.max(window.innerHeight - headerH - dockH - 4, 400);
   let w = window.innerWidth;
   let h = fallbackH;
   if (wrap) {
@@ -255,7 +265,7 @@ function applyHudToDom(hud: GameHudState, canvas: HTMLCanvasElement): void {
 function updateGameTitleBar(): void {
   if (!currentRegionId) return;
   const titleBar = document.getElementById('game-title-bar');
-  const menuTitle = document.getElementById('game-action-menu-title');
+  const titleMobile = document.getElementById('game-title-mobile');
   const rlab = regionLabelForPlay(currentRegionId, getLocale());
   let full = '';
   if (currentGameKind === 'puzzle') {
@@ -277,7 +287,7 @@ function updateGameTitleBar(): void {
     full = `${t('game.title.labels')}${labelDiff} · ${rlab}`;
   }
   if (titleBar) titleBar.textContent = full;
-  if (menuTitle) menuTitle.textContent = full;
+  if (titleMobile) titleMobile.textContent = full;
 }
 
 function refreshGameChromeI18n(): void {
@@ -313,10 +323,11 @@ function syncLangToggleButtons(): void {
 }
 
 async function startPuzzleGame(regionId: string): Promise<void> {
-  const region = REGIONS.find((r) => r.id === regionId);
+  const id = resolveRegionId(regionId);
+  const region = REGIONS.find((r) => r.id === id);
   if (!region) return;
 
-  currentRegionId = regionId;
+  currentRegionId = id;
   currentGameKind = 'puzzle';
   victoryPanelOpen = false;
   lastVictoryGaveUp = false;
@@ -342,10 +353,11 @@ async function startPuzzleGame(regionId: string): Promise<void> {
 }
 
 async function startFlagGame(regionId: string): Promise<void> {
-  const region = REGIONS.find((r) => r.id === regionId);
+  const id = resolveRegionId(regionId);
+  const region = REGIONS.find((r) => r.id === id);
   if (!region) return;
 
-  currentRegionId = regionId;
+  currentRegionId = id;
   currentGameKind = 'flag';
   victoryPanelOpen = false;
   lastVictoryGaveUp = false;
@@ -374,10 +386,11 @@ async function startFlagGame(regionId: string): Promise<void> {
 }
 
 async function startCapitalsGame(regionId: string): Promise<void> {
-  const region = REGIONS.find((r) => r.id === regionId);
+  const id = resolveRegionId(regionId);
+  const region = REGIONS.find((r) => r.id === id);
   if (!region) return;
 
-  currentRegionId = regionId;
+  currentRegionId = id;
   currentGameKind = 'capitals';
   victoryPanelOpen = false;
   lastVictoryGaveUp = false;
@@ -414,10 +427,11 @@ async function startCapitalsGame(regionId: string): Promise<void> {
 }
 
 async function startCountryLabelsGame(regionId: string): Promise<void> {
-  const region = REGIONS.find((r) => r.id === regionId);
+  const id = resolveRegionId(regionId);
+  const region = REGIONS.find((r) => r.id === id);
   if (!region) return;
 
-  currentRegionId = regionId;
+  currentRegionId = id;
   currentGameKind = 'country-labels';
   victoryPanelOpen = false;
   lastVictoryGaveUp = false;
@@ -506,12 +520,24 @@ function dockNavigateFromUi(delta: -1 | 1): void {
   else if (currentGame instanceof CountryLabelsGame) currentGame.dockNavigateStep(delta);
 }
 
+function openGameHelpModal(): void {
+  const capDiff =
+    currentGameKind === 'capitals' ? getCapitalsDifficultyFromMenuSelection() : undefined;
+  syncGameHelpModalBody(currentGameKind, capDiff);
+  const modal = document.getElementById('game-help-modal');
+  modal?.classList.remove('hidden');
+  modal?.setAttribute('aria-hidden', 'false');
+}
+
+function closeGameHelpModal(): void {
+  const modal = document.getElementById('game-help-modal');
+  modal?.classList.add('hidden');
+  modal?.setAttribute('aria-hidden', 'true');
+}
+
 function showGameHelpFromMenu(): void {
   closeGameActionMenu();
-  const hint = document.getElementById('game-hint');
-  hint?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  hint?.classList.add('game-hint--highlight');
-  window.setTimeout(() => hint?.classList.remove('game-hint--highlight'), 2200);
+  openGameHelpModal();
 }
 
 function requestAbandonFromMenu(): void {
@@ -523,6 +549,7 @@ function requestAbandonFromMenu(): void {
 
 function backToMenu(): void {
   closeGameActionMenu();
+  closeGameHelpModal();
   victoryPanelOpen = false;
   lastVictoryGaveUp = false;
   document.getElementById('victory-panel')?.classList.add('hidden');
@@ -580,11 +607,20 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    const modal = document.getElementById('game-help-modal');
+    if (modal && !modal.classList.contains('hidden')) {
+      closeGameHelpModal();
+      return;
+    }
     const panel = document.getElementById('game-action-menu-panel');
     if (!panel || panel.classList.contains('hidden')) return;
     closeGameActionMenu();
     document.getElementById('btn-game-menu')?.focus();
   });
+  document.getElementById('game-help-modal')?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('[data-close-game-help]')) closeGameHelpModal();
+  });
+  document.getElementById('btn-game-help-desktop')?.addEventListener('click', () => openGameHelpModal());
   document.getElementById('game-action-menu-panel')?.addEventListener('click', (e) => {
     const el = (e.target as HTMLElement).closest<HTMLElement>('[data-game-action]');
     if (!el) return;
@@ -596,15 +632,6 @@ document.addEventListener('DOMContentLoaded', () => {
       requestAbandonFromMenu();
     } else if (act === 'help') {
       showGameHelpFromMenu();
-    } else if (act === 'zoom-in') {
-      closeGameActionMenu();
-      currentGame?.zoomIn();
-    } else if (act === 'zoom-out') {
-      closeGameActionMenu();
-      currentGame?.zoomOut();
-    } else if (act === 'zoom-reset') {
-      closeGameActionMenu();
-      currentGame?.resetView();
     }
   });
   document.getElementById('btn-abandon')?.addEventListener('click', () => {
@@ -617,6 +644,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-zoom-in')?.addEventListener('click', () => currentGame?.zoomIn());
   document.getElementById('btn-zoom-out')?.addEventListener('click', () => currentGame?.zoomOut());
   document.getElementById('btn-zoom-reset')?.addEventListener('click', () => currentGame?.resetView());
+  document.getElementById('btn-zoom-float-in')?.addEventListener('click', () => currentGame?.zoomIn());
+  document.getElementById('btn-zoom-float-out')?.addEventListener('click', () => currentGame?.zoomOut());
+  document.getElementById('btn-zoom-float-reset')?.addEventListener('click', () => currentGame?.resetView());
+  document.getElementById('btn-mobile-zoom-in')?.addEventListener('click', () => currentGame?.zoomIn());
+  document.getElementById('btn-mobile-zoom-out')?.addEventListener('click', () => currentGame?.zoomOut());
+  document.getElementById('btn-mobile-zoom-reset')?.addEventListener('click', () => currentGame?.resetView());
   document.getElementById('dock-nav-flag-prev')?.addEventListener('click', () => dockNavigateFromUi(-1));
   document.getElementById('dock-nav-flag-next')?.addEventListener('click', () => dockNavigateFromUi(1));
   document.getElementById('dock-nav-capitals-prev')?.addEventListener('click', () => dockNavigateFromUi(-1));

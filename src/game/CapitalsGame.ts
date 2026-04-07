@@ -14,13 +14,12 @@ import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
 import type { MapViewBBoxClamp } from '../data/regionConfig.ts';
 import { getLocale } from '../i18n/locale.ts';
 import { pickUiString } from '../i18n/uiStrings.ts';
-import { clampDockIndex, isCompactGameLayout, updateDockNavButtons } from './compactDock.ts';
+import { bindCanvasPinchZoom } from './canvasPinchZoom.ts';
+import { clampDockIndex, defaultViewScale, isCompactGameLayout, updateDockNavButtons } from './compactDock.ts';
 
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
 const ZOOM_STEP = 1.12;
-const DEFAULT_VIEW_ZOOM_OUT_STEPS = 2;
-const DEFAULT_VIEW_SCALE = 1 / ZOOM_STEP ** DEFAULT_VIEW_ZOOM_OUT_STEPS;
 
 interface MapMarker {
   id: string;
@@ -73,7 +72,8 @@ export class CapitalsGame {
   private mapViewBBoxClamp: MapViewBBoxClamp | undefined;
   private difficulty: CapitalsDifficultyId = 'near-capital';
   private eventsBound = false;
-  private camera: ViewCamera = { cx: 0, cy: 0, scale: DEFAULT_VIEW_SCALE };
+  private unbindPinch: (() => void) | null = null;
+  private camera: ViewCamera = { cx: 0, cy: 0, scale: defaultViewScale() };
   private toleranceWorld: number;
 
   private dockEl: HTMLElement | null = null;
@@ -82,6 +82,7 @@ export class CapitalsGame {
   private dockActiveIndex = 0;
   private dockWheelHandler: ((e: WheelEvent) => void) | null = null;
   private ghostEl: HTMLElement | null = null;
+  private dockDragSourceEl: HTMLElement | null = null;
   private dragDockMarker: MapMarker | null = null;
   private dragCanvasMarker: MapMarker | null = null;
   private dragCanvasOffsetX = 0;
@@ -442,6 +443,15 @@ export class CapitalsGame {
     this.syncCapitalsDockNav();
   }
 
+  private clearDockDragPointerListeners(): void {
+    const el = this.dockDragSourceEl;
+    if (!el) return;
+    el.removeEventListener('pointermove', this.onDockDragPointerMove);
+    el.removeEventListener('pointerup', this.onDockDragPointerEnd);
+    el.removeEventListener('pointercancel', this.onDockDragPointerEnd);
+    this.dockDragSourceEl = null;
+  }
+
   private onDockPointerDown = (e: PointerEvent): void => {
     const t = e.currentTarget as HTMLElement;
     const id = t.dataset['markerId'];
@@ -464,20 +474,26 @@ export class CapitalsGame {
     document.body.appendChild(g);
     this.ghostEl = g;
     this.moveCapitalsGhost(e.clientX, e.clientY);
-    document.addEventListener('pointermove', this.onGlobalPointerMove);
-    document.addEventListener('pointerup', this.onGlobalPointerUp);
-    document.addEventListener('pointercancel', this.onGlobalPointerUp);
+
+    this.dockDragSourceEl = t;
+    try {
+      t.setPointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+    t.addEventListener('pointermove', this.onDockDragPointerMove, { passive: false });
+    t.addEventListener('pointerup', this.onDockDragPointerEnd);
+    t.addEventListener('pointercancel', this.onDockDragPointerEnd);
   };
 
-  private onGlobalPointerMove = (e: PointerEvent): void => {
+  private onDockDragPointerMove = (e: PointerEvent): void => {
     if (!this.ghostEl) return;
+    e.preventDefault();
     this.moveCapitalsGhost(e.clientX, e.clientY);
   };
 
-  private onGlobalPointerUp = (e: PointerEvent): void => {
-    document.removeEventListener('pointermove', this.onGlobalPointerMove);
-    document.removeEventListener('pointerup', this.onGlobalPointerUp);
-    document.removeEventListener('pointercancel', this.onGlobalPointerUp);
+  private onDockDragPointerEnd = (e: PointerEvent): void => {
+    this.clearDockDragPointerListeners();
 
     const marker = this.dragDockMarker;
     this.dragDockMarker = null;
@@ -511,9 +527,7 @@ export class CapitalsGame {
   };
 
   private endDockDrag(): void {
-    document.removeEventListener('pointermove', this.onGlobalPointerMove);
-    document.removeEventListener('pointerup', this.onGlobalPointerUp);
-    document.removeEventListener('pointercancel', this.onGlobalPointerUp);
+    this.clearDockDragPointerListeners();
     this.dragDockMarker = null;
     if (this.ghostEl) {
       this.ghostEl.remove();
@@ -703,7 +717,7 @@ export class CapitalsGame {
       this.camera = {
         cx: this.canvas.width / 2,
         cy: this.canvas.height / 2,
-        scale: DEFAULT_VIEW_SCALE,
+        scale: defaultViewScale(),
       };
       return;
     }
@@ -714,7 +728,7 @@ export class CapitalsGame {
       sy += t.targetY;
     }
     const n = tiles.length;
-    this.camera = { cx: sx / n, cy: sy / n, scale: DEFAULT_VIEW_SCALE };
+    this.camera = { cx: sx / n, cy: sy / n, scale: defaultViewScale() };
   }
 
   private screenToWorld(sx: number, sy: number): { x: number; y: number } {
@@ -934,9 +948,14 @@ export class CapitalsGame {
     this.canvas.addEventListener('pointerleave', this.onCanvasPointerLeave);
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     this.canvas.addEventListener('keydown', this.onCanvasKeyDown);
+    this.unbindPinch = bindCanvasPinchZoom(this.canvas, (x, y, factor) =>
+      this.zoomAtScreen(x, y, factor),
+    );
   }
 
   private unbindEvents(): void {
+    this.unbindPinch?.();
+    this.unbindPinch = null;
     this.endCanvasPan();
     this.endCanvasDrag();
     this.canvas.removeEventListener('pointerdown', this.onCanvasPointerDown);

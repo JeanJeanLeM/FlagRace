@@ -6,7 +6,8 @@ import { flagImageUrl } from '../data/flagAlpha2ByIso3.ts';
 import { countryDisplayCollatorLocale, countryDisplayName } from '../data/countryDisplayName.ts';
 import { getLocale } from '../i18n/locale.ts';
 import { pickUiString } from '../i18n/uiStrings.ts';
-import { clampDockIndex, isCompactGameLayout, updateDockNavButtons } from './compactDock.ts';
+import { bindCanvasPinchZoom } from './canvasPinchZoom.ts';
+import { clampDockIndex, defaultViewScale, isCompactGameLayout, updateDockNavButtons } from './compactDock.ts';
 import { buildFlagDockIso3List } from '../data/flagDecoys.ts';
 import type { FlagDockDifficulty } from '../flagDifficulty.ts';
 import type { GameHudState } from './Game.ts';
@@ -17,8 +18,6 @@ import type { MapViewBBoxClamp } from '../data/regionConfig.ts';
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
 const ZOOM_STEP = 1.12;
-const DEFAULT_VIEW_ZOOM_OUT_STEPS = 2;
-const DEFAULT_VIEW_SCALE = 1 / ZOOM_STEP ** DEFAULT_VIEW_ZOOM_OUT_STEPS;
 const NEUTRAL_TILE = '#455a70';
 
 function computeFlagHudScore(
@@ -69,7 +68,8 @@ export class FlagMapGame {
   private dockIso3List: string[] = [];
   private flagDifficulty: FlagDockDifficulty = 1;
   private eventsBound = false;
-  private camera: ViewCamera = { cx: 0, cy: 0, scale: DEFAULT_VIEW_SCALE };
+  private unbindPinch: (() => void) | null = null;
+  private camera: ViewCamera = { cx: 0, cy: 0, scale: defaultViewScale() };
   private placed = new Set<string>();
   private flagImages = new Map<string, HTMLImageElement>();
   private dockEl: HTMLElement | null = null;
@@ -87,6 +87,8 @@ export class FlagMapGame {
   /** Index dans la file des drapeaux non placés (mode compact uniquement). */
   private dockActiveIndex = 0;
   private dockWheelHandler: ((e: WheelEvent) => void) | null = null;
+  /** Bouton dock qui a capturé le pointeur pendant un drag (obligatoire sur tactile). */
+  private flagDragSourceEl: HTMLElement | null = null;
 
   constructor(canvas: HTMLCanvasElement, onHudUpdate?: (state: GameHudState) => void) {
     this.canvas = canvas;
@@ -370,6 +372,15 @@ export class FlagMapGame {
     this.fillDock();
   }
 
+  private clearFlagDragPointerListeners(): void {
+    const el = this.flagDragSourceEl;
+    if (!el) return;
+    el.removeEventListener('pointermove', this.onFlagDragPointerMove);
+    el.removeEventListener('pointerup', this.onFlagDragPointerEnd);
+    el.removeEventListener('pointercancel', this.onFlagDragPointerEnd);
+    this.flagDragSourceEl = null;
+  }
+
   private onDockPointerDown = (e: PointerEvent): void => {
     const t = e.currentTarget as HTMLElement;
     const iso3 = t.dataset['iso3'];
@@ -389,20 +400,26 @@ export class FlagMapGame {
     document.body.appendChild(g);
     this.ghostEl = g;
     this.moveGhost(e.clientX, e.clientY);
-    document.addEventListener('pointermove', this.onGlobalPointerMove);
-    document.addEventListener('pointerup', this.onGlobalPointerUp);
-    document.addEventListener('pointercancel', this.onGlobalPointerUp);
+
+    this.flagDragSourceEl = t;
+    try {
+      t.setPointerCapture(e.pointerId);
+    } catch {
+      /* navigateurs très anciens */
+    }
+    t.addEventListener('pointermove', this.onFlagDragPointerMove, { passive: false });
+    t.addEventListener('pointerup', this.onFlagDragPointerEnd);
+    t.addEventListener('pointercancel', this.onFlagDragPointerEnd);
   };
 
-  private onGlobalPointerMove = (e: PointerEvent): void => {
+  private onFlagDragPointerMove = (e: PointerEvent): void => {
     if (!this.ghostEl) return;
+    e.preventDefault();
     this.moveGhost(e.clientX, e.clientY);
   };
 
-  private onGlobalPointerUp = (e: PointerEvent): void => {
-    document.removeEventListener('pointermove', this.onGlobalPointerMove);
-    document.removeEventListener('pointerup', this.onGlobalPointerUp);
-    document.removeEventListener('pointercancel', this.onGlobalPointerUp);
+  private onFlagDragPointerEnd = (e: PointerEvent): void => {
+    this.clearFlagDragPointerListeners();
 
     const iso3 = this.dragIso3;
     this.dragIso3 = null;
@@ -440,9 +457,7 @@ export class FlagMapGame {
   };
 
   private endDrag(): void {
-    document.removeEventListener('pointermove', this.onGlobalPointerMove);
-    document.removeEventListener('pointerup', this.onGlobalPointerUp);
-    document.removeEventListener('pointercancel', this.onGlobalPointerUp);
+    this.clearFlagDragPointerListeners();
     this.dragIso3 = null;
     if (this.ghostEl) {
       this.ghostEl.remove();
@@ -565,7 +580,7 @@ export class FlagMapGame {
       this.camera = {
         cx: this.canvas.width / 2,
         cy: this.canvas.height / 2,
-        scale: DEFAULT_VIEW_SCALE,
+        scale: defaultViewScale(),
       };
       return;
     }
@@ -576,7 +591,7 @@ export class FlagMapGame {
       sy += t.targetY;
     }
     const n = tiles.length;
-    this.camera = { cx: sx / n, cy: sy / n, scale: DEFAULT_VIEW_SCALE };
+    this.camera = { cx: sx / n, cy: sy / n, scale: defaultViewScale() };
   }
 
   private startLoop(): void {
@@ -678,9 +693,14 @@ export class FlagMapGame {
     this.canvas.addEventListener('pointercancel', this.onCanvasPointerUp);
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     this.canvas.addEventListener('keydown', this.onCanvasKeyDown);
+    this.unbindPinch = bindCanvasPinchZoom(this.canvas, (x, y, factor) =>
+      this.zoomAtScreen(x, y, factor),
+    );
   }
 
   private unbindEvents(): void {
+    this.unbindPinch?.();
+    this.unbindPinch = null;
     this.endCanvasPan();
     this.canvas.removeEventListener('pointerdown', this.onCanvasPointerDown);
     this.canvas.removeEventListener('pointermove', this.onCanvasPointerMove);

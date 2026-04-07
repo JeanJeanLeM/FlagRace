@@ -1,7 +1,19 @@
+/** Même pas que les jeux (Game, drapeaux, capitales…) pour rester cohérent avec +/- clavier. */
+const VIEW_ZOOM_STEP = 1.12;
+
 /** Layout jeu compact (mobile / tablette) — aligné sur les media queries CSS ≤900px. */
 export function isCompactGameLayout(): boolean {
   if (typeof window === 'undefined') return false;
   return window.matchMedia('(max-width: 900px)').matches;
+}
+
+/**
+ * Échelle caméra « vue d’ensemble » : sur mobile un cran de moins dézoomé que le bureau
+ * (carte plus grande, moins de marge vide).
+ */
+export function defaultViewScale(): number {
+  const outSteps = isCompactGameLayout() ? 1 : 2;
+  return 1 / VIEW_ZOOM_STEP ** outSteps;
 }
 
 export function clampDockIndex(index: number, queueLength: number): number {

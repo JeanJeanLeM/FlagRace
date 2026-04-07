@@ -83,8 +83,21 @@ const ISO3_FLAG_WORLD_PATCH: Record<string, string> = {
   PSQ: 'ps',
 };
 
+const US_STATE_ISO3166_2 = /^US-([A-Z]{2})$/;
+
+/**
+ * Pour flagcdn : subdivisions ISO 3166-2 (ex. US-CA → `us-ca`).
+ * Voir https://flagcdn.com — drapeaux des États US.
+ */
+function flagcdnRegionCodeForIso3(iso3: string): string | null {
+  const m = US_STATE_ISO3166_2.exec(iso3);
+  if (!m) return null;
+  return `us-${m[1]!.toLowerCase()}`;
+}
+
 export function flagAlpha2ForIso3(iso3: string): string | null {
   return (
+    flagcdnRegionCodeForIso3(iso3) ??
     FLAG_ALPHA2_BY_ISO3[iso3] ??
     FLAG_DECOY_ALPHA2[iso3] ??
     ISO3_FLAG_WORLD_PATCH[iso3] ??

@@ -264,6 +264,54 @@ function dropRussiaPacificArtifacts(geometry) {
   return { type: 'MultiPolygon', coordinates: kept };
 }
 
+/**
+ * Morceaux d’Alaska (Aléoutes) enregistrés côté est du méridien 180° (lon > 0°) se retrouvent à l’est
+ * de la carte en −180…180°. On les retire : le reste des États-Unis reste en lon négative.
+ */
+function dropUsaEasternHemispherePolygons(geometry) {
+  const polys =
+    geometry.type === 'Polygon'
+      ? [geometry.coordinates]
+      : geometry.type === 'MultiPolygon'
+        ? geometry.coordinates
+        : [];
+  const kept = [];
+  for (const rings of polys) {
+    if (!rings?.[0]?.length) continue;
+    const outer = rings[0];
+    let minLon = Infinity;
+    for (const pt of outer) {
+      const lon = pt[0];
+      if (lon < minLon) minLon = lon;
+    }
+    if (minLon > 0) continue;
+    kept.push(rings);
+  }
+  if (!kept.length) return null;
+  if (kept.length === 1) return { type: 'Polygon', coordinates: kept[0] };
+  return { type: 'MultiPolygon', coordinates: kept };
+}
+
+function withUsaGeometryTrimmedForAmericasMap(feature) {
+  if (feature.properties?.iso3 !== 'USA') return feature;
+  const trimmed = dropUsaEasternHemispherePolygons(feature.geometry);
+  if (!trimmed) return feature;
+  let c;
+  try {
+    c = turf.getCoord(turf.centroid(turf.feature(trimmed)));
+  } catch {
+    return feature;
+  }
+  return {
+    ...feature,
+    geometry: trimmed,
+    properties: {
+      ...feature.properties,
+      centroid: [c[0], c[1]],
+    },
+  };
+}
+
 /** Ne garde que les îlots/polygones d’un pays dont le centroïde tombe en Europe proche. */
 function filterOutEuropeanOverseasPolygons(geometry) {
   const polys =
@@ -549,7 +597,9 @@ async function main() {
   const saFeats = pickCountries(world, (p) => p.CONTINENT === 'South America');
   const asiaFeats = pickCountries(world, (p) => p.CONTINENT === 'Asia');
   const africaFeats = pickCountries(world, (p) => p.CONTINENT === 'Africa');
-  const ncaFeats = pickCountries(world, (p) => p.CONTINENT === 'North America');
+  const ncaFeats = pickCountries(world, (p) => p.CONTINENT === 'North America').map(
+    withUsaGeometryTrimmedForAmericasMap,
+  );
 
   const euAdj = findAdjacencyPairs(europeFeats);
   const saAdj = findAdjacencyPairs(saFeats);
