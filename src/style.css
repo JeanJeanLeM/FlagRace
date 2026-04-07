@@ -987,19 +987,76 @@ html, body {
 /* ── Game: compact header (mobile / tablet ≤900px) ───────── */
 .game-header-mobile {
   display: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.4rem 0.65rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+  padding: 0.35rem 0.65rem 0.4rem;
   background: rgba(0, 0, 0, 0.5);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+}
+
+.game-header-mobile__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
   min-height: 44px;
 }
 
 .game-header-mobile__stats {
   flex: 1;
   min-width: 0;
+}
+
+.game-title-mobile {
+  margin: 0;
+  padding: 0 0.1rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.game-zoom--mobile-bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.game-zoom--mobile-bar__btn {
+  min-width: 2.1rem;
+  height: 2.25rem;
+  padding: 0 0.35rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.game-zoom--mobile-bar__btn--wide {
+  min-width: 3.1rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.game-zoom--mobile-bar__btn:hover,
+.game-zoom--mobile-bar__btn:focus-visible {
+  color: var(--text);
+  border-color: rgba(0, 255, 136, 0.35);
+  background: var(--card-hover);
+  outline: none;
 }
 
 .game-stats-mobile-line {
@@ -1061,18 +1118,6 @@ html, body {
   display: none;
 }
 
-.game-action-menu-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  padding: 0.35rem 1rem 0.5rem;
-  line-height: 1.35;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 0.35rem;
-  max-height: 2.8em;
-  overflow: hidden;
-}
-
 .game-action-menu-item {
   display: block;
   width: 100%;
@@ -1097,49 +1142,6 @@ html, body {
 .game-action-menu-item:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-}
-
-.game-action-menu-zoom {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.75rem;
-  margin: 0.25rem 0.5rem 0.35rem;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.25);
-}
-
-.game-action-menu-zoom-btn {
-  min-width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--card-bg);
-  color: var(--text-muted);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: color 0.12s, border-color 0.12s;
-}
-
-.game-action-menu-zoom-btn--wide {
-  min-width: 4rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-
-.game-action-menu-zoom-btn:hover,
-.game-action-menu-zoom-btn:focus-visible {
-  color: var(--text);
-  border-color: rgba(0, 255, 136, 0.35);
-  outline: none;
-}
-
-.game-action-menu-hint {
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  padding: 0.35rem 1rem 0.15rem;
-  line-height: 1.35;
 }
 
 /* Dock wrapper: desktop uses display:contents so layout matches previous row */
@@ -1275,32 +1277,6 @@ html, body {
   .victory-panel {
     order: 4;
   }
-
-  #game-hint {
-    height: auto;
-    min-height: 28px;
-    padding: 0.35rem 0.5rem;
-    font-size: 0.68rem;
-    line-height: 1.35;
-    text-align: center;
-    flex-wrap: wrap;
-  }
-
-  #game-hint.game-hint--highlight {
-    color: var(--accent);
-    background: rgba(0, 255, 136, 0.08);
-    animation: gameHintPulse 1.2s ease-out 2;
-  }
-}
-
-@keyframes gameHintPulse {
-  0%,
-  100% {
-    box-shadow: inset 0 0 0 0 transparent;
-  }
-  50% {
-    box-shadow: inset 0 0 0 2px rgba(0, 255, 136, 0.35);
-  }
 }
 
 #game-header {
@@ -1370,6 +1346,32 @@ html, body {
   min-width: 3.25rem;
   font-size: 0.72rem;
   font-weight: 600;
+}
+
+.btn-game-help-desktop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.45rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--accent);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.btn-game-help-desktop:hover,
+.btn-game-help-desktop:focus-visible {
+  color: var(--text);
+  border-color: rgba(0, 255, 136, 0.35);
+  background: var(--card-hover);
+  outline: none;
 }
 
 .btn-abandon {
@@ -1527,6 +1529,7 @@ html, body {
   font: inherit;
   text-align: center;
   transition: border-color 0.15s, transform 0.12s;
+  touch-action: none;
 }
 
 .capitals-dock-item:hover,
@@ -1601,6 +1604,7 @@ html, body {
   background: var(--card-bg);
   cursor: grab;
   overflow: hidden;
+  touch-action: none;
   height: 0;
   padding-bottom: 75%;
   transition: border-color 0.15s, transform 0.12s;
@@ -1616,6 +1620,7 @@ html, body {
   font-size: 0.62rem;
   font-weight: 700;
   color: var(--text-muted);
+  touch-action: none;
 }
 
 .flag-dock-item:hover,
@@ -1676,6 +1681,64 @@ html, body {
 #game-canvas:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Barre zoom tactile (≤900px) : au-dessus du canvas, sous le header */
+.game-zoom-float {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 35;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+}
+
+.game-zoom-float__btn {
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--accent);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.game-zoom-float__btn--mid {
+  min-width: 3.5rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.game-zoom-float__btn:hover,
+.game-zoom-float__btn:focus-visible {
+  background: var(--card-hover);
+  color: var(--text);
+  outline: none;
+}
+
+@media (max-width: 900px) {
+  .game-zoom-float {
+    display: flex;
+  }
+
+  #game-canvas {
+    touch-action: none;
+  }
 }
 
 #game-stats {
@@ -1829,19 +1892,144 @@ html, body {
   }
 }
 
-#game-hint {
-  height: 30px;
+/* ── Aide en partie (modale) ───────────────────────── */
+
+.game-help-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.28);
-  letter-spacing: 0.04em;
-  background: rgba(0, 0, 0, 0.25);
+  padding: 1rem;
+  pointer-events: none;
+}
+
+.game-help-modal.hidden {
+  display: none !important;
+}
+
+.game-help-modal:not(.hidden) {
+  pointer-events: auto;
+}
+
+.game-help-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+.game-help-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 420px);
+  max-height: min(78vh, 520px);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(15, 35, 55, 0.99) 0%, rgba(10, 25, 42, 0.99) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.game-help-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
+.game-help-modal__title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.game-help-modal__close {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--text-muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.game-help-modal__close:hover,
+.game-help-modal__close:focus-visible {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.25);
+  background: var(--card-hover);
+  outline: none;
+}
+
+.game-help-modal__body {
+  padding: 1rem 1.1rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.game-help-modal__text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.game-help-modal__foot {
+  flex-shrink: 0;
+  padding: 0.65rem 1rem 0.85rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+}
+
+.game-help-modal__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.35rem;
+}
+
+.game-help-modal__link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.game-help-modal__link:hover {
+  text-decoration: underline;
+}
+
+.game-help-modal__credit {
+  font-size: 0.62rem;
+  opacity: 0.92;
+  line-height: 1.4;
+}
+
 /* ── Footer ─────────────────────────────────────────── */
+
+body:has(#screen-game:not(.hidden)) #site-footer {
+  display: none;
+}
 
 #site-footer {
   position: fixed;
@@ -1853,8 +2041,8 @@ html, body {
   align-items: center;
   justify-content: flex-end;
   gap: 0.35rem 0.5rem;
-  max-width: min(100vw, 520px);
-  font-size: 0.6rem;
+  max-width: min(100vw, 720px);
+  font-size: 0.58rem;
   color: rgba(255, 255, 255, 0.15);
   padding: 4px 8px;
   pointer-events: none;

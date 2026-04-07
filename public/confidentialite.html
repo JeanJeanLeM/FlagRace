@@ -3,110 +3,93 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Politique de confidentialité et cookies — World Puzzle, données locales, publicités Google AdSense."
+    />
     <title>Confidentialité · World Puzzle</title>
-    <style>
-      :root {
-        --bg: #0d1b2a;
-        --text: #e8e8e8;
-        --muted: #7a9ab0;
-        --accent: #00ff88;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        font-family: system-ui, -apple-system, sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        line-height: 1.55;
-        padding: 2rem 1.25rem 4rem;
-      }
-      main {
-        max-width: 42rem;
-        margin: 0 auto;
-      }
-      h1 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 0 0 0.5rem;
-      }
-      .back {
-        display: inline-block;
-        margin-bottom: 1.5rem;
-        color: rgba(0, 255, 136, 0.75);
-        text-decoration: none;
-        font-size: 0.9rem;
-      }
-      .back:hover {
-        color: var(--accent);
-        text-decoration: underline;
-      }
-      h2 {
-        font-size: 1.05rem;
-        margin: 1.75rem 0 0.5rem;
-        color: var(--accent);
-      }
-      p,
-      ul {
-        margin: 0 0 0.85rem;
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
-      ul {
-        padding-left: 1.25rem;
-      }
-      a {
-        color: rgba(0, 255, 136, 0.8);
-      }
-    </style>
+    <link rel="stylesheet" href="/css/site-pages.css" />
   </head>
   <body>
     <main>
       <a class="back" href="/">← Retour au jeu</a>
+      <nav class="site-pages-nav" aria-label="Pages du site">
+        <a href="/">Accueil — jeu</a>
+        <a href="/comment-jouer.html">Comment jouer</a>
+        <a href="/faq.html">FAQ</a>
+        <a href="/a-propos.html">À propos</a>
+        <a href="/mentions-legales.html">Mentions légales</a>
+        <span class="site-pages-nav__here" aria-current="page">Confidentialité</span>
+      </nav>
+
       <h1>Confidentialité et cookies</h1>
-      <p>
+      <p class="lead">
         <strong>World Puzzle</strong> est un jeu géographique exécuté dans votre navigateur. Cette page décrit les
-        traitements liés au site et, le cas échéant, aux publicités.
+        traitements liés au site, aux préférences enregistrées localement et, le cas échéant, aux publicités affichées
+        par des partenaires tiers.
       </p>
 
-      <h2>Données hébergées et jeu</h2>
+      <h2>Absence de compte et données minimales</h2>
       <p>
-        Le jeu utilise des cartes et données géographiques (Natural Earth, domaine public) chargées depuis le même
-        site. Aucun compte utilisateur n’est requis pour jouer. Nous ne vendons pas vos données personnelles.
+        Aucune inscription n’est requise. Le jeu ne vous demande pas de nom, d’adresse postale ni de numéro de
+        téléphone pour jouer. Les réglages facultatifs (par exemple la langue d’interface) peuvent être stockés
+        <strong>uniquement sur votre appareil</strong> via les mécanismes du navigateur (stockage local), sans création
+        de profil côté serveur par nos soins pour ces seuls réglages.
       </p>
 
-      <h2>Publicités (Google AdSense)</h2>
+      <h2>Données techniques et hébergement</h2>
       <p>
-        Si vous acceptez les publicités, Google peut déposer des cookies ou utiliser des technologies similaires pour
-        diffuser et mesurer des annonces, personnaliser le contenu publicitaire et limiter la fréquence d’affichage. Ces
-        traitements sont régis par les politiques de Google. Le fichier
-        <a href="/ads.txt">/ads.txt</a> à la racine du site indique l’éditeur autorisé pour les annonces Google sur ce
-        domaine.
+        Comme tout site web, le serveur d’hébergement et les intermédiaires réseau peuvent traiter des données
+        techniques nécessaires à la connexion (adresse IP, horodatage, type de navigateur) dans le cadre de la sécurité
+        et des journaux système. Ces traitements relèvent de la politique de l’hébergeur et des obligations légales
+        applicables.
+      </p>
+      <p>
+        Les cartes et fonds géographiques proviennent de jeux de données <strong>Natural Earth</strong> (domaine
+        public), chargés depuis ce site. Nous ne revendons pas vos données personnelles à des tiers.
+      </p>
+
+      <h2>Cookies et publicités (Google AdSense)</h2>
+      <p>
+        Si vous <strong>acceptez</strong> les publicités via la bannière affichée sur le site, le script
+        <strong>Google AdSense</strong> peut être chargé. Google peut alors utiliser des cookies ou des technologies
+        équivalentes pour diffuser des annonces, les mesurer, limiter leur répétition ou les adapter à vos centres
+        d’intérêt selon les paramètres de votre compte Google et les choix que vous avez exprimés ailleurs. Ces
+        traitements sont décrits par Google dans ses documents officiels.
       </p>
       <ul>
         <li>
           <a href="https://policies.google.com/privacy" rel="noopener noreferrer">Politique de confidentialité Google</a>
         </li>
         <li>
-          <a href="https://policies.google.com/technologies/ads" rel="noopener noreferrer">Publicités Google</a>
+          <a href="https://policies.google.com/technologies/ads" rel="noopener noreferrer">Comment Google utilise les données dans les annonces</a>
         </li>
       </ul>
       <p>
-        Vous pouvez refuser la publicité depuis la bannière affichée sur le site ; dans ce cas le script AdSense n’est
-        pas chargé. Vous pouvez aussi gérer les cookies via les paramètres de votre navigateur.
+        Si vous <strong>refusez</strong> la publicité depuis la bannière, le script AdSense n’est pas chargé dans cette
+        logique de consentement ; seuls les contenus du jeu demeurent. Le fichier
+        <a href="/ads.txt">/ads.txt</a> à la racine du site indique toutefois l’éditeur autorisé pour les annonces
+        Google sur ce domaine, conformément aux usages du secteur publicitaire.
       </p>
 
-      <h2>Contact</h2>
+      <h2>Vos choix</h2>
       <p>
-        Pour toute question relative à cette politique, contactez l’éditeur du site à l’adresse que vous utilisez pour
-        héberger World Puzzle (par exemple via la page du projet sur votre hébergeur).
+        Vous pouvez à tout moment effacer les données du site dans les paramètres de votre navigateur, utiliser un mode
+        de navigation qui limite le pistage, ou consulter les outils proposés par Google pour la personnalisation des
+        annonces. Pour les questions relatives à l’identité de l’éditeur du site ou à un signalement, voir les
+        coordonnées sur la page <a href="/mentions-legales.html">Mentions légales</a>.
       </p>
 
-      <p style="margin-top: 2rem; font-size: 0.85rem">
-        Dernière mise à jour : mars 2026 — texte générique à adapter si vous collectez d’autres données (analytics,
-        formulaires, etc.).
+      <h2>Évolution de cette page</h2>
+      <p>
+        Cette politique peut être mise à jour si le fonctionnement du site change (nouveaux partenaires, nouvelles
+        fonctionnalités). La date de dernière révision est indiquée ci-dessous. Pour le détail des modes de jeu et du
+        site, consultez également <a href="/a-propos.html">À propos</a> et la <a href="/faq.html">FAQ</a>.
+      </p>
+
+      <p class="page-meta">
+        Dernière mise à jour : mars 2026 — à compléter si vous ajoutez des formulaires, une newsletter ou des outils
+        d’analyse d’audience (statistiques) avec collecte d’identifiants.
       </p>
     </main>
   </body>

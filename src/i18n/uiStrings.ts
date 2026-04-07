@@ -111,6 +111,7 @@ export const UI_STRINGS: Record<string, Row> = {
 
   'game.back': { fr: '← Menu', en: '← Menu' },
   'game.zoom.aria': { fr: 'Zoom', en: 'Zoom' },
+  'game.zoom.floatAria': { fr: 'Zoom sur la carte', en: 'Map zoom' },
   'game.zoom.outTitle': { fr: 'Dézoomer (−)', en: 'Zoom out (−)' },
   'game.zoom.resetTitle': {
     fr: 'Vue de départ : centrage + zoom large (touche 0)',
@@ -139,10 +140,13 @@ export const UI_STRINGS: Record<string, Row> = {
   'game.action.backToMenu': { fr: 'Retour au menu', en: 'Back to menu' },
   'game.action.giveUp': { fr: 'Abandonner…', en: 'Give up…' },
   'game.action.help': { fr: 'Aide', en: 'Help' },
-  'game.action.helpFooter': {
-    fr: 'Les conseils s’affichent sous la carte.',
-    en: 'Tips appear below the map.',
+  'game.help.title': { fr: 'Aide', en: 'Help' },
+  'game.help.closeAria': { fr: 'Fermer l’aide', en: 'Close help' },
+  'game.help.openTitle': {
+    fr: 'Règles et raccourcis pour le mode en cours',
+    en: 'Rules and shortcuts for the current mode',
   },
+  'game.help.openAria': { fr: 'Ouvrir l’aide', en: 'Open help' },
   'game.dock.prevAria': { fr: 'Élément précédent', en: 'Previous item' },
   'game.dock.nextAria': { fr: 'Élément suivant', en: 'Next item' },
   'game.dock.dragFlag': { fr: 'Glisser sur le pays', en: 'Drag onto the country' },
@@ -214,6 +218,10 @@ export const UI_STRINGS: Record<string, Row> = {
     en: 'Left → map · Misplaced: pin → dock to retry · Ctrl+wheel or +/−/0: zoom',
   },
 
+  'footer.howToPlay': { fr: 'Comment jouer', en: 'How to play' },
+  'footer.faq': { fr: 'FAQ', en: 'FAQ' },
+  'footer.about': { fr: 'À propos', en: 'About' },
+  'footer.legal': { fr: 'Mentions légales', en: 'Legal notice' },
   'footer.privacy': { fr: 'Confidentialité', en: 'Privacy' },
   'footer.credit': {
     fr: 'Données géographiques : Natural Earth (domaine public)',

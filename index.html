@@ -373,39 +373,62 @@
       <div id="screen-game" class="screen hidden" data-game-kind="puzzle">
         <!-- Compact mobile/tablet: stats + menu (≤900px) -->
         <header id="game-header-mobile" class="game-header-mobile">
-          <div class="game-header-mobile__stats">
-            <span id="game-stats-mobile-line" class="game-stats-mobile-line" aria-live="polite"></span>
-          </div>
-          <div class="game-header-mobile__menu">
-            <button
-              type="button"
-              id="btn-game-menu"
-              class="btn-game-menu"
-              aria-expanded="false"
-              aria-haspopup="true"
-              aria-controls="game-action-menu-panel"
-              data-i18n-aria="game.menu.openAria"
-            >
-              ☰
-            </button>
-            <div
-              id="game-action-menu-panel"
-              class="game-action-menu-panel hidden"
-              role="menu"
-              aria-hidden="true"
-            >
-              <p class="game-action-menu-title" id="game-action-menu-title"></p>
-              <button type="button" class="game-action-menu-item" role="menuitem" data-game-action="back" data-i18n="game.action.backToMenu"></button>
-              <button type="button" class="game-action-menu-item" role="menuitem" data-game-action="abandon" data-i18n="game.action.giveUp"></button>
-              <div class="game-action-menu-zoom" role="group" data-i18n-aria="game.zoom.aria">
-                <button type="button" class="game-action-menu-zoom-btn" data-game-action="zoom-out" data-i18n-title="game.zoom.outTitle">−</button>
-                <button type="button" class="game-action-menu-zoom-btn game-action-menu-zoom-btn--wide" data-game-action="zoom-reset" data-i18n="game.zoom.resetLabel" data-i18n-title="game.zoom.resetTitle"></button>
-                <button type="button" class="game-action-menu-zoom-btn" data-game-action="zoom-in" data-i18n-title="game.zoom.inTitle">+</button>
+          <div class="game-header-mobile__row">
+            <div class="game-header-mobile__stats">
+              <span id="game-stats-mobile-line" class="game-stats-mobile-line" aria-live="polite"></span>
+            </div>
+            <span class="game-zoom game-zoom--mobile-bar" data-i18n-aria="game.zoom.aria" aria-label="Zoom">
+              <button
+                type="button"
+                id="btn-mobile-zoom-out"
+                class="game-zoom--mobile-bar__btn"
+                data-i18n-title="game.zoom.outTitle"
+              >
+                −
+              </button>
+              <button
+                type="button"
+                id="btn-mobile-zoom-reset"
+                class="game-zoom--mobile-bar__btn game-zoom--mobile-bar__btn--wide"
+                data-i18n="game.zoom.resetLabel"
+                data-i18n-title="game.zoom.resetTitle"
+              >
+                Défaut
+              </button>
+              <button
+                type="button"
+                id="btn-mobile-zoom-in"
+                class="game-zoom--mobile-bar__btn"
+                data-i18n-title="game.zoom.inTitle"
+              >
+                +
+              </button>
+            </span>
+            <div class="game-header-mobile__menu">
+              <button
+                type="button"
+                id="btn-game-menu"
+                class="btn-game-menu"
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-controls="game-action-menu-panel"
+                data-i18n-aria="game.menu.openAria"
+              >
+                ☰
+              </button>
+              <div
+                id="game-action-menu-panel"
+                class="game-action-menu-panel hidden"
+                role="menu"
+                aria-hidden="true"
+              >
+                <button type="button" class="game-action-menu-item" role="menuitem" data-game-action="back" data-i18n="game.action.backToMenu"></button>
+                <button type="button" class="game-action-menu-item" role="menuitem" data-game-action="abandon" data-i18n="game.action.giveUp"></button>
+                <button type="button" class="game-action-menu-item" role="menuitem" data-game-action="help" data-i18n="game.action.help"></button>
               </div>
-              <button type="button" class="game-action-menu-item" role="menuitem" data-game-action="help" data-i18n="game.action.help"></button>
-              <p class="game-action-menu-hint" data-i18n="game.action.helpFooter"></p>
             </div>
           </div>
+          <p id="game-title-mobile" class="game-title-mobile" aria-live="polite"></p>
         </header>
 
         <div id="game-header" class="game-header game-header--desktop">
@@ -416,6 +439,15 @@
             <button type="button" id="btn-zoom-reset" data-i18n="game.zoom.resetLabel" data-i18n-title="game.zoom.resetTitle" title="Vue de départ : centrage + zoom large (touche 0)">Défaut</button>
             <button type="button" id="btn-zoom-in" data-i18n-title="game.zoom.inTitle" title="Zoomer (+)">+</button>
           </span>
+          <button
+            type="button"
+            id="btn-game-help-desktop"
+            class="btn-game-help-desktop"
+            data-i18n-title="game.help.openTitle"
+            data-i18n-aria="game.help.openAria"
+          >
+            ?
+          </button>
           <button
             type="button"
             id="btn-abandon"
@@ -477,6 +509,38 @@
           </div>
           <div id="game-canvas-wrap" class="game-canvas-wrap">
             <canvas id="game-canvas" tabindex="0"></canvas>
+            <div
+              id="game-zoom-float"
+              class="game-zoom-float"
+              role="toolbar"
+              data-i18n-aria="game.zoom.floatAria"
+            >
+              <button
+                type="button"
+                id="btn-zoom-float-out"
+                class="game-zoom-float__btn"
+                data-i18n-title="game.zoom.outTitle"
+              >
+                −
+              </button>
+              <button
+                type="button"
+                id="btn-zoom-float-reset"
+                class="game-zoom-float__btn game-zoom-float__btn--mid"
+                data-i18n="game.zoom.resetLabel"
+                data-i18n-title="game.zoom.resetTitle"
+              >
+                Défaut
+              </button>
+              <button
+                type="button"
+                id="btn-zoom-float-in"
+                class="game-zoom-float__btn"
+                data-i18n-title="game.zoom.inTitle"
+              >
+                +
+              </button>
+            </div>
           </div>
           <aside
             id="game-ad-rail"
@@ -510,12 +574,63 @@
             </div>
           </aside>
         </div>
-        <div id="game-hint" data-i18n="game.hint.puzzle">Chrono · score · Molette : rotation · Double-clic : nord (selon diff.) · Ctrl+molette : zoom · Relâcher : aimant</div>
+      </div>
+
+      <!-- Aide partie : remplace l’ancien bandeau sous la carte -->
+      <div
+        id="game-help-modal"
+        class="game-help-modal hidden"
+        aria-hidden="true"
+      >
+        <div class="game-help-modal__backdrop" data-close-game-help tabindex="-1"></div>
+        <div
+          class="game-help-modal__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="game-help-modal-title"
+        >
+          <div class="game-help-modal__head">
+            <h2 id="game-help-modal-title" class="game-help-modal__title" data-i18n="game.help.title">Aide</h2>
+            <button
+              type="button"
+              class="game-help-modal__close"
+              data-close-game-help
+              data-i18n-aria="game.help.closeAria"
+            >
+              ×
+            </button>
+          </div>
+          <div class="game-help-modal__body">
+            <p id="game-help-modal-text" class="game-help-modal__text"></p>
+          </div>
+          <div class="game-help-modal__foot">
+            <div class="game-help-modal__links">
+              <a href="/comment-jouer.html" class="game-help-modal__link" data-i18n="footer.howToPlay">Comment jouer</a>
+              <span class="footer-sep" aria-hidden="true">·</span>
+              <a href="/faq.html" class="game-help-modal__link" data-i18n="footer.faq">FAQ</a>
+              <span class="footer-sep" aria-hidden="true">·</span>
+              <a href="/a-propos.html" class="game-help-modal__link" data-i18n="footer.about">À propos</a>
+              <span class="footer-sep" aria-hidden="true">·</span>
+              <a href="/mentions-legales.html" class="game-help-modal__link" data-i18n="footer.legal">Mentions légales</a>
+              <span class="footer-sep" aria-hidden="true">·</span>
+              <a href="/confidentialite.html" class="game-help-modal__link" data-i18n="footer.privacy">Confidentialité</a>
+            </div>
+            <span class="game-help-modal__credit" data-i18n="footer.credit">Données géographiques : Natural Earth (domaine public)</span>
+          </div>
+        </div>
       </div>
 
     </div>
 
     <footer id="site-footer">
+      <a href="/comment-jouer.html" data-i18n="footer.howToPlay">Comment jouer</a>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <a href="/faq.html" data-i18n="footer.faq">FAQ</a>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <a href="/a-propos.html" data-i18n="footer.about">À propos</a>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <a href="/mentions-legales.html" data-i18n="footer.legal">Mentions légales</a>
+      <span class="footer-sep" aria-hidden="true">·</span>
       <a href="/confidentialite.html" data-i18n="footer.privacy">Confidentialité</a>
       <span class="footer-sep" aria-hidden="true">·</span>
       <span id="footer-credit" data-i18n="footer.credit">Données géographiques : Natural Earth (domaine public)</span>
