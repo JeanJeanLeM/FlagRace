@@ -250,7 +250,7 @@ export class Renderer {
       ctx.save();
       ctx.clip('evenodd');
       const b = localPolygonsBbox(tile.polygons);
-      drawImageCover(ctx, flagImg, b.minX, b.minY, b.maxX - b.minX, b.maxY - b.minY);
+      drawImageContain(ctx, flagImg, b.minX, b.minY, b.maxX - b.minX, b.maxY - b.minY);
       ctx.restore();
     } else {
       const baseFill = this.assembledNeutralFill
@@ -365,7 +365,7 @@ function localPolygonsBbox(polygons: [number, number][][][]): {
   return { minX, minY, maxX, maxY };
 }
 
-function drawImageCover(
+function drawImageContain(
   ctx: CanvasRenderingContext2D,
   img: CanvasImageSource,
   bx: number,
@@ -375,11 +375,13 @@ function drawImageCover(
 ): void {
   const iw = 'naturalWidth' in img && img.naturalWidth ? img.naturalWidth : 1;
   const ih = 'naturalHeight' in img && img.naturalHeight ? img.naturalHeight : 1;
-  const scale = Math.max(bw / iw, bh / ih);
+  const scale = Math.min(bw / iw, bh / ih);
   const dw = iw * scale;
   const dh = ih * scale;
   const ox = bx + (bw - dw) / 2;
   const oy = by + (bh - dh) / 2;
+  ctx.fillStyle = 'rgba(10, 20, 34, 0.9)';
+  ctx.fillRect(bx, by, bw, bh);
   ctx.drawImage(img, ox, oy, dw, dh);
 }
 

@@ -17,6 +17,7 @@ const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
 const ZOOM_STEP = 1.12;
 const NEUTRAL_TILE = '#455a70';
+const AUTO_SOLVE_STEP_MS = 420;
 
 type GameHudState = {
   connected: number;
@@ -24,6 +25,8 @@ type GameHudState = {
   elapsedMs: number;
   score: number;
   isComplete: boolean;
+  isAutoSolving: boolean;
+  autoSolveCountryName: string | null;
   victorySummary: { timeLabel: string; score: number; gaveUp: boolean } | null;
 };
 type FlagDockDifficulty = 1 | 2 | 3;
@@ -92,6 +95,10 @@ export class FlagMapGame {
   } | null = null;
   private panPointerId: number | null = null;
   private gaveUp = false;
+  private giveUpAutoQueue: string[] = [];
+  private giveUpAutoNextAtMs: number | null = null;
+  private giveUpAutoCountryName: string | null = null;
+  private giveUpFrozenElapsedMs: number | null = null;
   /** Index dans la file des drapeaux non placés (mode compact uniquement). */
   private dockActiveIndex = 0;
   private dockWheelHandler: ((e: WheelEvent) => void) | null = null;
@@ -141,6 +148,10 @@ export class FlagMapGame {
     this.winPhase = 'none';
     this.gaveUp = false;
     this.frozenElapsedMs = null;
+    this.giveUpAutoQueue = [];
+    this.giveUpAutoNextAtMs = null;
+    this.giveUpAutoCountryName = null;
+    this.giveUpFrozenElapsedMs = null;
     this.gameStartMs = performance.now();
 
     const toLoad = [...new Set(this.dockIso3List)];
@@ -193,6 +204,10 @@ export class FlagMapGame {
     this.gaveUp = false;
     this.gameStartMs = null;
     this.frozenElapsedMs = null;
+    this.giveUpAutoQueue = [];
+    this.giveUpAutoNextAtMs = null;
+    this.giveUpAutoCountryName = null;
+    this.giveUpFrozenElapsedMs = null;
     this.unbindEvents();
     this.eventsBound = false;
     this.endCanvasPan();
@@ -276,17 +291,15 @@ export class FlagMapGame {
   }
 
   giveUp(): void {
-    if (this.winPhase !== 'none' || this.gameStartMs === null) return;
+    if (this.winPhase !== 'none' || this.gameStartMs === null || this.gaveUp) return;
     this.gaveUp = true;
-    for (const iso3 of this.countriesList) {
-      this.placed.add(iso3);
-      const img = this.flagImages.get(iso3);
-      if (img) this.renderer.setTileFlag(iso3, img);
-    }
-    this.frozenElapsedMs = abandonFrozenElapsedMs(this.gameStartMs);
-    this.winPhase = 'victory';
+    this.giveUpFrozenElapsedMs = abandonFrozenElapsedMs(this.gameStartMs);
     this.endCanvasPan();
     this.endDrag();
+    this.giveUpAutoQueue = this.countriesList.filter((iso3) => !this.placed.has(iso3));
+    this.giveUpAutoCountryName = null;
+    this.giveUpAutoNextAtMs = this.giveUpAutoQueue.length > 0 ? performance.now() + 120 : null;
+    if (this.giveUpAutoQueue.length === 0) this.finishGiveUpAutoSolve();
     this.refreshDock();
     this.emitHud();
   }
@@ -647,14 +660,47 @@ export class FlagMapGame {
   }
 
   private render(): void {
+    this.tickGiveUpAutoSolve();
     this.renderer.setConnectedPairs(new Set());
     this.renderer.draw(this.tiles, this.borderConnectors, this.camera);
     this.emitHud();
   }
 
+  private tickGiveUpAutoSolve(): void {
+    if (!this.gaveUp || this.winPhase !== 'none' || this.giveUpAutoNextAtMs === null) return;
+    const now = performance.now();
+    if (now < this.giveUpAutoNextAtMs) return;
+
+    const iso3 = this.giveUpAutoQueue.shift();
+    if (!iso3) {
+      this.finishGiveUpAutoSolve();
+      return;
+    }
+
+    this.giveUpAutoCountryName = countryDisplayName(iso3, getLocale());
+    this.placed.add(iso3);
+    const img = this.flagImages.get(iso3);
+    if (img) this.renderer.setTileFlag(iso3, img);
+    this.refreshDock();
+
+    if (this.giveUpAutoQueue.length === 0) this.finishGiveUpAutoSolve();
+    else this.giveUpAutoNextAtMs = now + AUTO_SOLVE_STEP_MS;
+  }
+
+  private finishGiveUpAutoSolve(): void {
+    this.giveUpAutoQueue = [];
+    this.giveUpAutoNextAtMs = null;
+    this.giveUpAutoCountryName = null;
+    if (this.frozenElapsedMs === null) {
+      this.frozenElapsedMs = this.giveUpFrozenElapsedMs ?? this.getElapsedMs();
+    }
+    this.winPhase = 'victory';
+  }
+
   private getElapsedMs(): number {
     if (this.gameStartMs === null) return 0;
     if (this.frozenElapsedMs !== null) return this.frozenElapsedMs;
+    if (this.gaveUp && this.giveUpFrozenElapsedMs !== null) return this.giveUpFrozenElapsedMs;
     return performance.now() - this.gameStartMs;
   }
 
@@ -682,6 +728,8 @@ export class FlagMapGame {
       elapsedMs,
       score,
       isComplete: this.winPhase !== 'none',
+      isAutoSolving: this.gaveUp && this.winPhase === 'none',
+      autoSolveCountryName: this.giveUpAutoCountryName,
       victorySummary,
     });
   }

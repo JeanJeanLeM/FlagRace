@@ -3,6 +3,10 @@ import { flagAlpha2ForIso3 } from './flagAlpha2ByIso3.ts';
 import { countryNameFr } from './countryNamesFr.ts';
 
 let enRegionNames: Intl.DisplayNames | null = null;
+const EN_SPECIAL_NAMES: Record<string, string> = {
+  SDS: 'South Sudan',
+  SOL: 'Somaliland',
+};
 
 function englishNameFromAlpha2(alpha2: string): string | null {
   try {
@@ -18,6 +22,8 @@ function englishNameFromAlpha2(alpha2: string): string | null {
 /** Nom affiché pays / territoire selon la langue UI (FR : jeu existant ; EN : `Intl` + repli). */
 export function countryDisplayName(iso3: string, locale: Locale): string {
   if (locale === 'fr') return countryNameFr(iso3);
+  const special = EN_SPECIAL_NAMES[iso3];
+  if (special) return special;
   const a2 = flagAlpha2ForIso3(iso3);
   if (a2) {
     const n = englishNameFromAlpha2(a2);

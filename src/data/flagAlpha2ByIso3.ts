@@ -72,6 +72,10 @@ export const FLAG_DECOY_ALPHA2: Record<string, string> = {
  * Doit être résolu avant EXTRA (généré) pour afficher un vrai drapeau flagcdn.
  */
 const ISO3_FLAG_WORLD_PATCH: Record<string, string> = {
+  /** Variante South Sudan utilisée dans certaines exports (SSD = ss). */
+  SDS: 'ss',
+  /** Somaliland n'a pas d'ISO alpha-2 propre ; repli visuel sur Somalie. */
+  SOL: 'so',
   /** Souvent « Chypre Nord » / erreur de code → drapeau Chypre (même emplacement carte). */
   CYN: 'cy',
   /** British Indian Ocean Territory (ISO alpha-2 IO). */

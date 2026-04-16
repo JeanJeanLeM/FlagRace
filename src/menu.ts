@@ -24,10 +24,14 @@ async function injectWorldMapSvg(host: HTMLElement | null): Promise<void> {
     svg?.classList.add('world-menu-svg');
     svg?.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     host.querySelectorAll('.world-menu-region').forEach((path) => {
-      path.setAttribute('role', 'button');
-      path.setAttribute('tabindex', '0');
       const id = path.getAttribute('data-region');
       const meta = id ? catalogEntryForRegionId(id) : undefined;
+      if (!meta) {
+        path.remove();
+        return;
+      }
+      path.setAttribute('role', 'button');
+      path.setAttribute('tabindex', '0');
       if (meta && 'descriptionLines' in meta) {
         path.setAttribute(
           'aria-label',
@@ -69,6 +73,7 @@ export function initMenu(onStart: (sel: MenuStartSelection) => void): void {
   }
 
   function onSelectRegion(regionId: string): void {
+    if (!catalogEntryForRegionId(regionId)) return;
     selectedRegionId = regionId;
     refreshRegionPickersActiveState();
     updateSelectedRegionLabel();

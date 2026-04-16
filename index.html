@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Jeu de drapeaux : place chaque drapeau sur le bon pays." />
-    <title>World Puzzle</title>
+    <title>FlagRace</title>
   </head>
   <body>
     <div id="app">
@@ -18,12 +18,7 @@
               </div>
             </div>
 
-            <h1 class="game-title">World <span>Puzzle</span></h1>
-
-            <section class="game-type-section" aria-labelledby="game-type-heading">
-              <h2 id="game-type-heading" class="section-heading" data-i18n="menu.gameMode">Mode de jeu</h2>
-              <p class="single-mode-label" data-i18n="gameType.flags.name">Drapeaux</p>
-            </section>
+            <h1 class="game-title">Flag<span>Race</span></h1>
 
             <div id="menu-ads-dual" class="menu-ads-dual hidden" aria-hidden="true">
               <div id="menu-ad-col-a" class="menu-ads-dual__col hidden" aria-hidden="true">
@@ -38,11 +33,11 @@
 
             <h2 class="section-heading section-heading--inline" data-i18n="worldMap.heading">Carte du monde</h2>
             <div id="region-mode-map-wrap" class="region-mode-map-wrap">
+              <div id="world-menu-svg-host" class="world-menu-svg-host" data-i18n-aria="worldMap.svgAria" aria-label="Carte interactive"></div>
               <p id="world-menu-selection-indicator" class="world-menu-selection-indicator" aria-live="polite" aria-atomic="true">
                 <span class="world-menu-selection-indicator__label" data-i18n="worldMap.selectedLabel">Carte sélectionnée</span>
                 <span id="world-menu-selected-name" class="world-menu-selection-indicator__name"></span>
               </p>
-              <div id="world-menu-svg-host" class="world-menu-svg-host" data-i18n-aria="worldMap.svgAria" aria-label="Carte interactive"></div>
             </div>
 
             <nav class="menu-info-links" data-i18n-aria="footer.linksAria" aria-label="Raccourcis">
@@ -99,7 +94,7 @@
 
         <div id="game-header" class="game-header game-header--desktop">
           <button id="btn-back" data-i18n="game.back">← Menu</button>
-          <span id="game-title-bar">World Puzzle</span>
+          <span id="game-title-bar">FlagRace</span>
           <span class="game-zoom" data-i18n-aria="game.zoom.aria" aria-label="Zoom">
             <button type="button" id="btn-zoom-out" data-i18n-title="game.zoom.outTitle">−</button>
             <button type="button" id="btn-zoom-reset" data-i18n="game.zoom.resetLabel" data-i18n-title="game.zoom.resetTitle">Défaut</button>
@@ -111,6 +106,7 @@
             <span class="game-stat"><span data-i18n="game.stat.time">Temps</span> <strong id="game-time">0:00</strong></span>
             <span class="game-stat"><span id="progress-label" data-i18n="game.progress.flags">Drapeaux</span> <strong id="score-count">0</strong>/<strong id="score-max">0</strong></span>
             <span class="game-stat"><span data-i18n="game.stat.score">Score</span> <strong id="score-points">0</strong></span>
+            <span id="game-autosolve-stat" class="game-stat hidden"><span data-i18n="game.stat.autoPlacing">Placement auto</span> <strong id="game-autosolve-country">—</strong></span>
           </span>
         </div>
 

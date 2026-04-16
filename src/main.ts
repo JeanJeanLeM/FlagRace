@@ -22,6 +22,8 @@ type GameHudState = {
   elapsedMs: number;
   score: number;
   isComplete: boolean;
+  isAutoSolving: boolean;
+  autoSolveCountryName: string | null;
   victorySummary: { timeLabel: string; score: number; gaveUp: boolean } | null;
 };
 
@@ -127,13 +129,25 @@ function applyHudToDom(hud: GameHudState, canvas: HTMLCanvasElement): void {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
     const timeStr = `${m}:${s.toString().padStart(2, '0')}`;
-    mobileStats.textContent = `${timeStr} · ${hud.connected}/${hud.total} · ${hud.score}`;
+    const autoPart = hud.autoSolveCountryName ? ` · ${t('game.stat.autoPlacing')}: ${hud.autoSolveCountryName}` : '';
+    mobileStats.textContent = `${timeStr} · ${hud.connected}/${hud.total} · ${hud.score}${autoPart}`;
+  }
+  const autoCountryEl = document.getElementById('game-autosolve-country');
+  const autoStatEl = document.getElementById('game-autosolve-stat');
+  if (autoCountryEl && autoStatEl) {
+    if (hud.autoSolveCountryName) {
+      autoCountryEl.textContent = hud.autoSolveCountryName;
+      autoStatEl.classList.remove('hidden');
+    } else {
+      autoCountryEl.textContent = '—';
+      autoStatEl.classList.add('hidden');
+    }
   }
 
   const abandonBtn = document.getElementById('btn-abandon');
-  if (abandonBtn instanceof HTMLButtonElement) abandonBtn.disabled = hud.isComplete;
+  if (abandonBtn instanceof HTMLButtonElement) abandonBtn.disabled = hud.isComplete || hud.isAutoSolving;
   const abandonMenu = document.querySelector<HTMLButtonElement>('[data-game-action="abandon"]');
-  if (abandonMenu) abandonMenu.disabled = hud.isComplete;
+  if (abandonMenu) abandonMenu.disabled = hud.isComplete || hud.isAutoSolving;
 
   const open = hud.victorySummary !== null;
   if (open !== victoryPanelOpen) {

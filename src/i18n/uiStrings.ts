@@ -117,6 +117,7 @@ export const UI_STRINGS: Record<string, Row> = {
   'game.abandon.button': { fr: 'Abandonner', en: 'Give up' },
   'game.stat.time': { fr: 'Temps', en: 'Time' },
   'game.stat.score': { fr: 'Score', en: 'Score' },
+  'game.stat.autoPlacing': { fr: 'Placement auto', en: 'Auto solve' },
   'game.progress.connections': { fr: 'Connexions', en: 'Connections' },
   'game.progress.flags': { fr: 'Drapeaux', en: 'Flags' },
   'game.progress.capitals': { fr: 'Capitales', en: 'Capitals' },
@@ -226,10 +227,10 @@ export const UI_STRINGS: Record<string, Row> = {
     en: 'Give up this game? +1 minute on the clock, score penalty, and remaining items will be placed automatically.',
   },
 
-  'game.title.puzzle': { fr: 'World Puzzle — ', en: 'World Puzzle — ' },
-  'game.title.flags': { fr: 'World Puzzle — Drapeaux · niv. ', en: 'World Puzzle — Flags · lvl ' },
-  'game.title.capitals': { fr: 'World Puzzle — Capitales · ', en: 'World Puzzle — Capitals · ' },
-  'game.title.labels': { fr: 'World Puzzle — Noms sur la carte · niv. ', en: 'World Puzzle — Map labels · lvl ' },
+  'game.title.puzzle': { fr: 'FlagRace — ', en: 'FlagRace — ' },
+  'game.title.flags': { fr: 'FlagRace — Drapeaux · niv. ', en: 'FlagRace — Flags · lvl ' },
+  'game.title.capitals': { fr: 'FlagRace — Capitales · ', en: 'FlagRace — Capitals · ' },
+  'game.title.labels': { fr: 'FlagRace — Noms sur la carte · niv. ', en: 'FlagRace — Map labels · lvl ' },
 
   'capitalsModeLabel.country': { fr: 'Pays', en: 'Country' },
   'capitalsModeLabel.decoys': { fr: 'Pièges', en: 'Traps' },
