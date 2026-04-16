@@ -9,8 +9,6 @@ import { pickUiString } from '../i18n/uiStrings.ts';
 import { bindCanvasPinchZoom } from './canvasPinchZoom.ts';
 import { clampDockIndex, defaultViewScale, isCompactGameLayout, updateDockNavButtons } from './compactDock.ts';
 import { buildFlagDockIso3List } from '../data/flagDecoys.ts';
-import type { FlagDockDifficulty } from '../flagDifficulty.ts';
-import type { GameHudState } from './Game.ts';
 import { abandonFrozenElapsedMs, scoreAfterAbandonFlat } from './abandon.ts';
 import { tileContainsPointWithDropHalo } from './smallCountryDropHit.ts';
 import type { MapViewBBoxClamp } from '../data/regionConfig.ts';
@@ -19,6 +17,16 @@ const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 3.5;
 const ZOOM_STEP = 1.12;
 const NEUTRAL_TILE = '#455a70';
+
+type GameHudState = {
+  connected: number;
+  total: number;
+  elapsedMs: number;
+  score: number;
+  isComplete: boolean;
+  victorySummary: { timeLabel: string; score: number; gaveUp: boolean } | null;
+};
+type FlagDockDifficulty = 1 | 2 | 3;
 
 function computeFlagHudScore(
   placed: number,
@@ -89,6 +97,8 @@ export class FlagMapGame {
   private dockWheelHandler: ((e: WheelEvent) => void) | null = null;
   /** Bouton dock qui a capturé le pointeur pendant un drag (obligatoire sur tactile). */
   private flagDragSourceEl: HTMLElement | null = null;
+  /** Mode compact mobile : drapeau sélectionné pour placement au tap sur la carte. */
+  private selectedIso3: string | null = null;
 
   constructor(canvas: HTMLCanvasElement, onHudUpdate?: (state: GameHudState) => void) {
     this.canvas = canvas;
@@ -343,6 +353,7 @@ export class FlagMapGame {
     } else {
       btn.textContent = iso3;
     }
+    if (iso3 === this.selectedIso3) btn.classList.add('flag-dock-item--selected');
     btn.addEventListener('pointerdown', this.onDockPointerDown);
     this.dockEl.appendChild(btn);
   }
@@ -351,6 +362,7 @@ export class FlagMapGame {
     if (!this.dockEl) return;
     this.dockEl.replaceChildren();
     const queue = this.unplacedIsoQueue();
+    if (this.selectedIso3 && !queue.includes(this.selectedIso3)) this.selectedIso3 = null;
     this.clampFlagDockIndex();
     const compact = isCompactGameLayout();
 
@@ -386,6 +398,14 @@ export class FlagMapGame {
     const iso3 = t.dataset['iso3'];
     if (!iso3 || this.placed.has(iso3) || e.button !== 0) return;
     e.preventDefault();
+
+    if (isCompactGameLayout()) {
+      this.selectedIso3 = this.selectedIso3 === iso3 ? null : iso3;
+      this.fillDock();
+      this.emitHud();
+      return;
+    }
+
     this.dragIso3 = iso3;
     const g = document.createElement('div');
     g.className = 'flag-drag-ghost';
@@ -443,17 +463,7 @@ export class FlagMapGame {
     const sx = (e.clientX - rect.left) * scaleX;
     const sy = (e.clientY - rect.top) * scaleY;
     const w = this.screenToWorld(sx, sy);
-    const tile = this.tiles.find((t) => t.id === iso3);
-    if (!tile || !tileContainsPointWithDropHalo(tile, w.x, w.y)) return;
-
-    const img = this.flagImages.get(iso3);
-    if (!img) return;
-
-    this.placed.add(iso3);
-    this.renderer.setTileFlag(iso3, img);
-    this.refreshDock();
-    this.updateWinState();
-    this.emitHud();
+    this.placeIsoAtWorldPoint(iso3, w.x, w.y);
   };
 
   private endDrag(): void {
@@ -514,8 +524,27 @@ export class FlagMapGame {
   };
 
   private onCanvasPointerUp = (e: PointerEvent): void => {
-    if (this.canvasPan === null || e.pointerId !== this.panPointerId) return;
-    this.endCanvasPan();
+    if (this.canvasPan !== null && e.pointerId === this.panPointerId) {
+      this.endCanvasPan();
+      return;
+    }
+    if (!isCompactGameLayout() || this.dragIso3 || this.ghostEl) return;
+    if (!this.selectedIso3) return;
+
+    const rect = this.canvas.getBoundingClientRect();
+    const inside =
+      e.clientX >= rect.left &&
+      e.clientX <= rect.right &&
+      e.clientY >= rect.top &&
+      e.clientY <= rect.bottom;
+    if (!inside) return;
+
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+    const sx = (e.clientX - rect.left) * scaleX;
+    const sy = (e.clientY - rect.top) * scaleY;
+    const w = this.screenToWorld(sx, sy);
+    this.placeIsoAtWorldPoint(this.selectedIso3, w.x, w.y);
   };
 
   private moveGhost(clientX: number, clientY: number): void {
@@ -592,6 +621,20 @@ export class FlagMapGame {
     }
     const n = tiles.length;
     this.camera = { cx: sx / n, cy: sy / n, scale: defaultViewScale() };
+  }
+
+  private placeIsoAtWorldPoint(iso3: string, worldX: number, worldY: number): void {
+    const tile = this.tiles.find((t) => t.id === iso3);
+    if (!tile || !tileContainsPointWithDropHalo(tile, worldX, worldY)) return;
+    const img = this.flagImages.get(iso3);
+    if (!img) return;
+
+    this.placed.add(iso3);
+    this.renderer.setTileFlag(iso3, img);
+    if (this.selectedIso3 === iso3) this.selectedIso3 = null;
+    this.refreshDock();
+    this.updateWinState();
+    this.emitHud();
   }
 
   private startLoop(): void {

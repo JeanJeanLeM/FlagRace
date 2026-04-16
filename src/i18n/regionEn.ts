@@ -27,18 +27,4 @@ export const REGION_CATALOG_EN: Record<
     label: 'Asia',
     descriptionLines: ['Asian continent (Natural Earth)'],
   },
-  france: {
-    label: 'France',
-    descriptionLines: ['Single country · mainland (excluding overseas)'],
-  },
-  usa: {
-    label: 'United States',
-    descriptionLines: [
-      '48 contiguous states — one tile per state (puzzle, capital, name or flag)',
-    ],
-  },
-  'fr-departments': {
-    label: 'France · departments',
-    descriptionLines: ['Mainland only (excluding DROM-COM)'],
-  },
 };

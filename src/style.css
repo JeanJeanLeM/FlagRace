@@ -62,6 +62,7 @@ html, body {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  padding-bottom: 5.75rem;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 255, 136, 0.45) rgba(0, 0, 0, 0.2);
@@ -85,11 +86,14 @@ html, body {
 }
 
 .menu-start-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 60;
   flex-shrink: 0;
   width: 100%;
   padding: 0.65rem 1rem;
   padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
-  background: linear-gradient(180deg, transparent 0%, rgba(13, 27, 42, 0.88) 35%, var(--bg-dark) 100%);
+  background: linear-gradient(180deg, rgba(13, 27, 42, 0.92) 0%, var(--bg-dark) 100%);
   border-top: 1px solid var(--border);
   box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.45);
 }
@@ -113,6 +117,46 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 2rem;
+}
+
+.single-mode-label {
+  width: 100%;
+  max-width: 22rem;
+  text-align: center;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.menu-info-links {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem 0.65rem;
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.menu-info-links a {
+  color: rgba(0, 255, 136, 0.9);
+  text-decoration: none;
+  border: 1px solid rgba(0, 255, 136, 0.18);
+  background: rgba(0, 255, 136, 0.08);
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+}
+
+.menu-info-links a:hover,
+.menu-info-links a:focus-visible {
+  color: var(--accent);
+  border-color: rgba(0, 255, 136, 0.38);
+  background: rgba(0, 255, 136, 0.14);
+  outline: none;
 }
 
 .menu-lang-bar {
@@ -315,6 +359,10 @@ html, body {
 
   .menu-start-dock {
     padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
+  }
+
+  .menu-scroll {
+    padding-bottom: 6.25rem;
   }
 
   .btn-menu-cta {
@@ -1632,6 +1680,11 @@ html, body {
 .flag-dock-item:active {
   cursor: grabbing;
   transform: scale(0.98);
+}
+
+.flag-dock-item--selected {
+  border-color: rgba(0, 255, 136, 0.92);
+  box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.2), 0 0 20px rgba(0, 255, 136, 0.24);
 }
 
 .flag-dock-item > img {

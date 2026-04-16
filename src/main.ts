@@ -9,148 +9,60 @@ import {
   t,
 } from './i18n/index.ts';
 import { initMenu, resetMenuToGamePick } from './menu.ts';
-import { Game, type GameHudState } from './game/Game.ts';
 import { ABANDON_FLAT_SCORE_PENALTY } from './game/abandon.ts';
 import { FlagMapGame } from './game/FlagMapGame.ts';
-import { CapitalsGame } from './game/CapitalsGame.ts';
-import { CountryLabelsGame } from './game/CountryLabelsGame.ts';
 import { REGIONS, resolveRegionId } from './data/regionConfig.ts';
-import {
-  FR_DEPARTMENT_CAPITALS,
-  US_STATE_CAPITAL_ENTRIES,
-  WORLD_CONTINENT_CAPITALS,
-} from './data/worldRegions.generated.ts';
-import { getDisplayOptionsFromMenuSelection, initDifficultyMenu } from './gameDifficulty.ts';
-import { getFlagDifficultyFromMenu, initFlagDifficultyMenu } from './flagDifficulty.ts';
-import {
-  getCapitalsDifficultyFromMenuSelection,
-  initCapitalsDifficultyMenu,
-  type CapitalsDifficultyId,
-} from './capitalsDifficulty.ts';
-import {
-  getCountryLabelDifficultyFromMenu,
-  initCountryLabelDifficultyMenu,
-} from './countryLabelDifficulty.ts';
 import type { GameTypeId } from './gameModes.ts';
 import { initAdsense } from './adsense.ts';
 import { isCompactGameLayout } from './game/compactDock.ts';
 
-/** Pool capitales pour tous les modes « capitales » (filtré par pays de la carte). */
-const ALL_MAP_CAPITALS = [
-  ...WORLD_CONTINENT_CAPITALS,
-  ...FR_DEPARTMENT_CAPITALS,
-  ...US_STATE_CAPITAL_ENTRIES,
-];
+type GameHudState = {
+  connected: number;
+  total: number;
+  elapsedMs: number;
+  score: number;
+  isComplete: boolean;
+  victorySummary: { timeLabel: string; score: number; gaveUp: boolean } | null;
+};
 
-type ActiveGame = Game | FlagMapGame | CapitalsGame | CountryLabelsGame;
-
-let currentGame: ActiveGame | null = null;
+let currentGame: FlagMapGame | null = null;
 let currentRegionId: string | null = null;
-let currentGameKind: 'puzzle' | 'flag' | 'capitals' | 'country-labels' = 'puzzle';
 let victoryPanelOpen = false;
-/** Dernière fin de partie « abandon » pour rafraîchir les textes si la langue change. */
 let lastVictoryGaveUp = false;
 
 initDocumentLang();
 
-function gameHelpBodyText(
-  kind: 'puzzle' | 'flag' | 'capitals' | 'country-labels',
-  capitalsDiff?: CapitalsDifficultyId,
-): string {
-  let hintText = t('game.hint.puzzle');
-  if (kind === 'flag') {
-    hintText = t('game.hint.flag');
-  } else if (kind === 'country-labels') {
-    hintText = t('game.hint.labels');
-  } else if (kind === 'capitals') {
-    const d = capitalsDiff ?? 'near-capital';
-    if (d === 'in-country') {
-      hintText = t('game.hint.capitals.inCountry');
-    } else if (d === 'expert-decoys') {
-      hintText = t('game.hint.capitals.decoys');
-    } else {
-      hintText = t('game.hint.capitals.near');
-    }
-  }
-  if (kind !== 'puzzle' && isCompactGameLayout()) {
-    hintText += ' ' + t('game.hint.mobileDockSuffix');
-  }
+function gameHelpBodyText(): string {
+  let hintText = t('game.hint.flag');
+  if (isCompactGameLayout()) hintText += ' ' + t('game.hint.mobileDockSuffix');
   return hintText;
 }
 
-function syncGameHelpModalBody(
-  kind: 'puzzle' | 'flag' | 'capitals' | 'country-labels',
-  capitalsDiff?: CapitalsDifficultyId,
-): void {
+function syncGameHelpModalBody(): void {
   const el = document.getElementById('game-help-modal-text');
-  if (el) el.textContent = gameHelpBodyText(kind, capitalsDiff);
+  if (el) el.textContent = gameHelpBodyText();
 }
 
 function showScreen(id: string): void {
-  document.querySelectorAll<HTMLElement>('.screen').forEach((s) => {
-    s.classList.add('hidden');
-  });
+  document.querySelectorAll<HTMLElement>('.screen').forEach((s) => s.classList.add('hidden'));
   document.getElementById(id)?.classList.remove('hidden');
 }
 
-function setGameScreenKind(
-  kind: 'puzzle' | 'flag' | 'capitals' | 'country-labels',
-  capitalsDiff?: CapitalsDifficultyId,
-): void {
+function setGameScreenKind(): void {
   const screen = document.getElementById('screen-game');
-  if (screen) screen.dataset['gameKind'] = kind;
-  const flagShell = document.getElementById('flag-dock-shell');
-  const capShell = document.getElementById('capitals-dock-shell');
-  if (flagShell) flagShell.classList.toggle('hidden', kind !== 'flag');
-  if (capShell) capShell.classList.toggle('hidden', kind !== 'capitals' && kind !== 'country-labels');
+  if (screen) screen.dataset['gameKind'] = 'flag';
+  document.getElementById('flag-dock-shell')?.classList.remove('hidden');
 
   const label = document.getElementById('progress-label');
   const desc = document.getElementById('victory-desc');
   const eyebrow = document.getElementById('victory-eyebrow');
   const title = document.getElementById('victory-title');
 
-  if (label) {
-    label.textContent =
-      kind === 'flag'
-        ? t('game.progress.flags')
-        : kind === 'capitals'
-          ? t('game.progress.capitals')
-          : kind === 'country-labels'
-            ? t('game.progress.names')
-            : t('game.progress.connections');
-  }
-  syncGameHelpModalBody(kind, capitalsDiff);
-  if (desc) {
-    if (kind === 'flag') {
-      desc.textContent = t('victory.desc.flags');
-    } else if (kind === 'country-labels') {
-      desc.textContent = t('victory.desc.labels');
-    } else if (kind === 'capitals') {
-      const d = capitalsDiff ?? 'near-capital';
-      if (d === 'in-country') {
-        desc.textContent = t('victory.desc.capitals.inCountry');
-      } else if (d === 'expert-decoys') {
-        desc.textContent = t('victory.desc.capitals.decoys');
-      } else {
-        desc.textContent = t('victory.desc.capitals.near');
-      }
-    } else {
-      desc.textContent = t('victory.desc.puzzle');
-    }
-  }
-  if (eyebrow) {
-    eyebrow.textContent =
-      kind === 'flag'
-        ? t('victory.eyebrow.flagsPlaced')
-        : kind === 'capitals'
-          ? t('victory.eyebrow.capitalsPlaced')
-          : kind === 'country-labels'
-            ? t('victory.eyebrow.namesPlaced')
-            : t('victory.eyebrow.puzzleSolved');
-  }
-  if (title) {
-    title.textContent = t('victory.title.win');
-  }
+  if (label) label.textContent = t('game.progress.flags');
+  syncGameHelpModalBody();
+  if (desc) desc.textContent = t('victory.desc.flags');
+  if (eyebrow) eyebrow.textContent = t('victory.eyebrow.flagsPlaced');
+  if (title) title.textContent = t('victory.title.win');
 }
 
 function measuredGameHeaderHeight(): number {
@@ -160,14 +72,9 @@ function measuredGameHeaderHeight(): number {
   return h > 0 ? h : 52;
 }
 
-/** Bottom dock bar height in compact layout (≤900px), for canvas fallback sizing. */
 function measuredVisibleDockShellHeight(): number {
-  let h = 0;
-  const cap = document.getElementById('capitals-dock-shell');
   const fl = document.getElementById('flag-dock-shell');
-  if (cap && !cap.classList.contains('hidden')) h += cap.offsetHeight;
-  if (fl && !fl.classList.contains('hidden')) h += fl.offsetHeight;
-  return h;
+  return fl && !fl.classList.contains('hidden') ? fl.offsetHeight : 0;
 }
 
 function sizeCanvas(canvas: HTMLCanvasElement): void {
@@ -224,9 +131,7 @@ function applyHudToDom(hud: GameHudState, canvas: HTMLCanvasElement): void {
   }
 
   const abandonBtn = document.getElementById('btn-abandon');
-  if (abandonBtn instanceof HTMLButtonElement) {
-    abandonBtn.disabled = hud.isComplete;
-  }
+  if (abandonBtn instanceof HTMLButtonElement) abandonBtn.disabled = hud.isComplete;
   const abandonMenu = document.querySelector<HTMLButtonElement>('[data-game-action="abandon"]');
   if (abandonMenu) abandonMenu.disabled = hud.isComplete;
 
@@ -248,9 +153,7 @@ function applyHudToDom(hud: GameHudState, canvas: HTMLCanvasElement): void {
       if (hud.victorySummary.gaveUp) {
         if (eyebrow) eyebrow.textContent = t('victory.eyebrow.gaveUp');
         if (vTitle) vTitle.textContent = t('victory.title.gaveUp');
-        if (desc) {
-          desc.textContent = t('victory.desc.gaveUp', { penalty: ABANDON_FLAT_SCORE_PENALTY });
-        }
+        if (desc) desc.textContent = t('victory.desc.gaveUp', { penalty: ABANDON_FLAT_SCORE_PENALTY });
       }
       document.getElementById('btn-victory-replay')?.focus();
     } else {
@@ -267,25 +170,7 @@ function updateGameTitleBar(): void {
   const titleBar = document.getElementById('game-title-bar');
   const titleMobile = document.getElementById('game-title-mobile');
   const rlab = regionLabelForPlay(currentRegionId, getLocale());
-  let full = '';
-  if (currentGameKind === 'puzzle') {
-    full = t('game.title.puzzle') + rlab;
-  } else if (currentGameKind === 'flag') {
-    const flagDiff = getFlagDifficultyFromMenu();
-    full = `${t('game.title.flags')}${flagDiff} · ${rlab}`;
-  } else if (currentGameKind === 'capitals') {
-    const capitalsDiff = getCapitalsDifficultyFromMenuSelection();
-    const dLabel =
-      capitalsDiff === 'in-country'
-        ? t('capitalsModeLabel.country')
-        : capitalsDiff === 'expert-decoys'
-          ? t('capitalsModeLabel.decoys')
-          : t('capitalsModeLabel.capital');
-    full = `${t('game.title.capitals')}${dLabel} · ${rlab}`;
-  } else if (currentGameKind === 'country-labels') {
-    const labelDiff = getCountryLabelDifficultyFromMenu();
-    full = `${t('game.title.labels')}${labelDiff} · ${rlab}`;
-  }
+  const full = `${t('game.title.flags')}1 · ${rlab}`;
   if (titleBar) titleBar.textContent = full;
   if (titleMobile) titleMobile.textContent = full;
 }
@@ -293,9 +178,7 @@ function updateGameTitleBar(): void {
 function refreshGameChromeI18n(): void {
   const gameScreen = document.getElementById('screen-game');
   if (!gameScreen || gameScreen.classList.contains('hidden')) return;
-  const capDiff =
-    currentGameKind === 'capitals' ? getCapitalsDifficultyFromMenuSelection() : undefined;
-  setGameScreenKind(currentGameKind, capDiff);
+  setGameScreenKind();
   updateGameTitleBar();
   if (victoryPanelOpen && lastVictoryGaveUp) {
     const eyebrow = document.getElementById('victory-eyebrow');
@@ -322,34 +205,18 @@ function syncLangToggleButtons(): void {
   }
 }
 
-async function startPuzzleGame(regionId: string): Promise<void> {
-  const id = resolveRegionId(regionId);
-  const region = REGIONS.find((r) => r.id === id);
-  if (!region) return;
-
-  currentRegionId = id;
-  currentGameKind = 'puzzle';
-  victoryPanelOpen = false;
-  lastVictoryGaveUp = false;
-  document.getElementById('victory-panel')?.classList.add('hidden');
-  document.getElementById('victory-panel')?.setAttribute('aria-hidden', 'true');
-
-  showScreen('screen-game');
-  setGameScreenKind('puzzle');
-
-  const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
-  updateGameTitleBar();
-
-  sizeCanvas(canvas);
-
-  const displayOpts = getDisplayOptionsFromMenuSelection();
-
-  currentGame?.stop();
-  currentGame = new Game(canvas, (hud) => {
-    applyHudToDom(hud, canvas);
-  }, displayOpts);
-
-  await currentGame.load(region.geojsonUrl, region.countries, region.mapViewBBoxClamp);
+function syncLocaleAwareLinks(root: ParentNode = document): void {
+  const locale = getLocale();
+  root.querySelectorAll<HTMLAnchorElement>('a[data-link-role]').forEach((link) => {
+    const role = link.dataset['linkRole'];
+    if (role === 'how-to-play') {
+      link.href = locale === 'en' ? '/how-to-play.html' : '/comment-jouer.html';
+    } else if (role === 'faq') {
+      link.href = locale === 'en' ? '/faq-en.html' : '/faq.html';
+    } else if (role === 'about') {
+      link.href = locale === 'en' ? '/about.html' : '/a-propos.html';
+    }
+  });
 }
 
 async function startFlagGame(regionId: string): Promise<void> {
@@ -358,126 +225,35 @@ async function startFlagGame(regionId: string): Promise<void> {
   if (!region) return;
 
   currentRegionId = id;
-  currentGameKind = 'flag';
   victoryPanelOpen = false;
   lastVictoryGaveUp = false;
   document.getElementById('victory-panel')?.classList.add('hidden');
   document.getElementById('victory-panel')?.setAttribute('aria-hidden', 'true');
 
   showScreen('screen-game');
-  setGameScreenKind('flag');
+  setGameScreenKind();
 
   const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
   updateGameTitleBar();
-
   sizeCanvas(canvas);
 
   const dock = document.getElementById('flag-dock');
-  const flagDiff = getFlagDifficultyFromMenu();
-
   currentGame?.stop();
-  const fg = new FlagMapGame(canvas, (hud) => {
-    applyHudToDom(hud, canvas);
-  });
+  const fg = new FlagMapGame(canvas, (hud) => applyHudToDom(hud, canvas));
   fg.setDockElement(dock);
   currentGame = fg;
-
-  await fg.load(region.geojsonUrl, region.countries, flagDiff, region.mapViewBBoxClamp);
-}
-
-async function startCapitalsGame(regionId: string): Promise<void> {
-  const id = resolveRegionId(regionId);
-  const region = REGIONS.find((r) => r.id === id);
-  if (!region) return;
-
-  currentRegionId = id;
-  currentGameKind = 'capitals';
-  victoryPanelOpen = false;
-  lastVictoryGaveUp = false;
-  document.getElementById('victory-panel')?.classList.add('hidden');
-  document.getElementById('victory-panel')?.setAttribute('aria-hidden', 'true');
-
-  const capitalsDiff = getCapitalsDifficultyFromMenuSelection();
-
-  showScreen('screen-game');
-  setGameScreenKind('capitals', capitalsDiff);
-
-  const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
-  updateGameTitleBar();
-
-  sizeCanvas(canvas);
-
-  currentGame?.stop();
-  const capitalsDock = document.getElementById('capitals-dock');
-  capitalsDock?.setAttribute('aria-label', t('game.dock.capitalsAria'));
-  const cg = new CapitalsGame(canvas, (hud: GameHudState) => {
-    applyHudToDom(hud, canvas);
-  });
-  cg.setDockElement(capitalsDock);
-  cg.setDockHitElement(document.getElementById('capitals-dock-shell'));
-  currentGame = cg;
-
-  await cg.load(
-    region.geojsonUrl,
-    region.countries,
-    capitalsDiff,
-    ALL_MAP_CAPITALS,
-    region.mapViewBBoxClamp,
-  );
-}
-
-async function startCountryLabelsGame(regionId: string): Promise<void> {
-  const id = resolveRegionId(regionId);
-  const region = REGIONS.find((r) => r.id === id);
-  if (!region) return;
-
-  currentRegionId = id;
-  currentGameKind = 'country-labels';
-  victoryPanelOpen = false;
-  lastVictoryGaveUp = false;
-  document.getElementById('victory-panel')?.classList.add('hidden');
-  document.getElementById('victory-panel')?.setAttribute('aria-hidden', 'true');
-
-  const labelDiff = getCountryLabelDifficultyFromMenu();
-
-  showScreen('screen-game');
-  setGameScreenKind('country-labels');
-
-  const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
-  updateGameTitleBar();
-
-  sizeCanvas(canvas);
-
-  currentGame?.stop();
-  const dock = document.getElementById('capitals-dock');
-  dock?.setAttribute('aria-label', t('game.dock.labelsAria'));
-  const lg = new CountryLabelsGame(canvas, (hud: GameHudState) => {
-    applyHudToDom(hud, canvas);
-  });
-  lg.setDockElement(dock);
-  currentGame = lg;
-
-  await lg.load(region.geojsonUrl, region.countries, labelDiff, region.mapViewBBoxClamp);
+  await fg.load(region.geojsonUrl, region.countries, 1, region.mapViewBBoxClamp);
 }
 
 async function handleMenuStart(sel: { gameType: GameTypeId; regionId: string }): Promise<void> {
-  if (sel.gameType === 'puzzle-country') {
-    await startPuzzleGame(sel.regionId);
-  } else if (sel.gameType === 'flag-match') {
+  if (sel.gameType === 'flag-match') {
     await startFlagGame(sel.regionId);
-  } else if (sel.gameType === 'capitals-map') {
-    await startCapitalsGame(sel.regionId);
-  } else if (sel.gameType === 'country-labels-map') {
-    await startCountryLabelsGame(sel.regionId);
   }
 }
 
 function replayCurrentMode(): void {
   if (!currentRegionId) return;
-  if (currentGameKind === 'flag') void startFlagGame(currentRegionId);
-  else if (currentGameKind === 'capitals') void startCapitalsGame(currentRegionId);
-  else if (currentGameKind === 'country-labels') void startCountryLabelsGame(currentRegionId);
-  else void startPuzzleGame(currentRegionId);
+  void startFlagGame(currentRegionId);
 }
 
 function closeGameActionMenu(): void {
@@ -504,26 +280,15 @@ function toggleGameActionMenu(): void {
 }
 
 function notifyDockLayoutIfNeeded(): void {
-  if (
-    currentGame instanceof FlagMapGame ||
-    currentGame instanceof CapitalsGame ||
-    currentGame instanceof CountryLabelsGame
-  ) {
-    currentGame.onDockLayoutChange();
-  }
+  if (currentGame instanceof FlagMapGame) currentGame.onDockLayoutChange();
 }
 
 function dockNavigateFromUi(delta: -1 | 1): void {
-  if (!currentGame) return;
   if (currentGame instanceof FlagMapGame) currentGame.dockNavigateStep(delta);
-  else if (currentGame instanceof CapitalsGame) currentGame.dockNavigateStep(delta);
-  else if (currentGame instanceof CountryLabelsGame) currentGame.dockNavigateStep(delta);
 }
 
 function openGameHelpModal(): void {
-  const capDiff =
-    currentGameKind === 'capitals' ? getCapitalsDifficultyFromMenuSelection() : undefined;
-  syncGameHelpModalBody(currentGameKind, capDiff);
+  syncGameHelpModalBody();
   const modal = document.getElementById('game-help-modal');
   modal?.classList.remove('hidden');
   modal?.setAttribute('aria-hidden', 'false');
@@ -557,7 +322,6 @@ function backToMenu(): void {
   currentGame?.stop();
   currentGame = null;
   currentRegionId = null;
-  currentGameKind = 'puzzle';
   showScreen('screen-menu');
   resetMenuToGamePick();
 }
@@ -576,27 +340,29 @@ function onWindowResize(): void {
 document.addEventListener('DOMContentLoaded', () => {
   applyDomI18n();
   syncLangToggleButtons();
+  syncLocaleAwareLinks();
+
   document.getElementById('btn-lang-fr')?.addEventListener('click', () => setLocale('fr'));
   document.getElementById('btn-lang-en')?.addEventListener('click', () => setLocale('en'));
+
   subscribeLocale(() => {
     applyDomI18n(document);
     syncLangToggleButtons();
+    syncLocaleAwareLinks();
     window.dispatchEvent(new CustomEvent('worldpuzzle-locale'));
     refreshGameChromeI18n();
   });
 
-  initDifficultyMenu();
-  initFlagDifficultyMenu();
-  initCapitalsDifficultyMenu();
-  initCountryLabelDifficultyMenu();
   initMenu((sel) => {
     void handleMenuStart(sel);
   });
+
   document.getElementById('btn-back')?.addEventListener('click', backToMenu);
   document.getElementById('btn-game-menu')?.addEventListener('click', (e) => {
     e.stopPropagation();
     toggleGameActionMenu();
   });
+
   document.addEventListener('pointerdown', (e) => {
     const panel = document.getElementById('game-action-menu-panel');
     const btn = document.getElementById('btn-game-menu');
@@ -605,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn?.contains(n) || panel.contains(n)) return;
     closeGameActionMenu();
   });
+
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     const modal = document.getElementById('game-help-modal');
@@ -617,10 +384,13 @@ document.addEventListener('DOMContentLoaded', () => {
     closeGameActionMenu();
     document.getElementById('btn-game-menu')?.focus();
   });
+
   document.getElementById('game-help-modal')?.addEventListener('click', (e) => {
     if ((e.target as HTMLElement).closest('[data-close-game-help]')) closeGameHelpModal();
   });
+
   document.getElementById('btn-game-help-desktop')?.addEventListener('click', () => openGameHelpModal());
+
   document.getElementById('game-action-menu-panel')?.addEventListener('click', (e) => {
     const el = (e.target as HTMLElement).closest<HTMLElement>('[data-game-action]');
     if (!el) return;
@@ -634,13 +404,13 @@ document.addEventListener('DOMContentLoaded', () => {
       showGameHelpFromMenu();
     }
   });
+
   document.getElementById('btn-abandon')?.addEventListener('click', () => {
     if (!currentGame || victoryPanelOpen) return;
-    if (!confirm(t('confirm.abandon'))) {
-      return;
-    }
+    if (!confirm(t('confirm.abandon'))) return;
     currentGame.giveUp();
   });
+
   document.getElementById('btn-zoom-in')?.addEventListener('click', () => currentGame?.zoomIn());
   document.getElementById('btn-zoom-out')?.addEventListener('click', () => currentGame?.zoomOut());
   document.getElementById('btn-zoom-reset')?.addEventListener('click', () => currentGame?.resetView());
@@ -652,10 +422,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-mobile-zoom-reset')?.addEventListener('click', () => currentGame?.resetView());
   document.getElementById('dock-nav-flag-prev')?.addEventListener('click', () => dockNavigateFromUi(-1));
   document.getElementById('dock-nav-flag-next')?.addEventListener('click', () => dockNavigateFromUi(1));
-  document.getElementById('dock-nav-capitals-prev')?.addEventListener('click', () => dockNavigateFromUi(-1));
-  document.getElementById('dock-nav-capitals-next')?.addEventListener('click', () => dockNavigateFromUi(1));
   document.getElementById('btn-victory-replay')?.addEventListener('click', () => replayCurrentMode());
   document.getElementById('btn-victory-menu')?.addEventListener('click', () => backToMenu());
+
   window.addEventListener('resize', onWindowResize);
   showScreen('screen-menu');
   initAdsense();

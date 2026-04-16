@@ -1,4 +1,4 @@
-import type { FlagDockDifficulty } from '../flagDifficulty.ts';
+type FlagDockDifficulty = 1 | 2 | 3;
 
 /** Micro / petits États absents de la carte Nord Afrique (niveau 2). */
 export const POCKET_DECOYS_ISO3: readonly string[] = [

@@ -2,13 +2,7 @@ import { catalogEntryForRegionId, type RegionCatalogEntry } from '../data/region
 import type { Locale } from './locale.ts';
 import { REGION_CATALOG_EN } from './regionEn.ts';
 
-function countSuffix(entry: RegionCatalogEntry, n: number): string {
-  if (entry.id === 'fr-departments') {
-    return n === 1 ? '1 department' : `${n} departments`;
-  }
-  if (entry.id === 'usa') {
-    return n === 1 ? '1 state' : `${n} states`;
-  }
+function countSuffix(n: number): string {
   return n === 1 ? '1 country' : `${n} countries`;
 }
 
@@ -29,7 +23,7 @@ export function catalogEntryDescriptionLines(entry: RegionCatalogEntry, locale: 
   if (!en) return [...entry.descriptionLines];
 
   const countLine =
-    'countries' in entry && entry.available ? countSuffix(entry, entry.countries.length) : '';
+    'countries' in entry && entry.available ? countSuffix(entry.countries.length) : '';
 
   if (countLine) {
     return [en.descriptionLines[0] ?? '', countLine].filter(Boolean);

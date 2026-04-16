@@ -3,130 +3,58 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Jeu de cartes : puzzle pays, capitales, drapeaux et noms sur la carte." />
-    <!-- AdSense : meta + script (recommandation Google) ; ads.txt à la racine /ads.txt -->
-    <meta name="google-adsense-account" content="ca-pub-8944795420097131" />
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8944795420097131"
-      crossorigin="anonymous"
-    ></script>
+    <meta name="description" content="Jeu de drapeaux : place chaque drapeau sur le bon pays." />
     <title>World Puzzle</title>
   </head>
   <body>
     <div id="app">
-
-      <!-- ── Menu Screen ───────────────────────────── -->
       <div id="screen-menu" class="screen">
         <div class="menu-scroll">
-        <div class="menu-content">
-          <div class="menu-lang-bar">
-            <div
-              class="lang-switch"
-              role="group"
-              data-i18n-aria="lang.aria"
-            >
-              <button type="button" id="btn-lang-fr" class="lang-switch__btn lang-switch__btn--active" aria-pressed="true">FR</button>
-              <button type="button" id="btn-lang-en" class="lang-switch__btn" aria-pressed="false">EN</button>
+          <div class="menu-content">
+            <div class="menu-lang-bar">
+              <div class="lang-switch" role="group" data-i18n-aria="lang.aria">
+                <button type="button" id="btn-lang-fr" class="lang-switch__btn lang-switch__btn--active" aria-pressed="true">FR</button>
+                <button type="button" id="btn-lang-en" class="lang-switch__btn" aria-pressed="false">EN</button>
+              </div>
             </div>
-          </div>
-          <h1 class="game-title">World <span>Puzzle</span></h1>
 
-          <div id="menu-panel-main" class="menu-panel" aria-hidden="false">
-          <section class="game-type-section" aria-labelledby="game-type-heading">
-            <h2 id="game-type-heading" class="section-heading" data-i18n="menu.gameMode">Mode de jeu</h2>
-            <div class="game-type-grid" role="group" aria-labelledby="game-type-heading">
-              <button
-                type="button"
-                class="game-type-card game-type-card--puzzle active"
-                data-game-type="puzzle-country"
-                aria-pressed="true"
-                data-i18n-aria="gameType.puzzle.aria"
-              >
-                <span class="game-type-card-glow" aria-hidden="true"></span>
-                <span class="game-type-icon" aria-hidden="true">🧩</span>
-                <span class="game-type-name" data-i18n="gameType.puzzle.name">Puzzle pays</span>
-              </button>
-              <button
-                type="button"
-                class="game-type-card game-type-card--capitals"
-                data-game-type="capitals-map"
-                aria-pressed="false"
-                data-i18n-aria="gameType.capitals.aria"
-              >
-                <span class="game-type-card-glow" aria-hidden="true"></span>
-                <span class="game-type-icon" aria-hidden="true">📍</span>
-                <span class="game-type-name" data-i18n="gameType.capitals.name">Capitales</span>
-              </button>
-              <button
-                type="button"
-                class="game-type-card game-type-card--flags"
-                data-game-type="flag-match"
-                aria-pressed="false"
-                data-i18n-aria="gameType.flags.aria"
-              >
-                <span class="game-type-card-glow" aria-hidden="true"></span>
-                <span class="game-type-icon" aria-hidden="true">🏳️</span>
-                <span class="game-type-name" data-i18n="gameType.flags.name">Drapeaux</span>
-              </button>
-              <button
-                type="button"
-                class="game-type-card game-type-card--labels"
-                data-game-type="country-labels-map"
-                aria-pressed="false"
-                data-i18n-aria="gameType.labels.aria"
-              >
-                <span class="game-type-card-glow" aria-hidden="true"></span>
-                <span class="game-type-icon" aria-hidden="true">🏷️</span>
-                <span class="game-type-name" data-i18n="gameType.labels.name">Noms sur la carte</span>
-              </button>
+            <h1 class="game-title">World <span>Puzzle</span></h1>
+
+            <section class="game-type-section" aria-labelledby="game-type-heading">
+              <h2 id="game-type-heading" class="section-heading" data-i18n="menu.gameMode">Mode de jeu</h2>
+              <p class="single-mode-label" data-i18n="gameType.flags.name">Drapeaux</p>
+            </section>
+
+            <div id="menu-ads-dual" class="menu-ads-dual hidden" aria-hidden="true">
+              <div id="menu-ad-col-a" class="menu-ads-dual__col hidden" aria-hidden="true">
+                <p class="ad-wrap-label" data-i18n="ad.label">Publicité</p>
+                <div id="ad-menu" class="ad-slot"></div>
+              </div>
+              <div id="menu-ad-col-b" class="menu-ads-dual__col hidden" aria-hidden="true">
+                <p class="ad-wrap-label" data-i18n="ad.label">Publicité</p>
+                <div id="ad-menu-secondary" class="ad-slot"></div>
+              </div>
             </div>
-          </section>
 
-          <div id="menu-ads-dual" class="menu-ads-dual hidden" aria-hidden="true">
-            <div id="menu-ad-col-a" class="menu-ads-dual__col hidden" aria-hidden="true">
-              <p class="ad-wrap-label" data-i18n="ad.label">Publicité</p>
-              <div id="ad-menu" class="ad-slot"></div>
+            <h2 class="section-heading section-heading--inline" data-i18n="worldMap.heading">Carte du monde</h2>
+            <div id="region-mode-map-wrap" class="region-mode-map-wrap">
+              <p id="world-menu-selection-indicator" class="world-menu-selection-indicator" aria-live="polite" aria-atomic="true">
+                <span class="world-menu-selection-indicator__label" data-i18n="worldMap.selectedLabel">Carte sélectionnée</span>
+                <span id="world-menu-selected-name" class="world-menu-selection-indicator__name"></span>
+              </p>
+              <div id="world-menu-svg-host" class="world-menu-svg-host" data-i18n-aria="worldMap.svgAria" aria-label="Carte interactive"></div>
             </div>
-            <div id="menu-ad-col-b" class="menu-ads-dual__col hidden" aria-hidden="true">
-              <p class="ad-wrap-label" data-i18n="ad.label">Publicité</p>
-              <div id="ad-menu-secondary" class="ad-slot"></div>
-            </div>
-          </div>
 
-          <h2 class="section-heading section-heading--inline" data-i18n="worldMap.heading">Carte du monde</h2>
-          <div id="region-mode-map-wrap" class="region-mode-map-wrap">
-            <p
-              id="world-menu-selection-indicator"
-              class="world-menu-selection-indicator"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              <span class="world-menu-selection-indicator__label" data-i18n="worldMap.selectedLabel">Carte sélectionnée</span>
-              <span id="world-menu-selected-name" class="world-menu-selection-indicator__name"></span>
-            </p>
-            <div id="world-menu-svg-host" class="world-menu-svg-host" data-i18n-aria="worldMap.svgAria" aria-label="Carte interactive"></div>
-            <p class="region-extra-heading" data-i18n="worldMap.extraHeading">Cartes plus détaillées</p>
-            <div
-              id="region-mode-extra"
-              class="region-mode-extra"
-              role="group"
-              data-i18n-aria="worldMap.extraGroupAria"
-              aria-label="France par département ou États-Unis par État"
-            ></div>
-          </div>
-
-          <div id="menu-puzzle-controls-hint" class="controls-hint controls-hint--menu puzzle-only-menu--inactive" aria-hidden="true">
-            <span data-i18n="menu.hint.drag">Glisser : déplacer</span>
-            <span data-i18n="menu.hint.wheelRotate">Molette : rotation</span>
-            <span data-i18n="menu.hint.ctrlWheel">Ctrl + molette : zoom</span>
-            <span data-i18n="menu.hint.dblClick">Double-clic : nord (Facile / Moyen)</span>
-            <span data-i18n="menu.hint.release">Relâcher : aimant</span>
-          </div>
-
+            <nav class="menu-info-links" data-i18n-aria="footer.linksAria" aria-label="Raccourcis">
+              <a href="/comment-jouer.html" data-link-role="how-to-play" data-i18n="footer.howToPlay">Comment jouer</a>
+              <a href="/faq.html" data-link-role="faq" data-i18n="footer.faq">FAQ</a>
+              <a href="/a-propos.html" data-link-role="about" data-i18n="footer.about">À propos</a>
+              <a href="/mentions-legales.html" data-i18n="footer.legal">Mentions légales</a>
+              <a href="/confidentialite.html" data-i18n="footer.privacy">Confidentialité</a>
+            </nav>
           </div>
         </div>
-        </div>
+
         <div class="menu-start-dock" role="region" data-i18n-aria="menu.startDockAria">
           <div class="menu-start-dock__inner">
             <button type="button" id="btn-menu-start" class="btn-menu-cta btn-menu-cta--primary" data-i18n="menu.start">
@@ -136,273 +64,16 @@
         </div>
       </div>
 
-      <div id="difficulty-modal" class="difficulty-modal hidden" aria-hidden="true">
-        <div class="difficulty-modal__backdrop" data-difficulty-modal-close tabindex="-1"></div>
-        <div
-          class="difficulty-modal__panel"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="difficulty-modal-title"
-        >
-          <h2 id="difficulty-modal-title" class="difficulty-modal__title" data-i18n="modal.title">Avant de jouer</h2>
-          <p id="difficulty-modal-sub" class="difficulty-modal__sub"></p>
-
-          <div id="flag-difficulty-only" class="puzzle-only-menu puzzle-only-menu--inactive" aria-hidden="true">
-            <section class="difficulty-section" aria-labelledby="flag-difficulty-heading">
-              <h2 id="flag-difficulty-heading" class="section-heading" data-i18n="modal.flag.heading">Difficulté · Drapeaux</h2>
-              <div class="difficulty-grid flag-difficulty-grid" role="radiogroup" aria-labelledby="flag-difficulty-heading">
-                <button
-                  type="button"
-                  class="difficulty-card flag-difficulty-card difficulty-card--easy active"
-                  data-flag-difficulty="1"
-                  role="radio"
-                  aria-checked="true"
-                >
-                  <span class="difficulty-card-glow" aria-hidden="true"></span>
-                  <span class="difficulty-icon" aria-hidden="true">✅</span>
-                  <span class="difficulty-name" data-i18n="modal.flag.l1.name">Niveau 1</span>
-                  <ul class="difficulty-perks">
-                    <li data-i18n="modal.flag.l1.p1">Que des pays de la carte</li>
-                    <li data-i18n="modal.flag.l1.p2">Zéro leurre</li>
-                  </ul>
-                </button>
-                <button
-                  type="button"
-                  class="difficulty-card flag-difficulty-card difficulty-card--medium"
-                  data-flag-difficulty="2"
-                  role="radio"
-                  aria-checked="false"
-                >
-                  <span class="difficulty-card-glow" aria-hidden="true"></span>
-                  <span class="difficulty-icon" aria-hidden="true">🔬</span>
-                  <span class="difficulty-name" data-i18n="modal.flag.l2.name">Niveau 2</span>
-                  <ul class="difficulty-perks">
-                    <li data-i18n="modal.flag.l2.p1">Niveau 1 + micro-États hors carte</li>
-                    <li data-i18n="modal.flag.l2.p2">Ne placer que ce qui est sur la carte</li>
-                  </ul>
-                </button>
-                <button
-                  type="button"
-                  class="difficulty-card flag-difficulty-card difficulty-card--expert"
-                  data-flag-difficulty="3"
-                  role="radio"
-                  aria-checked="false"
-                >
-                  <span class="difficulty-card-glow" aria-hidden="true"></span>
-                  <span class="difficulty-icon" aria-hidden="true">🪤</span>
-                  <span class="difficulty-name" data-i18n="modal.flag.l3.name">Niveau 3</span>
-                  <ul class="difficulty-perks">
-                    <li data-i18n="modal.flag.l3.p1">Niveau 2 + faux amis</li>
-                    <li data-i18n="modal.flag.l3.p2">Dock chargé en leurres</li>
-                  </ul>
-                </button>
-              </div>
-            </section>
-          </div>
-
-          <div id="country-label-difficulty-only" class="puzzle-only-menu puzzle-only-menu--inactive" aria-hidden="true">
-            <section class="difficulty-section" aria-labelledby="country-label-difficulty-heading">
-              <h2 id="country-label-difficulty-heading" class="section-heading" data-i18n="modal.labels.heading">Difficulté · Noms sur la carte</h2>
-              <div class="difficulty-grid flag-difficulty-grid" role="radiogroup" aria-labelledby="country-label-difficulty-heading">
-                <button
-                  type="button"
-                  class="difficulty-card country-label-difficulty-card difficulty-card--easy active"
-                  data-country-label-difficulty="1"
-                  role="radio"
-                  aria-checked="true"
-                >
-                  <span class="difficulty-card-glow" aria-hidden="true"></span>
-                  <span class="difficulty-icon" aria-hidden="true">🏳️</span>
-                  <span class="difficulty-name" data-i18n="modal.labels.l1.name">Niveau 1</span>
-                  <ul class="difficulty-perks">
-                    <li data-i18n="modal.labels.l1.p1">Drapeau emoji + nom</li>
-                    <li data-i18n="modal.labels.l1.p2">Faux pays → retour gauche</li>
-                  </ul>
-                </button>
-                <button
-                  type="button"
-                  class="difficulty-card country-label-difficulty-card difficulty-card--medium"
-                  data-country-label-difficulty="2"
-                  role="radio"
-                  aria-checked="false"
-                >
-                  <span class="difficulty-card-glow" aria-hidden="true"></span>
-                  <span class="difficulty-icon" aria-hidden="true">📝</span>
-                  <span class="difficulty-name" data-i18n="modal.labels.l2.name">Niveau 2</span>
-                  <ul class="difficulty-perks">
-                    <li data-i18n="modal.labels.l2.p1">Nom seul, mêmes pays</li>
-                    <li data-i18n="modal.labels.l2.p2">Pas d’emoji drapeau</li>
-                  </ul>
-                </button>
-                <button
-                  type="button"
-                  class="difficulty-card country-label-difficulty-card difficulty-card--expert"
-                  data-country-label-difficulty="3"
-                  role="radio"
-                  aria-checked="false"
-                >
-                  <span class="difficulty-card-glow" aria-hidden="true"></span>
-                  <span class="difficulty-icon" aria-hidden="true">🌍</span>
-                  <span class="difficulty-name" data-i18n="modal.labels.l3.name">Niveau 3</span>
-                  <ul class="difficulty-perks">
-                    <li data-i18n="modal.labels.l3.p1">Noms hors carte dans le dock</li>
-                    <li data-i18n="modal.labels.l3.p2">Leurres : retour auto</li>
-                  </ul>
-                </button>
-              </div>
-            </section>
-          </div>
-
-          <div id="puzzle-difficulty-only" class="puzzle-only-menu">
-          <section class="difficulty-section" aria-labelledby="difficulty-heading">
-            <h2 id="difficulty-heading" class="section-heading" data-i18n="modal.puzzle.heading">Difficulté · Puzzle pays</h2>
-            <div class="difficulty-grid" role="radiogroup" aria-labelledby="difficulty-heading">
-              <button
-                type="button"
-                class="difficulty-card difficulty-card--easy active"
-                data-difficulty="easy"
-                role="radio"
-                aria-checked="true"
-              >
-                <span class="difficulty-card-glow" aria-hidden="true"></span>
-                <span class="difficulty-icon" aria-hidden="true">🌿</span>
-                <span class="difficulty-name" data-i18n="modal.puzzle.easy.name">Facile</span>
-                <ul class="difficulty-perks">
-                  <li data-i18n="modal.puzzle.easy.p1">Tuiles déjà orientées nord en haut</li>
-                  <li data-i18n="modal.puzzle.easy.p2">Max d’indices à l’écran</li>
-                  <li data-i18n="modal.puzzle.easy.p3">Double-clic = nord en haut</li>
-                </ul>
-              </button>
-              <button
-                type="button"
-                class="difficulty-card difficulty-card--medium"
-                data-difficulty="medium"
-                role="radio"
-                aria-checked="false"
-              >
-                <span class="difficulty-card-glow" aria-hidden="true"></span>
-                <span class="difficulty-icon" aria-hidden="true">🎯</span>
-                <span class="difficulty-name" data-i18n="modal.puzzle.medium.name">Moyen</span>
-                <ul class="difficulty-perks">
-                  <li data-i18n="modal.puzzle.medium.p1">Rotations aléatoires au départ</li>
-                  <li data-i18n="modal.puzzle.medium.p2">Noms + couleurs</li>
-                  <li data-i18n="modal.puzzle.medium.p3">Double-clic nord seulement</li>
-                </ul>
-              </button>
-              <button
-                type="button"
-                class="difficulty-card difficulty-card--expert"
-                data-difficulty="expert"
-                role="radio"
-                aria-checked="false"
-              >
-                <span class="difficulty-card-glow" aria-hidden="true"></span>
-                <span class="difficulty-icon" aria-hidden="true">⛰️</span>
-                <span class="difficulty-name" data-i18n="modal.puzzle.expert.name">Expert</span>
-                <ul class="difficulty-perks">
-                  <li data-i18n="modal.puzzle.expert.p1">Rotations aléatoires au départ</li>
-                  <li data-i18n="modal.puzzle.expert.p2">Monochrome, sans texte</li>
-                  <li data-i18n="modal.puzzle.expert.p3">Pas de raccourci nord</li>
-                </ul>
-              </button>
-            </div>
-          </section>
-          </div>
-
-          <div id="capitals-difficulty-only" class="puzzle-only-menu puzzle-only-menu--inactive" aria-hidden="true">
-            <section class="difficulty-section" aria-labelledby="capitals-difficulty-heading">
-              <h2 id="capitals-difficulty-heading" class="section-heading" data-i18n="modal.capitals.heading">Difficulté · Capitales</h2>
-              <div class="difficulty-grid" role="radiogroup" aria-labelledby="capitals-difficulty-heading">
-                <button
-                  type="button"
-                  class="difficulty-card capitals-difficulty-card difficulty-card--easy"
-                  data-capitals-difficulty="in-country"
-                  role="radio"
-                  aria-checked="false"
-                >
-                  <span class="difficulty-card-glow" aria-hidden="true"></span>
-                  <span class="difficulty-icon" aria-hidden="true">🗺️</span>
-                  <span class="difficulty-name" data-i18n="modal.capitals.inCountry.name">Pays</span>
-                  <ul class="difficulty-perks">
-                    <li data-i18n="modal.capitals.inCountry.p1">N’importe où dans le pays</li>
-                    <li data-i18n="modal.capitals.inCountry.p2">Capitale exacte non requise</li>
-                  </ul>
-                </button>
-                <button
-                  type="button"
-                  class="difficulty-card capitals-difficulty-card difficulty-card--medium active"
-                  data-capitals-difficulty="near-capital"
-                  role="radio"
-                  aria-checked="true"
-                >
-                  <span class="difficulty-card-glow" aria-hidden="true"></span>
-                  <span class="difficulty-icon" aria-hidden="true">📍</span>
-                  <span class="difficulty-name" data-i18n="modal.capitals.capital.name">Capitale</span>
-                  <ul class="difficulty-perks">
-                    <li data-i18n="modal.capitals.capital.p1">Bon pays + près du point</li>
-                    <li data-i18n="modal.capitals.capital.p2">Tolérance autour de la capitale</li>
-                  </ul>
-                </button>
-                <button
-                  type="button"
-                  class="difficulty-card capitals-difficulty-card difficulty-card--expert"
-                  data-capitals-difficulty="expert-decoys"
-                  role="radio"
-                  aria-checked="false"
-                >
-                  <span class="difficulty-card-glow" aria-hidden="true"></span>
-                  <span class="difficulty-icon" aria-hidden="true">🎭</span>
-                  <span class="difficulty-name" data-i18n="modal.capitals.decoys.name">Pièges</span>
-                  <ul class="difficulty-perks">
-                    <li data-i18n="modal.capitals.decoys.p1">Comme Capitale + leurres</li>
-                    <li data-i18n="modal.capitals.decoys.p2">Fausse ville → retour</li>
-                  </ul>
-                </button>
-              </div>
-            </section>
-          </div>
-
-          <div class="difficulty-modal__actions">
-            <button type="button" id="btn-difficulty-cancel" class="btn-menu-text" data-i18n="modal.cancel">Annuler</button>
-            <button type="button" id="btn-difficulty-confirm" class="btn-menu-cta btn-menu-cta--primary" data-i18n="modal.play">Jouer</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Game Screen ───────────────────────────── -->
-      <div id="screen-game" class="screen hidden" data-game-kind="puzzle">
-        <!-- Compact mobile/tablet: stats + menu (≤900px) -->
+      <div id="screen-game" class="screen hidden" data-game-kind="flag">
         <header id="game-header-mobile" class="game-header-mobile">
           <div class="game-header-mobile__row">
             <div class="game-header-mobile__stats">
               <span id="game-stats-mobile-line" class="game-stats-mobile-line" aria-live="polite"></span>
             </div>
             <span class="game-zoom game-zoom--mobile-bar" data-i18n-aria="game.zoom.aria" aria-label="Zoom">
-              <button
-                type="button"
-                id="btn-mobile-zoom-out"
-                class="game-zoom--mobile-bar__btn"
-                data-i18n-title="game.zoom.outTitle"
-              >
-                −
-              </button>
-              <button
-                type="button"
-                id="btn-mobile-zoom-reset"
-                class="game-zoom--mobile-bar__btn game-zoom--mobile-bar__btn--wide"
-                data-i18n="game.zoom.resetLabel"
-                data-i18n-title="game.zoom.resetTitle"
-              >
-                Défaut
-              </button>
-              <button
-                type="button"
-                id="btn-mobile-zoom-in"
-                class="game-zoom--mobile-bar__btn"
-                data-i18n-title="game.zoom.inTitle"
-              >
-                +
-              </button>
+              <button type="button" id="btn-mobile-zoom-out" class="game-zoom--mobile-bar__btn" data-i18n-title="game.zoom.outTitle">−</button>
+              <button type="button" id="btn-mobile-zoom-reset" class="game-zoom--mobile-bar__btn game-zoom--mobile-bar__btn--wide" data-i18n="game.zoom.resetLabel" data-i18n-title="game.zoom.resetTitle">Défaut</button>
+              <button type="button" id="btn-mobile-zoom-in" class="game-zoom--mobile-bar__btn" data-i18n-title="game.zoom.inTitle">+</button>
             </span>
             <div class="game-header-mobile__menu">
               <button
@@ -416,12 +87,7 @@
               >
                 ☰
               </button>
-              <div
-                id="game-action-menu-panel"
-                class="game-action-menu-panel hidden"
-                role="menu"
-                aria-hidden="true"
-              >
+              <div id="game-action-menu-panel" class="game-action-menu-panel hidden" role="menu" aria-hidden="true">
                 <button type="button" class="game-action-menu-item" role="menuitem" data-game-action="back" data-i18n="game.action.backToMenu"></button>
                 <button type="button" class="game-action-menu-item" role="menuitem" data-game-action="abandon" data-i18n="game.action.giveUp"></button>
                 <button type="button" class="game-action-menu-item" role="menuitem" data-game-action="help" data-i18n="game.action.help"></button>
@@ -435,128 +101,45 @@
           <button id="btn-back" data-i18n="game.back">← Menu</button>
           <span id="game-title-bar">World Puzzle</span>
           <span class="game-zoom" data-i18n-aria="game.zoom.aria" aria-label="Zoom">
-            <button type="button" id="btn-zoom-out" data-i18n-title="game.zoom.outTitle" title="Dézoomer (−)">−</button>
-            <button type="button" id="btn-zoom-reset" data-i18n="game.zoom.resetLabel" data-i18n-title="game.zoom.resetTitle" title="Vue de départ : centrage + zoom large (touche 0)">Défaut</button>
-            <button type="button" id="btn-zoom-in" data-i18n-title="game.zoom.inTitle" title="Zoomer (+)">+</button>
+            <button type="button" id="btn-zoom-out" data-i18n-title="game.zoom.outTitle">−</button>
+            <button type="button" id="btn-zoom-reset" data-i18n="game.zoom.resetLabel" data-i18n-title="game.zoom.resetTitle">Défaut</button>
+            <button type="button" id="btn-zoom-in" data-i18n-title="game.zoom.inTitle">+</button>
           </span>
-          <button
-            type="button"
-            id="btn-game-help-desktop"
-            class="btn-game-help-desktop"
-            data-i18n-title="game.help.openTitle"
-            data-i18n-aria="game.help.openAria"
-          >
-            ?
-          </button>
-          <button
-            type="button"
-            id="btn-abandon"
-            class="btn-abandon"
-            data-i18n="game.abandon.button"
-            data-i18n-title="game.abandon.title"
-            title="Placer automatiquement le reste : +1 min au chrono et pénalité de points"
-          >
-            Abandonner
-          </button>
+          <button type="button" id="btn-game-help-desktop" class="btn-game-help-desktop" data-i18n-title="game.help.openTitle" data-i18n-aria="game.help.openAria">?</button>
+          <button type="button" id="btn-abandon" class="btn-abandon" data-i18n="game.abandon.button" data-i18n-title="game.abandon.title">Abandonner</button>
           <span id="game-stats">
             <span class="game-stat"><span data-i18n="game.stat.time">Temps</span> <strong id="game-time">0:00</strong></span>
-            <span class="game-stat"><span id="progress-label" data-i18n="game.progress.connections">Connexions</span> <strong id="score-count">0</strong>/<strong id="score-max">0</strong></span>
+            <span class="game-stat"><span id="progress-label" data-i18n="game.progress.flags">Drapeaux</span> <strong id="score-count">0</strong>/<strong id="score-max">0</strong></span>
             <span class="game-stat"><span data-i18n="game.stat.score">Score</span> <strong id="score-points">0</strong></span>
           </span>
         </div>
+
         <div id="game-body" class="game-body">
-          <div id="capitals-dock-shell" class="dock-shell dock-shell--capitals hidden">
-            <button
-              type="button"
-              id="dock-nav-capitals-prev"
-              class="dock-nav-btn dock-nav-btn--prev"
-              aria-controls="capitals-dock"
-              data-i18n-aria="game.dock.prevAria"
-            >
-              ‹
-            </button>
-            <aside id="capitals-dock" class="capitals-dock hidden" data-i18n-aria="game.dock.genericAria" aria-label="Étiquettes à placer sur la carte"></aside>
-            <button
-              type="button"
-              id="dock-nav-capitals-next"
-              class="dock-nav-btn dock-nav-btn--next"
-              aria-controls="capitals-dock"
-              data-i18n-aria="game.dock.nextAria"
-            >
-              ›
-            </button>
-          </div>
           <div id="flag-dock-shell" class="dock-shell dock-shell--flag hidden">
-            <button
-              type="button"
-              id="dock-nav-flag-prev"
-              class="dock-nav-btn dock-nav-btn--prev"
-              aria-controls="flag-dock"
-              data-i18n-aria="game.dock.prevAria"
-            >
-              ‹
-            </button>
-            <aside id="flag-dock" class="flag-dock hidden" data-i18n-aria="game.dock.flagAria" aria-label="Drapeaux à placer, liste défilante"></aside>
-            <button
-              type="button"
-              id="dock-nav-flag-next"
-              class="dock-nav-btn dock-nav-btn--next"
-              aria-controls="flag-dock"
-              data-i18n-aria="game.dock.nextAria"
-            >
-              ›
-            </button>
+            <button type="button" id="dock-nav-flag-prev" class="dock-nav-btn dock-nav-btn--prev" aria-controls="flag-dock" data-i18n-aria="game.dock.prevAria">‹</button>
+            <aside id="flag-dock" class="flag-dock hidden" data-i18n-aria="game.dock.flagAria" aria-label="Drapeaux à placer"></aside>
+            <button type="button" id="dock-nav-flag-next" class="dock-nav-btn dock-nav-btn--next" aria-controls="flag-dock" data-i18n-aria="game.dock.nextAria">›</button>
           </div>
+
           <div id="game-canvas-wrap" class="game-canvas-wrap">
             <canvas id="game-canvas" tabindex="0"></canvas>
-            <div
-              id="game-zoom-float"
-              class="game-zoom-float"
-              role="toolbar"
-              data-i18n-aria="game.zoom.floatAria"
-            >
-              <button
-                type="button"
-                id="btn-zoom-float-out"
-                class="game-zoom-float__btn"
-                data-i18n-title="game.zoom.outTitle"
-              >
-                −
-              </button>
-              <button
-                type="button"
-                id="btn-zoom-float-reset"
-                class="game-zoom-float__btn game-zoom-float__btn--mid"
-                data-i18n="game.zoom.resetLabel"
-                data-i18n-title="game.zoom.resetTitle"
-              >
-                Défaut
-              </button>
-              <button
-                type="button"
-                id="btn-zoom-float-in"
-                class="game-zoom-float__btn"
-                data-i18n-title="game.zoom.inTitle"
-              >
-                +
-              </button>
+            <div id="game-zoom-float" class="game-zoom-float" role="toolbar" data-i18n-aria="game.zoom.floatAria">
+              <button type="button" id="btn-zoom-float-out" class="game-zoom-float__btn" data-i18n-title="game.zoom.outTitle">−</button>
+              <button type="button" id="btn-zoom-float-reset" class="game-zoom-float__btn game-zoom-float__btn--mid" data-i18n="game.zoom.resetLabel" data-i18n-title="game.zoom.resetTitle">Défaut</button>
+              <button type="button" id="btn-zoom-float-in" class="game-zoom-float__btn" data-i18n-title="game.zoom.inTitle">+</button>
             </div>
           </div>
-          <aside
-            id="game-ad-rail"
-            class="game-ad-rail hidden"
-            data-i18n-aria="game.ad.railAria"
-            aria-label="Publicité"
-            aria-hidden="true"
-          >
+
+          <aside id="game-ad-rail" class="game-ad-rail hidden" data-i18n-aria="game.ad.railAria" aria-label="Publicité" aria-hidden="true">
             <p class="ad-wrap-label" data-i18n="ad.label">Publicité</p>
             <div id="ad-game-sidebar" class="ad-slot ad-slot--game-rail"></div>
           </aside>
+
           <aside id="victory-panel" class="victory-panel hidden" aria-hidden="true">
             <div class="victory-panel-inner">
-              <p class="victory-eyebrow" id="victory-eyebrow" data-i18n="victory.eyebrow.puzzleSolved">Puzzle résolu</p>
+              <p class="victory-eyebrow" id="victory-eyebrow" data-i18n="victory.eyebrow.flagsPlaced">Drapeaux posés</p>
               <h2 class="victory-title" id="victory-title" data-i18n="victory.title.win">Bravo !</h2>
-              <p class="victory-desc" id="victory-desc" data-i18n="victory.desc.puzzle">Toutes les frontières du mode sont reliées.</p>
+              <p class="victory-desc" id="victory-desc" data-i18n="victory.desc.flags">Tous les drapeaux au bon pays.</p>
               <dl class="victory-stats">
                 <div class="victory-stat-row">
                   <dt data-i18n="victory.stat.time">Temps</dt>
@@ -576,40 +159,23 @@
         </div>
       </div>
 
-      <!-- Aide partie : remplace l’ancien bandeau sous la carte -->
-      <div
-        id="game-help-modal"
-        class="game-help-modal hidden"
-        aria-hidden="true"
-      >
+      <div id="game-help-modal" class="game-help-modal hidden" aria-hidden="true">
         <div class="game-help-modal__backdrop" data-close-game-help tabindex="-1"></div>
-        <div
-          class="game-help-modal__panel"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="game-help-modal-title"
-        >
+        <div class="game-help-modal__panel" role="dialog" aria-modal="true" aria-labelledby="game-help-modal-title">
           <div class="game-help-modal__head">
             <h2 id="game-help-modal-title" class="game-help-modal__title" data-i18n="game.help.title">Aide</h2>
-            <button
-              type="button"
-              class="game-help-modal__close"
-              data-close-game-help
-              data-i18n-aria="game.help.closeAria"
-            >
-              ×
-            </button>
+            <button type="button" class="game-help-modal__close" data-close-game-help data-i18n-aria="game.help.closeAria">×</button>
           </div>
           <div class="game-help-modal__body">
             <p id="game-help-modal-text" class="game-help-modal__text"></p>
           </div>
           <div class="game-help-modal__foot">
             <div class="game-help-modal__links">
-              <a href="/comment-jouer.html" class="game-help-modal__link" data-i18n="footer.howToPlay">Comment jouer</a>
+              <a href="/comment-jouer.html" data-link-role="how-to-play" class="game-help-modal__link" data-i18n="footer.howToPlay">Comment jouer</a>
               <span class="footer-sep" aria-hidden="true">·</span>
-              <a href="/faq.html" class="game-help-modal__link" data-i18n="footer.faq">FAQ</a>
+              <a href="/faq.html" data-link-role="faq" class="game-help-modal__link" data-i18n="footer.faq">FAQ</a>
               <span class="footer-sep" aria-hidden="true">·</span>
-              <a href="/a-propos.html" class="game-help-modal__link" data-i18n="footer.about">À propos</a>
+              <a href="/a-propos.html" data-link-role="about" class="game-help-modal__link" data-i18n="footer.about">À propos</a>
               <span class="footer-sep" aria-hidden="true">·</span>
               <a href="/mentions-legales.html" class="game-help-modal__link" data-i18n="footer.legal">Mentions légales</a>
               <span class="footer-sep" aria-hidden="true">·</span>
@@ -619,22 +185,8 @@
           </div>
         </div>
       </div>
-
     </div>
 
-    <footer id="site-footer">
-      <a href="/comment-jouer.html" data-i18n="footer.howToPlay">Comment jouer</a>
-      <span class="footer-sep" aria-hidden="true">·</span>
-      <a href="/faq.html" data-i18n="footer.faq">FAQ</a>
-      <span class="footer-sep" aria-hidden="true">·</span>
-      <a href="/a-propos.html" data-i18n="footer.about">À propos</a>
-      <span class="footer-sep" aria-hidden="true">·</span>
-      <a href="/mentions-legales.html" data-i18n="footer.legal">Mentions légales</a>
-      <span class="footer-sep" aria-hidden="true">·</span>
-      <a href="/confidentialite.html" data-i18n="footer.privacy">Confidentialité</a>
-      <span class="footer-sep" aria-hidden="true">·</span>
-      <span id="footer-credit" data-i18n="footer.credit">Données géographiques : Natural Earth (domaine public)</span>
-    </footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

@@ -9,16 +9,11 @@ import {
   AFRICA_COUNTRY_IDS,
   ASIA_COUNTRY_IDS,
   EUROPE_COUNTRY_IDS,
-  FR_DEPARTMENT_IDS,
   NORTH_CENTRAL_AMERICA_COUNTRY_IDS,
   SOUTH_AMERICA_COUNTRY_IDS,
-  USA_STATE_IDS,
 } from './worldRegions.generated.ts';
 
-/** Ancien id menu « usa-states » → « usa » (même carte par États). */
-const LEGACY_REGION_ID_ALIASES: Record<string, string> = {
-  'usa-states': 'usa',
-};
+const LEGACY_REGION_ID_ALIASES: Record<string, string> = {};
 
 export function resolveRegionId(regionId: string): string {
   return LEGACY_REGION_ID_ALIASES[regionId] ?? regionId;
@@ -54,8 +49,6 @@ export interface RegionConfig {
   label: string;
   geojsonUrl: string;
   countries: string[];
-  /** false pour départements / États (pas de drapeau ISO au dock). */
-  supportsFlags: boolean;
   /** Optionnel : cadrage carte (puzzle, drapeaux, capitales, noms). */
   mapViewBBoxClamp?: MapViewBBoxClamp;
 }
@@ -70,9 +63,6 @@ export type RegionCatalogEntry =
       available: true;
       geojsonUrl: string;
       countries: string[];
-      /** défaut : true */
-      supportsFlags?: boolean;
-      /** false : carte « fine » sous la carte monde (départements, États). */
       showOnWorldMap?: boolean;
       mapViewBBoxClamp?: MapViewBBoxClamp;
     }
@@ -138,39 +128,6 @@ export const REGION_CATALOG: readonly RegionCatalogEntry[] = [
     geojsonUrl: '/data/asia.geojson',
     countries: [...ASIA_COUNTRY_IDS],
   },
-  {
-    id: 'france',
-    label: 'France',
-    icon: '🇫🇷',
-    descriptionLines: ['Pays unique · métropole (hors outre-mer)', '1 pays'],
-    available: true,
-    geojsonUrl: '/data/france-country.geojson',
-    countries: ['FRA'],
-  },
-  {
-    id: 'usa',
-    label: 'États-Unis',
-    icon: '🇺🇸',
-    descriptionLines: [
-      '48 États contigus · une tuile par État (puzzle, capitale, nom ou drapeau)',
-      `${USA_STATE_IDS.length} États`,
-    ],
-    available: true,
-    geojsonUrl: '/data/usa-states.geojson',
-    countries: [...USA_STATE_IDS],
-    showOnWorldMap: true,
-  },
-  {
-    id: 'fr-departments',
-    label: 'France · départements',
-    icon: '🇫🇷',
-    descriptionLines: ['Métropole uniquement (hors DROM-COM)', `${FR_DEPARTMENT_IDS.length} départements`],
-    available: true,
-    geojsonUrl: '/data/fr-departments.geojson',
-    countries: [...FR_DEPARTMENT_IDS],
-    supportsFlags: false,
-    showOnWorldMap: false,
-  },
 ];
 
 /** Régions réellement jouables — chargement GeoJSON au démarrage de partie uniquement. */
@@ -181,7 +138,6 @@ export const REGIONS: RegionConfig[] = REGION_CATALOG.filter(
   label: e.label,
   geojsonUrl: e.geojsonUrl,
   countries: e.countries,
-  supportsFlags: e.supportsFlags !== false,
   mapViewBBoxClamp: e.mapViewBBoxClamp,
 }));
 
@@ -190,11 +146,6 @@ export function getDefaultRegionId(): string {
     if (e.available && e.showOnWorldMap !== false) return e.id;
   }
   return 'europe';
-}
-
-export function regionSupportsFlags(regionId: string): boolean {
-  const r = REGIONS.find((x) => x.id === resolveRegionId(regionId));
-  return r?.supportsFlags ?? true;
 }
 
 export function catalogEntryForRegionId(regionId: string): RegionCatalogEntry | undefined {

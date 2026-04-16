@@ -1,14 +1,13 @@
 /**
  * AdSense : après consentement, charge le même script que la balise officielle
  * (pagead2.googlesyndication.com/.../adsbygoogle.js?client=…).
- * ID éditeur par défaut World Puzzle ; surcharger avec VITE_ADSENSE_CLIENT ou désactiver avec `off`.
+ * ID éditeur défini via VITE_ADSENSE_CLIENT ; désactiver avec `off`.
  * Menu : VITE_ADSENSE_SLOT_MENU + VITE_ADSENSE_SLOT_MENU_SECOND (ou SLOT_MENU_BOTTOM pour le 2e).
  * Jeu : VITE_ADSENSE_SLOT_GAME_SIDEBAR (colonne droite).
  */
 
 import { getLocale, pickUiString, subscribeLocale, t } from './i18n/index.ts';
 
-const DEFAULT_ADSENSE_CLIENT = 'ca-pub-8944795420097131';
 const CONSENT_KEY = 'worldpuzzle-ads-consent';
 
 declare global {
@@ -21,7 +20,7 @@ function publisherId(): string | undefined {
   const raw = import.meta.env.VITE_ADSENSE_CLIENT?.trim();
   if (raw === 'off') return undefined;
   if (raw?.startsWith('ca-pub-')) return raw;
-  return DEFAULT_ADSENSE_CLIENT;
+  return undefined;
 }
 
 function slotMenu(): string | undefined {

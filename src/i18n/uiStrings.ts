@@ -5,8 +5,8 @@ type Row = { fr: string; en: string };
 /** Textes UI statiques FR/EN (clés plates pour `t()` et `data-i18n`). */
 export const UI_STRINGS: Record<string, Row> = {
   'meta.description': {
-    fr: 'Jeu de cartes : puzzle pays, capitales, drapeaux et noms sur la carte.',
-    en: 'Map game: country puzzle, capitals, flags, and labels on the map.',
+    fr: 'Jeu de drapeaux : place chaque drapeau sur le bon pays.',
+    en: 'Flag game: place each flag on the correct country.',
   },
 
   'lang.aria': { fr: 'Langue', en: 'Language' },
@@ -39,11 +39,6 @@ export const UI_STRINGS: Record<string, Row> = {
   'worldMap.heading': { fr: 'Carte du monde', en: 'World map' },
   'worldMap.selectedLabel': { fr: 'Carte sélectionnée', en: 'Selected map' },
   'worldMap.svgAria': { fr: 'Carte interactive', en: 'Interactive map' },
-  'worldMap.extraHeading': { fr: 'Cartes plus détaillées', en: 'More detailed maps' },
-  'worldMap.extraGroupAria': {
-    fr: 'France par département ou États-Unis par État',
-    en: 'France by department or United States by state',
-  },
   'worldMap.fallback': {
     fr: 'Carte menu indisponible. Lance <code>npm run build:menu-map</code> à la racine du projet.',
     en: 'Menu map unavailable. Run <code>npm run build:menu-map</code> from the project root.',
@@ -57,10 +52,6 @@ export const UI_STRINGS: Record<string, Row> = {
 
   'menu.start': { fr: 'Lancer la partie', en: 'Start game' },
   'menu.startDockAria': { fr: 'Lancer une partie', en: 'Start a game' },
-
-  'modal.title': { fr: 'Avant de jouer', en: 'Before you play' },
-  'modal.cancel': { fr: 'Annuler', en: 'Cancel' },
-  'modal.play': { fr: 'Jouer', en: 'Play' },
 
   'modal.flag.heading': { fr: 'Difficulté · Drapeaux', en: 'Difficulty · Flags' },
   'modal.flag.l1.name': { fr: 'Niveau 1', en: 'Level 1' },
@@ -150,11 +141,12 @@ export const UI_STRINGS: Record<string, Row> = {
   'game.dock.prevAria': { fr: 'Élément précédent', en: 'Previous item' },
   'game.dock.nextAria': { fr: 'Élément suivant', en: 'Next item' },
   'game.dock.dragFlag': { fr: 'Glisser sur le pays', en: 'Drag onto the country' },
+  'game.dock.tapFlag': { fr: 'Touchez pour sélectionner', en: 'Tap to select' },
   'game.dock.dragMap': { fr: 'Glisser sur la carte', en: 'Drag onto the map' },
   'game.dock.dragCountry': { fr: 'Glisser sur le pays sur la carte', en: 'Drag onto the country on the map' },
   'game.hint.mobileDockSuffix': {
-    fr: 'Bas : un élément à la fois — ‹ › ou défilement horizontal sur la carte.',
-    en: 'Bottom: one item at a time — ‹ › or horizontal scroll on the card.',
+    fr: 'Mobile : touchez un drapeau, puis touchez le pays correspondant.',
+    en: 'Mobile: tap a flag, then tap the matching country.',
   },
 
   'victory.eyebrow.puzzleSolved': { fr: 'Puzzle résolu', en: 'Puzzle solved' },
@@ -223,14 +215,10 @@ export const UI_STRINGS: Record<string, Row> = {
   'footer.about': { fr: 'À propos', en: 'About' },
   'footer.legal': { fr: 'Mentions légales', en: 'Legal notice' },
   'footer.privacy': { fr: 'Confidentialité', en: 'Privacy' },
+  'footer.linksAria': { fr: 'Liens utiles', en: 'Useful links' },
   'footer.credit': {
     fr: 'Données géographiques : Natural Earth (domaine public)',
     en: 'Geographic data: Natural Earth (public domain)',
-  },
-
-  'region.flagBlockedTitle': {
-    fr: 'Pas de drapeaux ISO pour cette carte (départements, États US).',
-    en: 'No ISO flags for this map (departments, US states).',
   },
 
   'confirm.abandon': {
